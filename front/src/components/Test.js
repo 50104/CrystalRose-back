@@ -38,7 +38,7 @@ function Test() {
 
   return (
     <div>
-      <form onSubmit={onSubmit}>
+      {/* <form onSubmit={onSubmit}>
         아이디: <input type="text" value={id} onChange={(e) => setId(e.target.value)}></input>
         이름:<input type="text" value={name} onChange={(e) => setName(e.target.value)}></input>
         <button type="submit">전송</button>
@@ -53,7 +53,11 @@ function Test() {
             </li>
           ))}
         </ul>
-      </div>
+      </div> */}
+      <form name="form" method="post" action="http://localhost:4000/board" encType="multipart/form-data">
+          <input type="file" name="files" multiple="multiple"/>
+          <input type="submit" id="submit" value="전송"/>
+      </form>
     </div>
   );
 }

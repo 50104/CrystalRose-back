@@ -19,6 +19,6 @@ public class WishEntity {
     private String name;
 
     //엔터티는 기본생성자가 꼭 필요함 (의존성 주입 해야하니까)
-    public TestEntity() {
-    }
+    // public TestEntity() {
+    // }
 }
