@@ -2,11 +2,11 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Spring Boot-BackApplication<back>",
+            "name": "Spring Boot-BackApplication<CristalRose-back>",
             "request": "launch",
             "cwd": "${workspaceFolder}",
             "mainClass": "com.rose.back.BackApplication",
-            "projectName": "back",
+            "projectName": "CristalRose-back",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
         }
