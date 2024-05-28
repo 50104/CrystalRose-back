@@ -23,9 +23,6 @@ public class UserEntity {
     //@Table(name = "user_list") 데이터베이스의 유저리스트 라는 테이블과 맵핑하겠다
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(length = 10, name = "user_no")
-    private int userNo;
-
     @Column(length = 50, name = "user_id")
     private String userId;
 

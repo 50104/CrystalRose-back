@@ -19,9 +19,6 @@ public class UserEmailCertification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(length = 10, name = "user_no")
-    private int userNo;
-
     @Column(length = 50, name = "user_id")
     private String userId;
 

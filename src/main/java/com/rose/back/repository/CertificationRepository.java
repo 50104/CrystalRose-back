@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.rose.back.entity.UserEmailCertification;
 
 @Repository
-public interface CertificationRepository extends JpaRepository<UserEmailCertification, Integer> {
+public interface CertificationRepository extends JpaRepository<UserEmailCertification, String> {
     
 }
