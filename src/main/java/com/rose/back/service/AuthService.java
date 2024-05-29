@@ -2,6 +2,8 @@ package com.rose.back.service;
 
 import org.springframework.http.ResponseEntity;
 
+import com.rose.back.dto.request.auth.CheckCertificationRequestDto;
+import com.rose.back.dto.response.auth.CheckCertificationResponseDto;
 import com.rose.back.dto.request.auth.EmailCertificationRequestDto;
 import com.rose.back.dto.request.auth.IdCheckRequestDto;
 import com.rose.back.dto.response.auth.EmailCertificationResponseDto;
@@ -12,4 +14,6 @@ public interface AuthService {
     ResponseEntity<? super IdCheckResponseDto> userIdCheck(IdCheckRequestDto dto);
 
     ResponseEntity<? super EmailCertificationResponseDto> emailCertification(EmailCertificationRequestDto dto);
+
+    ResponseEntity<? super CheckCertificationResponseDto> checkCertification(CheckCertificationRequestDto dto);
 }

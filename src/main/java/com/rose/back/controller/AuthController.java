@@ -2,6 +2,8 @@ package com.rose.back.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import com.rose.back.dto.request.auth.CheckCertificationRequestDto;
+import com.rose.back.dto.response.auth.CheckCertificationResponseDto;
 import com.rose.back.dto.request.auth.EmailCertificationRequestDto;
 import com.rose.back.dto.request.auth.IdCheckRequestDto;
 import com.rose.back.dto.response.auth.EmailCertificationResponseDto;
@@ -36,6 +38,12 @@ public class AuthController {
     emailCertification(@RequestBody @Valid EmailCertificationRequestDto requestBody) {
 
         ResponseEntity<? super EmailCertificationResponseDto> response = authService.emailCertification(requestBody);
+        return response;
+    }
+
+    @PostMapping("/check-certification")
+    public ResponseEntity<? super CheckCertificationResponseDto> checkCertification(@RequestBody @Valid CheckCertificationRequestDto requestBody) {
+        ResponseEntity<? super CheckCertificationResponseDto> response = authService.checkCertification(requestBody);
         return response;
     }
 }

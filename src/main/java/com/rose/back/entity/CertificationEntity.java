@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Entity(name = "user_email_certification")
 @Table(name = "user_email_certification")
-public class UserEmailCertification {
+public class CertificationEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -4,12 +4,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.rose.back.common.CertificationNumber;
+import com.rose.back.dto.request.auth.CheckCertificationRequestDto;
 import com.rose.back.dto.request.auth.EmailCertificationRequestDto;
 import com.rose.back.dto.request.auth.IdCheckRequestDto;
 import com.rose.back.dto.response.ResponseDto;
+import com.rose.back.dto.response.auth.CheckCertificationResponseDto;
 import com.rose.back.dto.response.auth.EmailCertificationResponseDto;
 import com.rose.back.dto.response.auth.IdCheckResponseDto;
-import com.rose.back.entity.UserEmailCertification;
+import com.rose.back.entity.CertificationEntity;
 import com.rose.back.provider.EmailProvider;
 import com.rose.back.repository.CertificationRepository;
 import com.rose.back.repository.UserRepository;
@@ -64,7 +66,7 @@ public class AuthServiceImplement implements AuthService {
             if (!isSuccessed) return EmailCertificationResponseDto.mailSendFail();
 
             // 전송 결과 저장
-            UserEmailCertification certificationEntity = new UserEmailCertification(userId, userEmail, certificationNumber);
+            CertificationEntity certificationEntity = new CertificationEntity(userId, userEmail, certificationNumber);
             certificationRepository.save(certificationEntity);
 
         } catch (Exception e) {
@@ -74,5 +76,29 @@ public class AuthServiceImplement implements AuthService {
         }
 
         return EmailCertificationResponseDto.success();
+    }
+
+    @Override
+    public ResponseEntity<? super CheckCertificationResponseDto> checkCertification(CheckCertificationRequestDto dto) {
+        
+        try {
+            
+            String userId = dto.getUserId();
+            String userEmail = dto.getUserEmail();
+            String certificationNumber = dto.getCertificationNumber();
+
+            CertificationEntity certificationEntity = certificationRepository.findByUserId(userId);
+            if (certificationEntity == null) return CheckCertificationResponseDto.certificationFail();
+
+            boolean isMatched = certificationEntity.getUserEmail().equals(userEmail) && certificationEntity.getCertificationNo().equals(certificationNumber);
+            if (!isMatched) return CheckCertificationResponseDto.certificationFail();
+
+        } catch (Exception e) {
+            
+            e.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+
+        return CheckCertificationResponseDto.success();
     }
 }
