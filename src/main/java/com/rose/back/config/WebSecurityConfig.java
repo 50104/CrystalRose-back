@@ -1,6 +1,7 @@
 package com.rose.back.config;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.annotation.Bean;
@@ -64,15 +65,22 @@ public class WebSecurityConfig {
     protected CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.addAllowedOrigin("*");
+        corsConfiguration.addAllowedOrigin("http://localhost:3000");// 리액트 서버
         corsConfiguration.addAllowedMethod("*");
         corsConfiguration.addAllowedHeader("*");
 
+        corsConfiguration.setAllowCredentials(true);
+        corsConfiguration.setExposedHeaders(Arrays.asList("Access-Control-Allow-Headers",
+                "Authorization, x-xsrf-token, Access-Control-Allow-Headers, Origin, Accept, X-Requested-With, " +
+                        "Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")); // 헤더 요청 열어둠
+        // xx CorsConfig 에서 가져옴
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/v1/**", corsConfiguration);
+        source.registerCorsConfiguration("/**", corsConfiguration);
 
         return source;
     }
+    // xx cors 에러2 같이 확인 "/api/v1/**" 변경
 }
 
 class FailedAuthenticationEntryPoint implements AuthenticationEntryPoint {
