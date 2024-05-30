@@ -6,8 +6,10 @@ import com.rose.back.dto.request.auth.CheckCertificationRequestDto;
 import com.rose.back.dto.response.auth.CheckCertificationResponseDto;
 import com.rose.back.dto.request.auth.EmailCertificationRequestDto;
 import com.rose.back.dto.request.auth.IdCheckRequestDto;
+import com.rose.back.dto.request.auth.SignUpRequestDto;
 import com.rose.back.dto.response.auth.EmailCertificationResponseDto;
 import com.rose.back.dto.response.auth.IdCheckResponseDto;
+import com.rose.back.dto.response.auth.SignUpResponseDto;
 import com.rose.back.service.AuthService;
 
 import jakarta.validation.Valid;
@@ -44,6 +46,12 @@ public class AuthController {
     @PostMapping("/check-certification")
     public ResponseEntity<? super CheckCertificationResponseDto> checkCertification(@RequestBody @Valid CheckCertificationRequestDto requestBody) {
         ResponseEntity<? super CheckCertificationResponseDto> response = authService.checkCertification(requestBody);
+        return response;
+    }
+
+    @PostMapping("/sign-up")
+    public ResponseEntity<? super SignUpResponseDto> signUp(@RequestBody @Valid SignUpRequestDto requestBody) {
+        ResponseEntity<? super SignUpResponseDto> response = authService.signUp(requestBody);
         return response;
     }
 }

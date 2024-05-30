@@ -13,19 +13,20 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "user_email_certification")
-@Table(name = "user_email_certification")
+@Entity(name = "certification")
+@Table(name = "certification")
 public class CertificationEntity {
 
+    // @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(length = 50, name = "user_id")
+    @Column(length = 100, name = "user_id")
     private String userId;
 
     @Column(length = 300, name = "user_email")
     private String userEmail;
 
-    @Column(length = 300, name = "certification_no")
-    private String certificationNo;
+    @Column(length = 300, name = "certification_number")
+    private String certificationNumber;
     
 }
