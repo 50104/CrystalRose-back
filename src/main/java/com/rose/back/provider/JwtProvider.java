@@ -22,8 +22,9 @@ public class JwtProvider {
     public String create(String userId) {
 
         Date expiredDate = Date.from(Instant.now().plus(1, ChronoUnit.HOURS));
-        Key key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+        Key key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)); // 시크릿키 생성
 
+        // json wab token 생성
         String jwt = Jwts.builder()
             .signWith(key, SignatureAlgorithm.HS256)
             .setSubject(userId).setIssuedAt(new Date()).setExpiration(expiredDate)
@@ -32,6 +33,7 @@ public class JwtProvider {
         return jwt;
     }
 
+    // jwt 검증
     public String validate(String jwt) {
 
         String subject = null;

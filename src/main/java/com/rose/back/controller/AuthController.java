@@ -6,9 +6,11 @@ import com.rose.back.dto.request.auth.CheckCertificationRequestDto;
 import com.rose.back.dto.response.auth.CheckCertificationResponseDto;
 import com.rose.back.dto.request.auth.EmailCertificationRequestDto;
 import com.rose.back.dto.request.auth.IdCheckRequestDto;
+import com.rose.back.dto.request.auth.SignInRequestDto;
 import com.rose.back.dto.request.auth.SignUpRequestDto;
 import com.rose.back.dto.response.auth.EmailCertificationResponseDto;
 import com.rose.back.dto.response.auth.IdCheckResponseDto;
+import com.rose.back.dto.response.auth.SignInResponseDto;
 import com.rose.back.dto.response.auth.SignUpResponseDto;
 import com.rose.back.service.AuthService;
 
@@ -52,6 +54,12 @@ public class AuthController {
     @PostMapping("/sign-up")
     public ResponseEntity<? super SignUpResponseDto> signUp(@RequestBody @Valid SignUpRequestDto requestBody) {
         ResponseEntity<? super SignUpResponseDto> response = authService.signUp(requestBody);
+        return response;
+    }
+
+    @PostMapping("/sign-in")
+    public ResponseEntity<? super SignInResponseDto> signIn (@RequestBody @Valid SignInRequestDto requestBody) {
+        ResponseEntity<? super SignInResponseDto> response = authService.signIn(requestBody);
         return response;
     }
 }

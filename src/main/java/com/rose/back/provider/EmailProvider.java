@@ -19,7 +19,7 @@ public class EmailProvider {
 
         try {
 
-            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessage message = javaMailSender.createMimeMessage(); // 메세지 객체(인스턴스) 생성
             MimeMessageHelper messageHelper = new MimeMessageHelper(message, true);
             
             String htmlContent = getCertificationMessage(certificationNumber);

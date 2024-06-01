@@ -9,15 +9,18 @@ import com.rose.back.common.CertificationNumber;
 import com.rose.back.dto.request.auth.CheckCertificationRequestDto;
 import com.rose.back.dto.request.auth.EmailCertificationRequestDto;
 import com.rose.back.dto.request.auth.IdCheckRequestDto;
+import com.rose.back.dto.request.auth.SignInRequestDto;
 import com.rose.back.dto.request.auth.SignUpRequestDto;
 import com.rose.back.dto.response.ResponseDto;
 import com.rose.back.dto.response.auth.CheckCertificationResponseDto;
 import com.rose.back.dto.response.auth.EmailCertificationResponseDto;
 import com.rose.back.dto.response.auth.IdCheckResponseDto;
+import com.rose.back.dto.response.auth.SignInResponseDto;
 import com.rose.back.dto.response.auth.SignUpResponseDto;
 import com.rose.back.entity.CertificationEntity;
 import com.rose.back.entity.UserEntity;
 import com.rose.back.provider.EmailProvider;
+import com.rose.back.provider.JwtProvider;
 import com.rose.back.repository.CertificationRepository;
 import com.rose.back.repository.UserRepository;
 import com.rose.back.service.AuthService;
@@ -28,14 +31,18 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthServiceImplement implements AuthService {
     
+    // final을 붙여서 외부에서 제어의 역전을 통해 의존성 주입
     private final UserRepository userRepository;
     private final CertificationRepository certificationRepository;
+
+    private final JwtProvider jwtProvider;
 
     private final EmailProvider emailProvider;
 
     private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     // 위는 final을 붙여서 직접 의존성을 주입하지않고 @Service외부를 통해 주입하고있는데 어떤걸 주입할지 직접 선택함
 
+    // ID 중복 확인
     @Override
     public ResponseEntity<? super IdCheckResponseDto> userIdCheck(IdCheckRequestDto dto) {
 
@@ -67,7 +74,7 @@ public class AuthServiceImplement implements AuthService {
             if (isExistId) return EmailCertificationResponseDto.duplicateId();
             
             // 번호 생성
-            String certificationNumber = CertificationNumber.getCertificationNumber();
+            String certificationNumber = CertificationNumber.getCertificationNumber(); // 임의의 4자리수 받아오기
 
             // 메일 전송
             boolean isSuccessed = emailProvider.sendCertificationMail(userEmail, certificationNumber);
@@ -144,5 +151,32 @@ public class AuthServiceImplement implements AuthService {
         }
 
         return SignUpResponseDto.success();
+    }
+
+    @Override
+    public ResponseEntity<? super SignInResponseDto> signIn(SignInRequestDto dto) {
+        
+        String token = null;
+
+        try {
+
+            String userId = dto.getUserId();
+            UserEntity userEntity = userRepository.findByUserId(userId);
+            if(userEntity == null) return SignInResponseDto.signInFail();
+
+            String userPwd = dto.getUserPwd();
+            String encodedPwd = userEntity.getUserPwd();
+            boolean isMatched = passwordEncoder.matches(userPwd, encodedPwd);
+            if(!isMatched) return SignInResponseDto.signInFail();
+
+            token = jwtProvider.create(userId);
+            
+        } catch (Exception e) {
+            
+            e.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+
+        return SignInResponseDto.success(token);
     }
 }

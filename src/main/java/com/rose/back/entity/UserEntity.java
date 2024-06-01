@@ -50,6 +50,14 @@ public class UserEntity {
         this.userRole = "ROLE_USER";
     }
 
+    public UserEntity(String userId, String email, String type) {
+        this.userId = userId;
+        this.userPwd = "Passw0rd";
+        this.userEmail = email;
+        this.userType = type;
+        this.userRole = "ROLE_USER";
+    }
+
     // @Column(name = "ap_date")
     // private LocalDate apDate;
 }
