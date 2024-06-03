@@ -17,9 +17,11 @@ import lombok.NoArgsConstructor;
 @Table(name = "certification")
 public class CertificationEntity {
 
-    // @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     @Id
+    @Column(length = 100, name = "user_no")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long userNo;
+
     @Column(length = 100, name = "user_id")
     private String userId;
 

@@ -81,7 +81,7 @@ public class AuthServiceImplement implements AuthService {
             if (!isSuccessed) return EmailCertificationResponseDto.mailSendFail();
 
             // 전송 결과 저장
-            CertificationEntity certificationEntity = new CertificationEntity(userId, userEmail, certificationNumber);
+            CertificationEntity certificationEntity = new CertificationEntity(null, userId, userEmail, certificationNumber);
             certificationRepository.save(certificationEntity);
 
         } catch (Exception e) {

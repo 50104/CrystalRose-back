@@ -20,12 +20,15 @@ import lombok.NoArgsConstructor;
 @Entity(name = "user_list")
 @Table(name = "user_list")
 public class UserEntity {
-
-    //@GeneratedValue(strategy = GenerationType.IDENTITY)
     
     //@Entity(name="user_list") UserEntity를 엔터티 클래스로 사용하겠다 jpa이름은 유저리스트
     //@Table(name = "user_list") 데이터베이스의 유저리스트 라는 테이블과 맵핑하겠다
+
     @Id
+    @Column(length = 50, name = "user_no")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long userNo;
+    
     @Column(length = 50, name = "user_id")
     private String userId;
 
@@ -46,14 +49,14 @@ public class UserEntity {
         this.userId = dto.getUserId();
         this.userPwd = dto.getUserPwd();
         this.userEmail = dto.getUserEmail();
-        this.userType = "app";
+        this.userType ="WEB";
         this.userRole = "ROLE_USER";
     }
 
-    public UserEntity(String userId, String email, String type) {
+    public UserEntity(String userId, String UserEmail, String type) {
         this.userId = userId;
-        this.userPwd = "Passw0rd";
-        this.userEmail = email;
+        this.userPwd = null;
+        this.userEmail = UserEmail;
         this.userType = type;
         this.userRole = "ROLE_USER";
     }

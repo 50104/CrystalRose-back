@@ -9,7 +9,7 @@ import jakarta.transaction.Transactional;
 
 
 @Repository
-public interface CertificationRepository extends JpaRepository<CertificationEntity, String> {
+public interface CertificationRepository extends JpaRepository<CertificationEntity, Long> {
     
     CertificationEntity findByUserId(String userId);
 
