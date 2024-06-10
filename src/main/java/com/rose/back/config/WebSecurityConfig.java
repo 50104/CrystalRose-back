@@ -22,8 +22,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import lombok.RequiredArgsConstructor;
 
-import com.rose.back.filter.JwtAuthenticationFilter;
-import com.rose.back.handler.OAuth2SuccessHandler;
+import com.rose.back.user.filter.JwtAuthenticationFilter;
+import com.rose.back.user.handler.OAuth2SuccessHandler;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
