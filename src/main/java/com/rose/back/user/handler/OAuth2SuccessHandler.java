@@ -15,9 +15,19 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler { // OAuth2 인증 성공 시 호출
     
     private final JwtProvider jwtProvider;
+
+    /**
+     * 인증 성공 시 호출되는 메소드
+     * 
+     * @param request 인증 요청 객체
+     * @param response 인증 응답 객체
+     * @param authentication 인증 객체
+     * @throws IOException 입출력 예외가 발생할 경우
+     * @throws ServletException 서블릿 예외가 발생할 경우
+     */
 
     @Override
     public void onAuthenticationSuccess(

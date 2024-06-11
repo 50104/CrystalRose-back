@@ -15,6 +15,7 @@ public class EmailProvider {
 
     private final String SUBJECT = "[빛나는 크리스퇄 가드닝 인증메일입니다.]";
 
+    // 이메일 인증 메일 전송
     public boolean sendCertificationMail(String email, String certificationNumber) {
 
         try {
@@ -22,13 +23,13 @@ public class EmailProvider {
             MimeMessage message = javaMailSender.createMimeMessage(); // 메세지 객체(인스턴스) 생성
             MimeMessageHelper messageHelper = new MimeMessageHelper(message, true);
             
-            String htmlContent = getCertificationMessage(certificationNumber);
+            String htmlContent = getCertificationMessage(certificationNumber); // 인증 메시지를 HTML 형식으로 가져오는 메소드 호출
 
-            messageHelper.setTo(email);
-            messageHelper.setSubject(SUBJECT);
-            messageHelper.setText(htmlContent, true);
+            messageHelper.setTo(email); // 수신자 이메일 설정
+            messageHelper.setSubject(SUBJECT); // 이메일 제목 설정
+            messageHelper.setText(htmlContent, true); // 이메일 내용 설정
 
-            javaMailSender.send(message);
+            javaMailSender.send(message); // 이메일 전송
             
         } catch (Exception e) {
             

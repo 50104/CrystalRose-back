@@ -32,6 +32,7 @@ public class AuthController {
     
     private final AuthService authService;
 
+    // 아이디 중복 체크
     @PostMapping("/id-check")
     public ResponseEntity<? super IdCheckResponseDto> idCheck (
         @RequestBody @Valid IdCheckRequestDto requestBody
@@ -40,32 +41,36 @@ public class AuthController {
         return response;
     }
 
+    // 이메일 인증
     @PostMapping("/email-certification")
     public ResponseEntity<? super EmailCertificationResponseDto> 
     emailCertification(@RequestBody @Valid EmailCertificationRequestDto requestBody) {
-
         ResponseEntity<? super EmailCertificationResponseDto> response = authService.emailCertification(requestBody);
         return response;
     }
 
+    // 인증번호 확인
     @PostMapping("/check-certification")
     public ResponseEntity<? super CheckCertificationResponseDto> checkCertification(@RequestBody @Valid CheckCertificationRequestDto requestBody) {
         ResponseEntity<? super CheckCertificationResponseDto> response = authService.checkCertification(requestBody);
         return response;
     }
 
+    // 회원 가입
     @PostMapping("/sign-up")
     public ResponseEntity<? super SignUpResponseDto> signUp(@RequestBody @Valid SignUpRequestDto requestBody) {
         ResponseEntity<? super SignUpResponseDto> response = authService.signUp(requestBody);
         return response;
     }
 
+    // 로그인
     @PostMapping("/sign-in")
     public ResponseEntity<? super SignInResponseDto> signIn (@RequestBody @Valid SignInRequestDto requestBody) {
         ResponseEntity<? super SignInResponseDto> response = authService.signIn(requestBody);
         return response;
     }
 
+    // 로그아웃
     @PostMapping("/logout")
     public void logout(HttpServletRequest request, HttpServletResponse response) throws Exception {
         HttpSession session = request.getSession(false);

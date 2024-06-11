@@ -19,8 +19,10 @@ public class JwtProvider {
     @Value("${secret-key}")
     private String secretKey;
 
+    // JWT 토큰 생성 메서드
     public String create(String userId) {
 
+        // 만료 날짜 설정 (현재 시간으로부터 1시간 후)
         Date expiredDate = Date.from(Instant.now().plus(1, ChronoUnit.HOURS));
         Key key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)); // 시크릿키 생성
 
@@ -41,6 +43,7 @@ public class JwtProvider {
 
         try {
             
+            // JWT 토큰 파싱 및 검증
             subject = Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()

@@ -46,27 +46,27 @@ public class WebSecurityConfig {
             .cors(cors -> cors
                 .configurationSource(corsConfigurationSource())
             )
-            .csrf(CsrfConfigurer::disable)
-            .httpBasic(HttpBasicConfigurer::disable)
+            .csrf(CsrfConfigurer::disable) // CSRF(Cross-Site Request Forgery) 비활성화
+            .httpBasic(HttpBasicConfigurer::disable) // HTTP 기본 인증 비활성화
             .sessionManagement(sessionManagement -> sessionManagement
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 생성 정책 설정 (STATELESS: 세션을 사용하지 않음)
             )
             .authorizeHttpRequests(request -> request
-                .requestMatchers("/","/api/v1/auth/**","/oauth2/**").permitAll()
-                .requestMatchers("/api/v1/user/**").hasRole("USER")
-                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                .anyRequest().authenticated()
+                .requestMatchers("/","/api/v1/auth/**","/oauth2/**").permitAll() // 특정 URL 패턴에 대한 접근 권한 설정
+                .requestMatchers("/api/v1/user/**").hasRole("USER") // 특정 URL 패턴에 대한 접근 권한 설정 (USER 역할 필요)
+                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN") // 특정 URL 패턴에 대한 접근 권한 설정 (ADMIN 역할 필요)
+                .anyRequest().authenticated() // 모든 요청에 대해 인증이 필요함
             )
             .oauth2Login(oauth2 -> oauth2
-                .authorizationEndpoint(endpoint -> endpoint.baseUri("/api/v1/auth/oauth2"))
-                .redirectionEndpoint(endpoint -> endpoint.baseUri("/oauth2/callback/*"))
-                .userInfoEndpoint(endpoint -> endpoint.userService(oAuth2UserService))
-                .successHandler(oAuth2SuccessHandler)
+                .authorizationEndpoint(endpoint -> endpoint.baseUri("/api/v1/auth/oauth2")) // OAuth2 인증 엔드포인트 설정
+                .redirectionEndpoint(endpoint -> endpoint.baseUri("/oauth2/callback/*")) // OAuth2 리다이렉션 엔드포인트 설정
+                .userInfoEndpoint(endpoint -> endpoint.userService(oAuth2UserService)) // OAuth2 사용자 정보 엔드포인트 설정
+                .successHandler(oAuth2SuccessHandler) // OAuth2 인증 성공 핸들러 설정
             )
             .exceptionHandling(exceptionHandling -> exceptionHandling
-                .authenticationEntryPoint(new FailedAuthenticationEntryPoint())
+                .authenticationEntryPoint(new FailedAuthenticationEntryPoint()) // 인증 실패 핸들러 설정
             )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // JWT 인증 필터 추가
 
         return httpSecurity.build();
     }
@@ -75,15 +75,14 @@ public class WebSecurityConfig {
     protected CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.addAllowedOrigin("http://localhost:3000");// 리액트 서버
-        corsConfiguration.addAllowedMethod("*");
-        corsConfiguration.addAllowedHeader("*");
+        corsConfiguration.addAllowedOrigin("http://localhost:3000"); // 허용된 오리진 설정 (리액트 서버)
+        corsConfiguration.addAllowedMethod("*"); // 허용된 HTTP 메서드 설정
+        corsConfiguration.addAllowedHeader("*"); // 허용된 헤더 설정
 
-        corsConfiguration.setAllowCredentials(true);
+        corsConfiguration.setAllowCredentials(true); // 자격 증명 허용 설정
         corsConfiguration.setExposedHeaders(Arrays.asList("Access-Control-Allow-Headers",
                 "Authorization, x-xsrf-token, Access-Control-Allow-Headers, Origin, Accept, X-Requested-With, " +
-                        "Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")); // 헤더 요청 열어둠
-        // xx CorsConfig 에서 가져옴
+                        "Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")); // 노출된 헤더 설정
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);
@@ -93,15 +92,16 @@ public class WebSecurityConfig {
     // xx cors 에러2 같이 확인 "/api/v1/**" 변경
 }
 
+// 인증 실패 핸들러 클래스
 class FailedAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
             AuthenticationException authException) throws IOException, ServletException {
 
-        response.setContentType("application/json");
-        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        response.getWriter().write("{\"code\": \"NP\", \"message\": \"No Permission.\"}");
+        response.setContentType("application/json"); // 응답의 Content-Type을 JSON으로 설정
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN); // 응답의 상태 코드를 403 Forbidden으로 설정
+        response.getWriter().write("{\"code\": \"NP\", \"message\": \"No Permission.\"}"); // 응답의 내용을 JSON 형식으로 작성하여 출력
     }
 }
 

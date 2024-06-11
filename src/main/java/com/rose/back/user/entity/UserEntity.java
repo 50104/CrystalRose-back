@@ -44,6 +44,7 @@ public class UserEntity {
     @Column(length = 50, name = "user_role")
     private String userRole;
 
+    // 회원가입을 위한 생성자
     public UserEntity (SignUpRequestDto dto) {
 
         this.userId = dto.getUserId();
@@ -51,16 +52,19 @@ public class UserEntity {
         this.userEmail = dto.getUserEmail();
         this.userType ="WEB";
         this.userRole = "ROLE_USER";
+        this.apDate = LocalDate.now();
     }
 
+    // 소셜 로그인을 위한 생성자
     public UserEntity(String userId, String UserEmail, String type) {
         this.userId = userId;
         this.userPwd = null;
         this.userEmail = UserEmail;
         this.userType = type;
         this.userRole = "ROLE_USER";
+        this.apDate = LocalDate.now();
     }
 
     @Column(name = "ap_date")
-    private LocalDate apDate;
+    private LocalDate apDate = LocalDate.now();
 }

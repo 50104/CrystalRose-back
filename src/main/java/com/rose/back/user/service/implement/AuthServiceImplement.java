@@ -61,6 +61,7 @@ public class AuthServiceImplement implements AuthService {
         return IdCheckResponseDto.success();
     }
 
+    // 이메일 인증
     @Override
     public ResponseEntity<? super EmailCertificationResponseDto> emailCertification(EmailCertificationRequestDto dto) {
         
@@ -93,6 +94,7 @@ public class AuthServiceImplement implements AuthService {
         return EmailCertificationResponseDto.success();
     }
 
+    // 인증 확인
     @Override
     public ResponseEntity<? super CheckCertificationResponseDto> checkCertification(CheckCertificationRequestDto dto) {
         
@@ -117,6 +119,7 @@ public class AuthServiceImplement implements AuthService {
         return CheckCertificationResponseDto.success();
     }
 
+    // 회원가입
     @Override
     public ResponseEntity<? super SignUpResponseDto> signUp(SignUpRequestDto dto) {
         
@@ -153,6 +156,7 @@ public class AuthServiceImplement implements AuthService {
         return SignUpResponseDto.success();
     }
 
+    // 로그인
     @Override
     public ResponseEntity<? super SignInResponseDto> signIn(SignInRequestDto dto) {
         
