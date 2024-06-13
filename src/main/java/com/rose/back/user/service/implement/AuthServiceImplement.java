@@ -47,7 +47,6 @@ public class AuthServiceImplement implements AuthService {
     public ResponseEntity<? super IdCheckResponseDto> userIdCheck(IdCheckRequestDto dto) {
 
         try {
-
             String userId = dto.getUserId();
             boolean isExistId = userRepository.existsByUserId(userId);
             if (isExistId) return IdCheckResponseDto.duplicateId();
@@ -104,11 +103,11 @@ public class AuthServiceImplement implements AuthService {
             String userEmail = dto.getUserEmail();
             String certificationNumber = dto.getCertificationNumber();
 
-            CertificationEntity certificationEntity = certificationRepository.findByUserId(userId);
-            if (certificationEntity == null) return CheckCertificationResponseDto.certificationFail();
+            CertificationEntity certificationEntity = certificationRepository.findByUserId(userId); // user_id로 찾아옴
+            if (certificationEntity == null) return CheckCertificationResponseDto.certificationFail(); // 없으면 실패
 
-            boolean isMatched = certificationEntity.getUserEmail().equals(userEmail) && certificationEntity.getCertificationNumber().equals(certificationNumber);
-            if (!isMatched) return CheckCertificationResponseDto.certificationFail();
+            boolean isMatched = certificationEntity.getUserEmail().equals(userEmail) && certificationEntity.getCertificationNumber().equals(certificationNumber); // 이메일과 인증번호가 일치하는지 확인
+            if (!isMatched) return CheckCertificationResponseDto.certificationFail(); // 일치하지않으면 실패
 
         } catch (Exception e) {
             
@@ -124,27 +123,26 @@ public class AuthServiceImplement implements AuthService {
     public ResponseEntity<? super SignUpResponseDto> signUp(SignUpRequestDto dto) {
         
         try {
-
             String userId = dto.getUserId();
-            boolean isExistId = userRepository.existsByUserId(userId);
-            if(isExistId) return SignUpResponseDto.duplicateId();
+            boolean isExistId = userRepository.existsByUserId(userId); // id가 존재하는지 확인
+            if(isExistId) return SignUpResponseDto.duplicateId(); // 존재하면 실패
 
             String userEmail = dto.getUserEmail();
             String certificationNumber = dto.getCertificationNumber();
-            CertificationEntity certificationEntity = certificationRepository.findByUserId(userId);
+            CertificationEntity certificationEntity = certificationRepository.findByUserId(userId); // user_id로 찾아옴
             boolean isMatched = 
                 certificationEntity.getUserEmail().equals(userEmail) && 
-                certificationEntity.getCertificationNumber().equals(certificationNumber);
-            if(!isMatched) return SignUpResponseDto.certificationFail();
+                certificationEntity.getCertificationNumber().equals(certificationNumber); // 이메일과 인증번호가 일치하는지 확인
+            if(!isMatched) return SignUpResponseDto.certificationFail(); // 일치하지않으면 실패
 
             String userPwd = dto.getUserPwd();
-            String encodedPassword = passwordEncoder.encode(userPwd);
-            dto.setUserPwd(encodedPassword);
+            String encodedPassword = passwordEncoder.encode(userPwd); // 비밀번호 암호화
+            dto.setUserPwd(encodedPassword); // 암호화된 비밀번호로 변경
 
-            UserEntity userEntity = new UserEntity(dto);
-            userRepository.save(userEntity);
+            UserEntity userEntity = new UserEntity(dto); // 회원가입을 위한 생성자
+            userRepository.save(userEntity); // 저장
 
-            certificationRepository.deleteByUserId(userId);
+            certificationRepository.deleteByUserId(userId); // user_id로 삭제
             // certificationRepository.delete(certificationEntity);
             
         } catch (Exception e) {
@@ -165,15 +163,16 @@ public class AuthServiceImplement implements AuthService {
         try {
 
             String userId = dto.getUserId();
-            UserEntity userEntity = userRepository.findByUserId(userId);
-            if(userEntity == null) return SignInResponseDto.signInFail();
+            String userRole = "";
+            UserEntity userEntity = userRepository.findByUserId(userId); // user_id로 찾아옴
+            if(userEntity == null) return SignInResponseDto.signInFail(); // 없으면 실패
 
             String userPwd = dto.getUserPwd();
-            String encodedPwd = userEntity.getUserPwd();
-            boolean isMatched = passwordEncoder.matches(userPwd, encodedPwd);
-            if(!isMatched) return SignInResponseDto.signInFail();
+            String encodedPwd = userEntity.getUserPwd(); // 암호화된 비밀번호
+            boolean isMatched = passwordEncoder.matches(userPwd, encodedPwd); // 비밀번호 일치하는지 확인
+            if(!isMatched) return SignInResponseDto.signInFail(); // 일치하지않으면
 
-            token = jwtProvider.create(userId);
+            token = jwtProvider.create(userId,userRole,60*60*10L); // 토큰 생성
             
         } catch (Exception e) {
             
@@ -182,5 +181,5 @@ public class AuthServiceImplement implements AuthService {
         }
 
         return SignInResponseDto.success(token);
-    }
+    }// xx LoginFilter
 }

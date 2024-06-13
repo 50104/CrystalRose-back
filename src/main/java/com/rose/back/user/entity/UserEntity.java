@@ -32,11 +32,14 @@ public class UserEntity {
     @Column(length = 50, name = "user_id")
     private String userId;
 
+    @Column(length = 300, name = "user_email")
+    private String userEmail;
+
     @Column(length = 300, name = "user_pwd")
     private String userPwd;
 
-    @Column(length = 300, name = "user_email")
-    private String userEmail;
+    @Column(length = 50, name = "user_name")
+    private String userName;
 
     @Column(length = 50, name = "user_type")
     private String userType;
@@ -44,13 +47,22 @@ public class UserEntity {
     @Column(length = 50, name = "user_role")
     private String userRole;
 
+    @Column(length = 50, name = "user_tel")
+    private String userTel;
+
+    @Column(length = 100, name = "user_profile")
+    private String userProfile;
+
+    @Column(length = 50, name = "user_nick")
+    private String userNick;
+
     // 회원가입을 위한 생성자
     public UserEntity (SignUpRequestDto dto) {
 
         this.userId = dto.getUserId();
         this.userPwd = dto.getUserPwd();
         this.userEmail = dto.getUserEmail();
-        this.userType ="WEB";
+        this.userType ="web";
         this.userRole = "ROLE_USER";
         this.apDate = LocalDate.now();
     }
