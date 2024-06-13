@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
-public class AuthController {
+public class AuthController implements AuthControllerDocs{
     
     private final AuthService authService;
 
@@ -72,7 +72,9 @@ public class AuthController {
 
     // 로그아웃
     @PostMapping("/logout")
-    public void logout(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public ResponseEntity<String> logout(@RequestBody @Valid HttpServletRequest request, HttpServletResponse response) 
+        // throws Exception
+        {
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.invalidate();
@@ -81,5 +83,7 @@ public class AuthController {
         response.setHeader("Set-Cookie", "JSESSIONID=; Max-Age=0; Path=/; HttpOnly; SameSite=None; Secure");
         // 토큰 쿠키 삭제
         response.setHeader("Set-Cookie", "jwtToken=; Max-Age=0; Path=/; HttpOnly; SameSite=None; Secure");
+
+        return ResponseEntity.ok("로그아웃 성공");
     }
 }
