@@ -1,62 +1,50 @@
 package com.rose.back.user.provider;
 
-import java.util.Date;
-import java.security.Key;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-
+import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
+
+import lombok.RequiredArgsConstructor;
 
 @Component
+@RequiredArgsConstructor
 public class JwtProvider {
     
-    @Value("${secret-key}")
-    private String secretKey;
+    private SecretKey secretKey;
 
-    // JWT 토큰 생성 메서드
-    public String create(String userId) {
-
-        // 만료 날짜 설정 (현재 시간으로부터 1시간 후)
-        Date expiredDate = Date.from(Instant.now().plus(1, ChronoUnit.HOURS));
-        Key key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)); // 시크릿키 생성
-
-        // json wab token 생성
-        String jwt = Jwts.builder()
-            .signWith(key, SignatureAlgorithm.HS256)
-            .setSubject(userId).setIssuedAt(new Date()).setExpiration(expiredDate)
-            .compact();
-        
-        return jwt;
+    public JwtProvider(@Value("${spring.jwt.secret}") String secretKey) {
+        this.secretKey = new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
     }
 
-    // jwt 검증
-    public String validate(String jwt) {
+    public String create(String category, String userId, String userRole, Long expiredMs) {
+        return Jwts.builder()
+                .claim("category",category) // access, refresh
+                .claim("userId", userId)
+                .claim("userRole", userRole)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + expiredMs))
+                .signWith(secretKey)
+                .compact();
+    }
 
-        String subject = null;
-        Key key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+    public String getUserId(String token) {
+        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("userId", String.class);
+    }
 
-        try {
-            
-            // JWT 토큰 파싱 및 검증
-            subject = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(jwt)
-                .getBody()
-                .getSubject();
+    public String getUserRole(String token) {
+        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("userRole", String.class);
+    }
 
-        } catch (Exception e) {
-            
-            e.printStackTrace();
-            return null;
-        }
+    public String getCategory(String token) {
+        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("category", String.class);
+    }
 
-        return subject;
+    public Boolean isExpired(String token) {
+        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
     }
 }
