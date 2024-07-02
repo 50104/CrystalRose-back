@@ -8,16 +8,14 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import com.rose.back.user.dto.request.auth.CheckCertificationRequestDto;
-import com.rose.back.user.dto.request.auth.EmailCertificationRequestDto;
-import com.rose.back.user.dto.request.auth.IdCheckRequestDto;
-import com.rose.back.user.dto.request.auth.SignInRequestDto;
-import com.rose.back.user.dto.request.auth.SignUpRequestDto;
-import com.rose.back.user.dto.response.auth.CheckCertificationResponseDto;
-import com.rose.back.user.dto.response.auth.EmailCertificationResponseDto;
-import com.rose.back.user.dto.response.auth.IdCheckResponseDto;
-import com.rose.back.user.dto.response.auth.SignInResponseDto;
-import com.rose.back.user.dto.response.auth.SignUpResponseDto;
+import com.rose.back.user.dto.UserDTO;
+import com.rose.back.user.dto.request.CheckCertificationRequestDto;
+import com.rose.back.user.dto.request.EmailCertificationRequestDto;
+import com.rose.back.user.dto.request.IdCheckRequestDto;
+import com.rose.back.user.dto.response.CheckCertificationResponseDto;
+import com.rose.back.user.dto.response.EmailCertificationResponseDto;
+import com.rose.back.user.dto.response.IdCheckResponseDto;
+import com.rose.back.user.dto.response.ResponseDto;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -48,17 +46,5 @@ public interface AuthControllerDocs {
         @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "회원가입 성공"),
         @ApiResponse(responseCode = "409", description = "회원가입 실패")})
-        public ResponseEntity<? super SignUpResponseDto> signUp(@RequestBody @Valid SignUpRequestDto requestBody);
-
-        @Operation(summary = "로그인", description = "로그인을 실행합니다.")
-        @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "로그인 성공"),
-        @ApiResponse(responseCode = "409", description = "로그인 실패")})
-        public ResponseEntity<? super SignInResponseDto> signIn(@RequestBody @Valid SignInRequestDto requestBody);
-
-        @Operation(summary = "로그아웃", description = "로그아웃을 실행합니다.")
-        @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "로그아웃 성공"),
-        @ApiResponse(responseCode = "409", description = "로그아웃 실패")})
-        public ResponseEntity<String> logout(@RequestBody @Valid HttpServletRequest request, HttpServletResponse response);
+        public ResponseEntity<? super ResponseDto> join(@RequestBody UserDTO userDto);
 }

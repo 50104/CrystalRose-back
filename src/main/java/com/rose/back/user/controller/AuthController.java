@@ -2,16 +2,14 @@ package com.rose.back.user.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 
-import com.rose.back.user.dto.request.auth.CheckCertificationRequestDto;
-import com.rose.back.user.dto.request.auth.EmailCertificationRequestDto;
-import com.rose.back.user.dto.request.auth.IdCheckRequestDto;
-import com.rose.back.user.dto.request.auth.SignInRequestDto;
-import com.rose.back.user.dto.request.auth.SignUpRequestDto;
-import com.rose.back.user.dto.response.auth.CheckCertificationResponseDto;
-import com.rose.back.user.dto.response.auth.EmailCertificationResponseDto;
-import com.rose.back.user.dto.response.auth.IdCheckResponseDto;
-import com.rose.back.user.dto.response.auth.SignInResponseDto;
-import com.rose.back.user.dto.response.auth.SignUpResponseDto;
+import com.rose.back.user.dto.UserDTO;
+import com.rose.back.user.dto.request.CheckCertificationRequestDto;
+import com.rose.back.user.dto.request.EmailCertificationRequestDto;
+import com.rose.back.user.dto.request.IdCheckRequestDto;
+import com.rose.back.user.dto.response.CheckCertificationResponseDto;
+import com.rose.back.user.dto.response.EmailCertificationResponseDto;
+import com.rose.back.user.dto.response.IdCheckResponseDto;
+import com.rose.back.user.dto.response.ResponseDto;
 import com.rose.back.user.service.AuthService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,27 +22,31 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
-@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/auth")
 public class AuthController implements AuthControllerDocs{
     
     private final AuthService authService;
 
     // 아이디 중복 체크
     @PostMapping("/id-check")
-    public ResponseEntity<? super IdCheckResponseDto> idCheck (
-        @RequestBody @Valid IdCheckRequestDto requestBody
-    ) {
+    public ResponseEntity<? super IdCheckResponseDto> idCheck (@RequestBody @Valid IdCheckRequestDto requestBody) {
+
+        log.info("아이디 중복 체크 컨트롤러 실행");
+
         ResponseEntity<? super IdCheckResponseDto> response = authService.userIdCheck(requestBody);
         return response;
     }
 
     // 이메일 인증
     @PostMapping("/email-certification")
-    public ResponseEntity<? super EmailCertificationResponseDto> 
-    emailCertification(@RequestBody @Valid EmailCertificationRequestDto requestBody) {
+    public ResponseEntity<? super EmailCertificationResponseDto> emailCertification(@RequestBody @Valid EmailCertificationRequestDto requestBody) {
+
+        log.info("이메일 인증 컨트롤러 실행");
         ResponseEntity<? super EmailCertificationResponseDto> response = authService.emailCertification(requestBody);
         return response;
     }
@@ -52,38 +54,17 @@ public class AuthController implements AuthControllerDocs{
     // 인증번호 확인
     @PostMapping("/check-certification")
     public ResponseEntity<? super CheckCertificationResponseDto> checkCertification(@RequestBody @Valid CheckCertificationRequestDto requestBody) {
+
+        log.info("이메일 인증 확인 컨트롤러 실행");
         ResponseEntity<? super CheckCertificationResponseDto> response = authService.checkCertification(requestBody);
         return response;
     }
+    
+    // 회원가입
+    @PostMapping("/join")
+    public ResponseEntity<? super ResponseDto> join(@RequestBody UserDTO userDto){
 
-    // 회원 가입
-    @PostMapping("/sign-up")
-    public ResponseEntity<? super SignUpResponseDto> signUp(@RequestBody @Valid SignUpRequestDto requestBody) {
-        ResponseEntity<? super SignUpResponseDto> response = authService.signUp(requestBody);
-        return response;
-    }
-
-    // 로그인
-    @PostMapping("/sign-in")
-    public ResponseEntity<? super SignInResponseDto> signIn (@RequestBody @Valid SignInRequestDto requestBody) {
-        ResponseEntity<? super SignInResponseDto> response = authService.signIn(requestBody);
-        return response;
-    }
-
-    // 로그아웃
-    @PostMapping("/logout")
-    public ResponseEntity<String> logout(@RequestBody @Valid HttpServletRequest request, HttpServletResponse response) 
-        // throws Exception
-        {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate();
-        }
-        // JSESSIONID 쿠키 삭제
-        response.setHeader("Set-Cookie", "JSESSIONID=; Max-Age=0; Path=/; HttpOnly; SameSite=None; Secure");
-        // 토큰 쿠키 삭제
-        response.setHeader("Set-Cookie", "jwtToken=; Max-Age=0; Path=/; HttpOnly; SameSite=None; Secure");
-
-        return ResponseEntity.ok("로그아웃 성공");
+        log.info("회원가입 컨트롤러 실행");
+        return authService.join(userDto);
     }
 }

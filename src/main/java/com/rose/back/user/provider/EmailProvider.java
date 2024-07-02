@@ -19,7 +19,6 @@ public class EmailProvider {
     public boolean sendCertificationMail(String email, String certificationNumber) {
 
         try {
-
             MimeMessage message = javaMailSender.createMimeMessage(); // 메세지 객체(인스턴스) 생성
             MimeMessageHelper messageHelper = new MimeMessageHelper(message, true);
             
@@ -30,18 +29,14 @@ public class EmailProvider {
             messageHelper.setText(htmlContent, true); // 이메일 내용 설정
 
             javaMailSender.send(message); // 이메일 전송
-            
         } catch (Exception e) {
-            
             e.printStackTrace();
             return false;
         }
-
         return true;
     }
 
     private String getCertificationMessage(String certificationNumber) {
-
         String certificationMessage = "";
         certificationMessage += "<h1 style='text-align: center;'>[빛나는 크리스퇄 가드닝 인증메일입니다.]</h1>";
         certificationMessage += "<h3 style='text-align: center;'>인증코드 : <strong style='font-size: 32px; letter-spacing: 8px;'>" + certificationNumber + "</strong></h3>";
