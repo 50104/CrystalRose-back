@@ -1,4 +1,4 @@
-package com.rose.back.user.dto.request.auth;
+package com.rose.back.user.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -9,12 +9,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class EmailCertificationRequestDto {
-    
-    @NotBlank
-    private String userId;
-
-    @NotBlank
+public class FindIdRequestDto {
     @Email
-    private String userEmail;
+    @NotBlank
+    private String email;
 }

@@ -1,73 +1,60 @@
-package com.rose.back.user.dto.dto2;
+package com.rose.back.user.dto.oauth2;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.rose.back.user.entity.UserEntity;
+import com.rose.back.user.dto.UserDTO;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
 public class CustomUserDetails  implements UserDetails {
 
-    private final UserEntity userEntity;
+    private final UserDTO userDTO;
 
-    public CustomUserDetails(UserEntity userEntity) {
-
-        this.userEntity = userEntity;
+    public CustomUserDetails(UserDTO userDTO) {
+        this.userDTO = userDTO;
     }
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-
         Collection<GrantedAuthority> collection = new ArrayList<>();
-
         collection.add(new GrantedAuthority() {
-
             @Override
             public String getAuthority() {
-
-                return userEntity.getUserRole();
+                return userDTO.getUserRole();
             }
         });
-
         return collection;
     }
 
     @Override
     public String getPassword() {
-
-        return userEntity.getUserPwd();
+        return userDTO.getUserPwd();
     }
 
     @Override
     public String getUsername() {
-
-        return userEntity.getUserId();
+        return userDTO.getUserName();
     }
 
     @Override
     public boolean isAccountNonExpired() {
-
         return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-
         return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-
         return true;
     }
 
     @Override
     public boolean isEnabled() {
-
         return true;
     }
 }
