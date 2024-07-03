@@ -56,13 +56,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
         GrantedAuthority auth = iterator.next();
+        
         String userRole = auth.getAuthority();
-
-        //닉네임 가져오기
         String nickname = customUserDetails.getUserNick();
-
-        //토큰에 아이디, 역할만 담아서 생성
-        //access : 10분, refresh : 1일
         String access = jwtProvider.create("access", userId, userRole, nickname, 10*60*1000L); // 10분
         String refresh = jwtProvider.create("refresh", userId, userRole, nickname, 24*60*60*1000L); // 1일
         addRefreshEntity(userId, refresh, 86400000L); // 1일

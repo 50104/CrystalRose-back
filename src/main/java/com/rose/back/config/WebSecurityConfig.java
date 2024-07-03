@@ -19,6 +19,7 @@ import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserServ
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -27,6 +28,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import com.rose.back.user.filter.CustomLogoutFilter;
 import com.rose.back.user.filter.JWTFilter;
 import com.rose.back.user.filter.LoginFilter;
 import com.rose.back.user.handler.OAuth2SuccessHandler;
@@ -71,7 +73,7 @@ public class WebSecurityConfig {
                 sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 생성 정책 설정 (STATELESS: 세션을 사용하지 않음)
             )
             .authorizeHttpRequests(request -> request
-                .requestMatchers("/", "/login", "/api/v1/auth/**", "/oauth2/**").permitAll() // 특정 URL 패턴에 대한 접근 권한 설정
+                .requestMatchers("/", "/login", "/reissue", "/api/v1/auth/**", "/oauth2/**").permitAll() // 특정 URL 패턴에 대한 접근 권한 설정
                 .requestMatchers("/api/v1/user/**").hasRole("USER") // 특정 URL 패턴에 대한 접근 권한 설정 (USER 역할 필요)
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN") // 특정 URL 패턴에 대한 접근 권한 설정 (ADMIN 역할 필요)
                 .anyRequest().authenticated() // 모든 요청에 대해 인증이 필요함
@@ -88,6 +90,7 @@ public class WebSecurityConfig {
             )
             .addFilterAt(new LoginFilter(authenticationManager(), jwtProvider, refreshRepository), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(new JWTFilter(jwtProvider), LoginFilter.class) // JWT 인증 필터 추가
+            .addFilterBefore(new CustomLogoutFilter(jwtProvider, refreshRepository), LogoutFilter.class)
             .csrf((auth) -> auth.disable())
             .formLogin((auth) -> auth.disable())
             .httpBasic((auth) -> auth.disable());

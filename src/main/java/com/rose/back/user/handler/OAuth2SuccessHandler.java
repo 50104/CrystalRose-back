@@ -31,10 +31,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
         GrantedAuthority auth = iterator.next();
-
+        
+        String userNick = oAuth2User.getName();
         String userId = oAuth2User.getUsername();
         String userRole = auth.getAuthority();
-        String refresh = jwtProvider.create("refresh", userId, userRole, 24 * 60 * 60 * 1000L);
+        String refresh = jwtProvider.create("refresh", userId, userRole, userNick, 24 * 60 * 60 * 1000L);
         addRefreshEntity(userId, refresh, 86400000L);
 
         response.addCookie(createCookie("refresh", refresh));
