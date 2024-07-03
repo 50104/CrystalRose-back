@@ -33,7 +33,7 @@ public class AuthServiceImplement implements AuthService {
     private final PasswordEncoder bCryptPasswordEncoder;
     // 위는 final을 붙여서 직접 의존성을 주입하지않고 @Service외부를 통해 주입하고있는데 어떤걸 주입할지 직접 선택함@Autowired
 
-    // ID 중복 확인
+    // 아이디 중복 확인
     @Override
     public ResponseEntity<? super ResponseDto> userIdCheck(IdCheckRequestDto dto) {
         try {
@@ -46,6 +46,22 @@ public class AuthServiceImplement implements AuthService {
         }
         // return IdCheckResponseDto.success();
         return ResponseEntity.ok(new ResponseDto());
+    }
+
+    // 이메일 중복 확인
+    @Override
+    public ResponseEntity<? super EmailCertificationResponseDto> checkEmail(EmailCertificationRequestDto dto) {
+        try {
+            String userEmail = dto.getUserEmail();
+            boolean isExistEmail = userRepository.existsByUserEmail(userEmail);
+            if (isExistEmail) {
+                return EmailCertificationResponseDto.duplicateEmail();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+        return EmailCertificationResponseDto.success();
     }
 
     // 이메일 인증

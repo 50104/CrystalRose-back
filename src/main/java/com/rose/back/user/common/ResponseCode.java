@@ -6,6 +6,7 @@ public interface ResponseCode {
 
     String VALIDATION_FAIL = "VF";
     String DUPLICATE_ID = "DI";
+    String DUPLICATE_EMAIL="DE";
 
     String SIGN_IN_FAIL = "SF";
     String CERTIFICATION_FAIL = "CF";

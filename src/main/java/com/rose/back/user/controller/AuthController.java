@@ -42,6 +42,16 @@ public class AuthController implements AuthControllerDocs{
         return response;
     }
 
+    // 이메일 중복 확인
+    @PostMapping("/email-check")
+    public ResponseEntity<? super EmailCertificationResponseDto> checkEmail(@RequestBody @Valid EmailCertificationRequestDto requestBody) {
+
+        log.info("이메일 중복 체크 컨트롤러 실행");
+        ResponseEntity<? super EmailCertificationResponseDto> response = authService.checkEmail(requestBody);
+        return response;
+
+    }
+
     // 이메일 인증
     @PostMapping("/email-certification")
     public ResponseEntity<? super EmailCertificationResponseDto> emailCertification(@RequestBody @Valid EmailCertificationRequestDto requestBody) {
