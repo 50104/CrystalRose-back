@@ -19,6 +19,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -72,9 +73,12 @@ public class AuthController implements AuthControllerDocs{
     
     // 회원가입
     @PostMapping("/join")
-    public ResponseEntity<? super ResponseDto> join(@RequestBody UserDTO userDto){
+    public ResponseEntity<? super ResponseDto> join(@RequestBody UserDTO userDto, BindingResult bindingResult){
 
         log.info("회원가입 컨트롤러 실행");
+        if (bindingResult.hasErrors()) { // 유효성 검사 오류 처리
+            return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
+        }
         return authService.join(userDto);
     }
 }

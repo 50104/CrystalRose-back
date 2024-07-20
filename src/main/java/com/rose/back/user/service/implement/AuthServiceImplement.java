@@ -20,6 +20,7 @@ import com.rose.back.user.entity.UserEntity;
 import com.rose.back.user.provider.EmailProvider;
 import com.rose.back.user.service.AuthService;
 import java.time.LocalDate;
+import java.util.Random;
 
 import lombok.RequiredArgsConstructor;
 
@@ -70,14 +71,12 @@ public class AuthServiceImplement implements AuthService {
         try {
             String userId = dto.getUserId();
             String userEmail = dto.getUserEmail();
-            // 이메일 여부 확인
-            boolean isExistId = userRepository.existsByUserId(userId);
-            if (isExistId) return EmailCertificationResponseDto.duplicateId();
             // 번호 생성
             String certificationNumber = CertificationNumber.getCertificationNumber(); // 임의의 4자리수 받아오기
             // 메일 전송
             boolean isSuccessed = emailProvider.sendCertificationMail(userEmail, certificationNumber);
             if (!isSuccessed) return EmailCertificationResponseDto.mailSendFail();
+            certificationRepository.deleteByUserEmail(userEmail);
             // 전송 결과 저장
             CertificationEntity certificationEntity = new CertificationEntity(null, userId, userEmail, certificationNumber);
             certificationRepository.save(certificationEntity);
@@ -101,6 +100,7 @@ public class AuthServiceImplement implements AuthService {
 
             boolean isMatched = certificationEntity.getUserEmail().equals(userEmail) && certificationEntity.getCertificationNumber().equals(certificationNumber); // 이메일과 인증번호가 일치하는지 확인
             if (!isMatched) return CheckCertificationResponseDto.certificationFail(); // 일치하지않으면 실패
+            certificationRepository.deleteByUserEmail(userEmail);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.databaseError();

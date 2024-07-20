@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.rose.back.user.dto.UserDTO;
@@ -52,5 +53,5 @@ public interface AuthControllerDocs {
         @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "회원가입 성공"),
         @ApiResponse(responseCode = "409", description = "회원가입 실패")})
-        public ResponseEntity<? super ResponseDto> join(@RequestBody UserDTO userDto);
+        public ResponseEntity<? super ResponseDto> join(@RequestBody UserDTO userDto, BindingResult bindingResult);
 }
