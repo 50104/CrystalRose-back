@@ -12,9 +12,6 @@ import com.rose.back.user.dto.response.IdCheckResponseDto;
 import com.rose.back.user.dto.response.ResponseDto;
 import com.rose.back.user.service.AuthService;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -80,5 +77,13 @@ public class AuthController implements AuthControllerDocs{
             return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
         }
         return authService.join(userDto);
+    }
+
+    //아이디 찾기
+    @PostMapping("/findId-email-certification")
+    public ResponseEntity<?> sendCertificationEmail(@RequestBody EmailCertificationRequestDto request) {
+
+        log.info("아이디 찾기 컨트롤러 실행");
+        return authService.findIdByEmail(request.getUserEmail());
     }
 }

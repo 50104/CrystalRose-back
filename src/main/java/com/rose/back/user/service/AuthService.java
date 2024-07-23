@@ -21,4 +21,6 @@ public interface AuthService {
     ResponseEntity<? super CheckCertificationResponseDto> checkCertification(CheckCertificationRequestDto dto);
 
     ResponseEntity<? super ResponseDto> join(UserDTO dto);
+    
+    ResponseEntity<? super ResponseDto> findIdByEmail(String email); // 아이디 찾기
 }

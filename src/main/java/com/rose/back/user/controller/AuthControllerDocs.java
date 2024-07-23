@@ -1,8 +1,6 @@
 package com.rose.back.user.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
@@ -54,4 +52,10 @@ public interface AuthControllerDocs {
         @ApiResponse(responseCode = "200", description = "회원가입 성공"),
         @ApiResponse(responseCode = "409", description = "회원가입 실패")})
         public ResponseEntity<? super ResponseDto> join(@RequestBody UserDTO userDto, BindingResult bindingResult);
+
+        @Operation(summary = "아이디 찾기", description = "아이디를 찾습니다.")
+        @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "아이디 찾기 성공"),
+        @ApiResponse(responseCode = "409", description = "아이디 찾기 실패")})
+        public ResponseEntity<?> sendCertificationEmail(@RequestBody EmailCertificationRequestDto request);
 }
