@@ -86,4 +86,12 @@ public class AuthController implements AuthControllerDocs{
         log.info("아이디 찾기 컨트롤러 실행");
         return authService.findIdByEmail(request.getUserEmail());
     }
+
+    // 비밀번호 초기화
+    @PostMapping("/findUserPwd")
+    public ResponseEntity<?> findUserPwd(@RequestBody EmailCertificationRequestDto request) {
+
+        log.info("비밀번호 초기화 컨트롤러 실행");
+        return authService.resetUserPwd(request.getUserEmail(), request.getUserId());
+    }
 }
