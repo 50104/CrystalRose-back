@@ -5,11 +5,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.rose.back.user.dto.UserDTO;
 import com.rose.back.user.entity.UserEntity;
 import com.rose.back.user.repository.UserRepository;
 import com.rose.back.user.service.UserService;
+import com.rose.back.user.util.FileUtil;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -21,6 +23,7 @@ public class UserServiceImpl implements UserService {
     
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final FileUtil fileUtil;
 
     @Override
     public UserDTO get(String userId) { // 로그인한 사용자 정보 가져오기
@@ -79,5 +82,27 @@ public class UserServiceImpl implements UserService {
                 .userNo(user.getUserNo())
                 .userType(user.getUserType())
                 .build();
+    }
+
+    @Override
+    public void modify(UserDTO userDTO) {
+        UserEntity user = userRepository.findByUserId(userDTO.getUserName());
+        String beforeProfileImage = user.getUserProfileImg();
+        String profileImage = null;
+        MultipartFile multipartFile = userDTO.getUserProfileFile();
+
+        if (multipartFile != null) {
+            profileImage = fileUtil.saveFile(multipartFile, userDTO.getUserName());
+            user.setUserProfileImg(profileImage);
+        }
+        if (Boolean.parseBoolean(userDTO.getIsDelete())) {
+            if (beforeProfileImage != null) {
+                log.info("프로필 이미지 삭제 시도: " + beforeProfileImage);
+                fileUtil.deleteFile(beforeProfileImage);
+            }
+            user.setUserProfileImg(null);
+        }
+        user.setUserNick(userDTO.getUserNick());
+        userRepository.save(user);
     }
 }
