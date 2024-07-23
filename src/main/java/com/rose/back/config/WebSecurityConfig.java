@@ -37,6 +37,9 @@ import com.rose.back.user.repository.RefreshRepository;
 import com.rose.back.user.service.implement.CustomOAuth2UserService;
 import com.rose.back.user.service.implement.CustomUserDetailsService;
 
+// 인증 Authentication 방문자가 들어 갈 수있는지 확인
+// 인가 Authorization 방문자가 방문했을 때, 허가된 공간에만 접근 가능
+
 @Configurable
 @Configuration
 @EnableWebSecurity

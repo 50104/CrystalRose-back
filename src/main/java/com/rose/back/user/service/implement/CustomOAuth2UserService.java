@@ -35,19 +35,22 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         OAuth2Response oAuthResponse = null;
 
-        if(registrationId.equals("naver")){
+        if (registrationId.equals("naver")) {
             oAuthResponse = new NaverResponse(oAuth2User.getAttributes());
-        }else if(registrationId.equals("kakao")){
+        } else if (registrationId.equals("kakao")) {
             oAuthResponse = new KakaoResponse(oAuth2User.getAttributes());
-        }else if(registrationId.equals("google")){
+        } else if (registrationId.equals("google")) {
             oAuthResponse = new GoogleResponse(oAuth2User.getAttributes());
-        }else {
+        } else {
             log.error("지원하지 않는 소셜 로그인입니다.");
         }
 
         String username = oAuthResponse.getProvider() + " " + oAuthResponse.getProviderId();
+        if (username.length() > 15) {
+            username = username.substring(0, 15);
+        }
         UserEntity existData = userRepository.findByUserId(username);
-        if(existData == null){
+        if (existData == null) {
             //닉네임을 동의하지 않을 경우 랜덤으로 닉네임 등록
             String nickname = oAuthResponse.getUserNick() != null ? oAuthResponse.getUserNick() : RandomStringUtils.random(5, true, false);
 
@@ -67,7 +70,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .userRole("ROLE_USER")
                     .build();
             return new CustomOAuth2User(userDto);
-        } else{
+        } else {
             existData.setUserEmail(oAuthResponse.getUserEmail());
 
             UserDTO userDto = UserDTO.builder()

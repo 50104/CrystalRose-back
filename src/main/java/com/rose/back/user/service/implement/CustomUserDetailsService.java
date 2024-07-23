@@ -16,6 +16,7 @@ import com.rose.back.user.repository.UserRepository;
 public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
 
+    // 사용자 이름을 받아 DB에서 사용자 정보를 조회
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserEntity user = userRepository.findByUserId(username);
@@ -28,6 +29,6 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .userRole(user.getUserRole())
                 .userNick(user.getUserNick())
                 .build();
-        return new CustomUserDetails(userDto);
+        return new CustomUserDetails(userDto); // UserDetails에 담아서 return하면 AuthenticationManager가 검증
     }
 }
