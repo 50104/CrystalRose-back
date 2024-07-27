@@ -112,7 +112,7 @@ public class WebSecurityConfig {
         corsConfiguration.setAllowCredentials(true); // 자격 증명 허용 설정
         corsConfiguration.setMaxAge(3600L); // 1시간 동안 캐싱
         corsConfiguration.setExposedHeaders(Arrays.asList(
-            "Access-Control-Allow-Headers", "Set-Cookie", "Authorization", "access", "refresh"
+            "Access-Control-Allow-Headers", "Set-Cookie", "Authorization", "access", "refresh", "Access-Control-Allow-Origin"
             /* "x-xsrf-token, Origin, Accept, X-Requested-With, Content-Type, 
                 Access-Control-Request-Method, Access-Control-Request-Headers" */
         )); // 노출된 헤더 설정
