@@ -1,6 +1,5 @@
-package com.rose.back.board.controller;
+package com.rose.back.board.handler;
 
-//import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -8,21 +7,14 @@ import org.springframework.web.multipart.MultipartFile;
 import com.rose.back.board.entity.Board;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 
 @Component
 public class FileHandler {
-
-    public List<Board> parseFileInfo(
-            Long boardID,
-            List<MultipartFile> multipartFiles
-    ) throws Exception {
-
+    public List<Board> parseFileInfo(Long boardID, List<MultipartFile> multipartFiles) throws Exception {
         // 반환을 할 파일 리스트
         List<Board> fileList = new ArrayList<>();
 
@@ -34,7 +26,6 @@ public class FileHandler {
         if (multipartFiles.isEmpty()) {
             return fileList;
         }
-
         // 프로젝트 폴더에 저장하기 위해 절대경로를 설정 (Window 의 Tomcat 은 Temp 파일을 이용한다)
         String absolutePath = new File("").getAbsolutePath() + "\\";
 
@@ -86,7 +77,6 @@ public class FileHandler {
                 multipartFile.transferTo(file);
             }
         }
-
         return fileList;
     }
 
