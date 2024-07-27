@@ -1,16 +1,22 @@
 package com.rose.back.user.common;
 
-public interface ResponseMessage {
-    
-    String SUCCESS = "Success";
+public enum ResponseMessage {
+    SUCCESS("Success"),
+    VALIDATION_FAIL("Validation Failed"),
+    DUPLICATE_ID("Duplicate Id"),
+    DUPLICATE_EMAIL("Duplicate Email"),
+    SIGN_IN_FAIL("Login information mismatch"),
+    CERTIFICATION_FAIL("Certification Failed"),
+    MAIL_FAIL("Mail send failed"),
+    DATABASE_ERROR("Database error");
 
-    String VALIDATION_FAIL = "Validation Failed";
-    String DUPLICATE_ID = "Duplicate Id";
-    String DUPLICATE_EMAIL="Duplicate Email";
+    private final String message;
 
-    String SIGN_IN_FAIL = "Login information mismatch";
-    String CERTIFICATION_FAIL = "Certification Failed";
+    ResponseMessage(String message) {
+        this.message = message;
+    }
 
-    String MAIL_FAIL = "Mail send failed";
-    String DATABASE_ERROR = "Database error";
+    public String getMessage() {
+        return message;
+    }
 }

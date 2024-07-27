@@ -1,16 +1,22 @@
 package com.rose.back.user.common;
 
-public interface ResponseCode {
-    
-    String SUCCESS = "SU";
+public enum ResponseCode {
+    SUCCESS("SU"),
+    VALIDATION_FAIL("VF"),
+    DUPLICATE_ID("DI"),
+    DUPLICATE_EMAIL("DE"),
+    SIGN_IN_FAIL("SF"),
+    CERTIFICATION_FAIL("CF"),
+    MAIL_FAIL("MF"),
+    DATABASE_ERROR("DBE");
 
-    String VALIDATION_FAIL = "VF";
-    String DUPLICATE_ID = "DI";
-    String DUPLICATE_EMAIL="DE";
+    private final String code;
 
-    String SIGN_IN_FAIL = "SF";
-    String CERTIFICATION_FAIL = "CF";
+    ResponseCode(String code) {
+        this.code = code;
+    }
 
-    String MAIL_FAIL = "MF";
-    String DATABASE_ERROR = "DBE";
+    public String getCode() {
+        return code;
+    }
 }

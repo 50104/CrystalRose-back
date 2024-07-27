@@ -21,7 +21,7 @@ public class IdCheckResponseDto extends ResponseDto {
     }
 
     public static ResponseEntity<ResponseDto> duplicateId() {
-        ResponseDto responseBody = new ResponseDto(ResponseCode.DUPLICATE_ID, ResponseMessage.DUPLICATE_ID);
+        ResponseDto responseBody = new ResponseDto(ResponseCode.DUPLICATE_ID.getCode(), ResponseMessage.DUPLICATE_ID.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody);
     }
 }

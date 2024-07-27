@@ -79,12 +79,12 @@ public class AuthController implements AuthControllerDocs{
         return authService.join(userDto);
     }
 
-    //아이디 찾기
-    @PostMapping("/findId-email-certification")
-    public ResponseEntity<?> sendCertificationEmail(@RequestBody EmailCertificationRequestDto request) {
+    // 아이디 찾기
+    @PostMapping("/findUserId")
+    public ResponseEntity<?> findUserId(@RequestBody EmailCertificationRequestDto request) {
 
-        log.info("아이디 찾기 컨트롤러 실행");
-        return authService.findIdByEmail(request.getUserEmail());
+        log.info("아이디찾기 컨트롤러 실행");
+        return authService.findUserId(request.getUserEmail());
     }
 
     // 비밀번호 초기화

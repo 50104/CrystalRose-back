@@ -21,17 +21,17 @@ public class EmailCertificationResponseDto extends ResponseDto {
     }
 
     public static ResponseEntity<ResponseDto> duplicateId() {
-        ResponseDto responseBody = new ResponseDto(ResponseCode.DUPLICATE_ID,ResponseMessage.DUPLICATE_ID);
+        ResponseDto responseBody = new ResponseDto(ResponseCode.DUPLICATE_ID.getCode(),ResponseMessage.DUPLICATE_ID.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody);
     }
 
     public static ResponseEntity<ResponseDto> duplicateEmail() {
-        ResponseDto responseBody = new ResponseDto(ResponseCode.DUPLICATE_EMAIL,ResponseMessage.DUPLICATE_EMAIL);
+        ResponseDto responseBody = new ResponseDto(ResponseCode.DUPLICATE_EMAIL.getCode(),ResponseMessage.DUPLICATE_EMAIL.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody);
     }
 
     public static ResponseEntity<ResponseDto> mailSendFail() {
-        ResponseDto responseBody = new ResponseDto(ResponseCode.MAIL_FAIL,ResponseMessage.MAIL_FAIL);
+        ResponseDto responseBody = new ResponseDto(ResponseCode.MAIL_FAIL.getCode(),ResponseMessage.MAIL_FAIL.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseBody);
     }
 }

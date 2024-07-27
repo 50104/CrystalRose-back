@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.rose.back.user.dto.UserDTO;
@@ -17,24 +18,29 @@ import com.rose.back.user.provider.JwtProvider;
 import io.jsonwebtoken.ExpiredJwtException;
 
 import java.io.IOException;
+
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Component
+@RequiredArgsConstructor
 public class JWTFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
 
-    public JWTFilter(JwtProvider jwtProvider) {
-        this.jwtProvider = jwtProvider;
-    }
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String requestUri = request.getRequestURI(); // 재로그인, 무한로프 방지
-        if (requestUri.matches("^\\/login(?:\\/.*)?$") || requestUri.matches("^\\/oauth2(?:\\/.*)?$")) {
+        log.debug("Request URI: {}", requestUri);
+        if (requestUri.matches("^\\/login(?:\\/.*)?$")) {
             filterChain.doFilter(request, response);
             return;
-        }    
+        }
+        if (requestUri.matches("^\\/oauth2(?:\\/.*)?$")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         String accessToken = request.getHeader("access");
         log.debug("Access token: {}", accessToken);
