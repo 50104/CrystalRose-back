@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import com.rose.back.board.dto.SaveDto;
 import com.rose.back.board.entity.ContentEntity;
 import com.rose.back.board.repository.ContentRepository;
+import java.util.*;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,5 +23,13 @@ public class ContentService {
         content1.setBoardContent(content);
         contentRepository.save(content1);
         return;
+    }
+
+    public List<ContentEntity> selectContent() {
+        return contentRepository.findAll();
+    }
+
+    public ContentEntity selectOneContent(Long boardNo) {
+        return contentRepository.findByBoardNo(boardNo);
     }
 }
