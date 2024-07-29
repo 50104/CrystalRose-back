@@ -1,4 +1,4 @@
-package com.rose.back.board.entity;
+package com.rose.back.board.content.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

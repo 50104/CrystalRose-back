@@ -1,10 +1,10 @@
-package com.rose.back.board.handler;
+package com.rose.back.board.content.handler;
 
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.rose.back.board.entity.Board;
+import com.rose.back.board.content.entity.Board;
 
 import java.io.File;
 import java.text.SimpleDateFormat;

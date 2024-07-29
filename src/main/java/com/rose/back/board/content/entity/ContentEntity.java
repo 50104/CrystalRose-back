@@ -1,4 +1,4 @@
-package com.rose.back.board.entity;
+package com.rose.back.board.content.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -23,4 +23,7 @@ public class ContentEntity {
 
     @Column(columnDefinition = "LONGTEXT", name = "board_content")
     private String boardContent;
+
+    @Column(length = 50, name = "user_id")
+    private String userId;
 }

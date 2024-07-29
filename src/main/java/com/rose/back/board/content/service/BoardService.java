@@ -1,12 +1,12 @@
-package com.rose.back.board.service;
+package com.rose.back.board.content.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.rose.back.board.entity.Board;
-import com.rose.back.board.handler.FileHandler;
-import com.rose.back.board.repository.BoardRepository;
+import com.rose.back.board.content.entity.Board;
+import com.rose.back.board.content.handler.FileHandler;
+import com.rose.back.board.content.repository.BoardRepository;
 
 import java.util.ArrayList;
 import java.util.List;

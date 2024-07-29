@@ -45,7 +45,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             log.error("지원하지 않는 소셜 로그인입니다.");
         }
 
-        String username = oAuthResponse.getProvider() + " " + oAuthResponse.getProviderId();
+        String username = oAuthResponse.getProvider() + "" + oAuthResponse.getProviderId();
         if (username.length() > 15) {
             username = username.substring(0, 15);
         }
