@@ -49,26 +49,34 @@ public class ContentController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<String> saveLogic(@ModelAttribute ContentRequestDto req) {
+    public ResponseEntity<Map<String, Object>> saveLogic(@ModelAttribute ContentRequestDto req) {
         log.info("[POST][/board/save] - 게시글 저장 컨트롤러, 데이터: {}", req);
         try {
-            contentService.saveContent(req);
-            return ResponseEntity.ok().body("게시글 저장 성공");
+            Long savedBoardNo = contentService.saveContent(req);
+            Map<String, Object> response = new HashMap<>();
+            response.put("data", Collections.singletonMap("boardNo", savedBoardNo));
+            return ResponseEntity.ok().body(response);
         } catch (Exception e) {
             log.error("게시글 저장 실패: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("게시글 저장 실패: " + e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "게시글 저장 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
     @PostMapping("/save/{boardNo}")
-    public ResponseEntity<String> updateLogic(@ModelAttribute ContentRequestDto req, @PathVariable("boardNo") Long boardNo) {
+    public ResponseEntity<Map<String, Object>> updateLogic(@ModelAttribute ContentRequestDto req, @PathVariable("boardNo") Long boardNo) {
         log.info("[POST][/board/save/{}] - 게시글 수정 컨트롤러, 데이터: {}", boardNo, req);
         try {
             contentService.updateOneContent(req, boardNo);
-            return ResponseEntity.ok().body("게시글 수정 성공");
+            Map<String, Object> response = new HashMap<>();
+            response.put("data", Collections.singletonMap("boardNo", boardNo));
+            return ResponseEntity.ok().body(response);
         } catch (Exception e) {
             log.error("게시글 수정 실패: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("게시글 수정 실패: " + e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "게시글 수정 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
@@ -103,42 +111,54 @@ public class ContentController {
     }
 
     @GetMapping("/delete/{boardNo}")
-    public ResponseEntity<String> deleteC(@PathVariable("boardNo") Long boardNo) {
+    public ResponseEntity<Map<String, String>> deleteC(@PathVariable("boardNo") Long boardNo) {
         log.info("[GET][/board/delete/{}] - 게시글 삭제 컨트롤러", boardNo);
         try {
             contentService.deleteOneContent(boardNo);
-            return ResponseEntity.ok().body("게시글 삭제 성공");
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "게시글 삭제 성공");
+            return ResponseEntity.ok().body(response);
         } catch (Exception e) {
             log.error("게시글 삭제 실패: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("게시글 삭제 실패: " + e.getMessage());
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "게시글 삭제 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
     @PostMapping("/board")
-    public ResponseEntity<?> createBoard(
+    public ResponseEntity<Map<String, String>> createBoard(
             @Validated @RequestParam("files") List<MultipartFile> files
     ) throws Exception {
         log.info("[POST][/board] - 게시판 생성 컨트롤러, 파일 개수: {}", files.size());
         try {
             boardService.addBoard(Board.builder().build(), files);
-            return ResponseEntity.ok().build();
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "게시판 생성 성공");
+            return ResponseEntity.ok().body(response);
         } catch (Exception e) {
             log.error("게시판 생성 실패: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("게시판 생성 실패: " + e.getMessage());
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "게시판 생성 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
     @GetMapping("/board")
-    public ResponseEntity<String> getBoard(@RequestParam long id) {
+    public ResponseEntity<Map<String, Object>> getBoard(@RequestParam long id) {
         log.info("[GET][/board] - 게시판 조회 컨트롤러, ID: {}", id);
         try {
             Board board = boardService.findBoard(id).orElseThrow(() -> new RuntimeException("게시판을 찾을 수 없습니다."));
             String imgPath = board.getStoredFileName();
             log.info("저장된 이미지 경로: {}", imgPath);
-            return ResponseEntity.ok().body("<img src=\"" + imgPath + "\">");
+            Map<String, Object> response = new HashMap<>();
+            response.put("imgPath", imgPath);
+            return ResponseEntity.ok().body(response);
         } catch (Exception e) {
             log.error("게시판 조회 실패: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("게시판 조회 실패: " + e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "게시판 조회 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 }

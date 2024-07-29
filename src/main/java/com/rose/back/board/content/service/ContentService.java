@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.rose.back.board.content.dto.ContentRequestDto;
-import com.rose.back.board.content.entity.Board;
 import com.rose.back.board.content.entity.ContentEntity;
 import com.rose.back.board.content.repository.ContentRepository;
 import java.util.*;
@@ -18,12 +17,13 @@ public class ContentService {
     private final ContentRepository contentRepository;
 
     @Transactional
-    public void saveContent(ContentRequestDto req) {
+    public Long saveContent(ContentRequestDto req) {
         ContentEntity content = new ContentEntity();
         content.setBoardTitle(req.getBoardTitle());
         content.setBoardContent(req.getBoardContent());
         content.setUserId(req.getUserId());
-        contentRepository.save(content);
+        ContentEntity savedContent = contentRepository.save(content);
+        return savedContent.getBoardNo();
     }
 
     public List<ContentEntity> selectContent() {
