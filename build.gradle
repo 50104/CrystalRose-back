@@ -23,9 +23,13 @@ repositories {
 }
 
 dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-tomcat'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// 배포 서버에서 .env 파일 읽기
+	implementation group: 'io.github.cdimascio', name: 'dotenv-java', version: '3.0.0'
 
 	// log4j2
 	implementation('org.springframework.boot:spring-boot-starter-log4j2') {
@@ -55,9 +59,6 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     implementation 'mysql:mysql-connector-java:8.0.32'
-	// implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-	// runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
-	// runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 	// testAnnotationProcessor 'org.projectlombok:lombok'
 	// testImplementation 'org.projectlombok:lombok'
 
@@ -79,7 +80,8 @@ tasks.named('test') {
 }
 
 processResources {
-	filesMatching('application.properties') {
-		expand(project: project)
-	}
+    inputs.property("SPRING_JWT_SECRET", System.getenv("SPRING_JWT_SECRET"))
+    filesMatching("application.properties") {
+        expand("SPRING_JWT_SECRET": System.getenv("SPRING_JWT_SECRET"))
+    }
 }

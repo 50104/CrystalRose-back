@@ -60,16 +60,27 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
         // 토큰 만료 확인
         try {
-            jwtProvider.isExpired(refresh);
+            if (jwtProvider.isExpired(refresh)) {
+                httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
         } catch (ExpiredJwtException e) {
             httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        } catch (Exception e) {
+            httpResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;
         }
 
         // 토큰 카테고리 확인
-        String category = jwtProvider.getCategory(refresh);
-        if (!"refresh".equals(category)) {
-            httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        try {
+            String category = jwtProvider.getCategory(refresh);
+            if (!"refresh".equals(category)) {
+                httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
+        } catch (Exception e) {
+            httpResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;
         }
 

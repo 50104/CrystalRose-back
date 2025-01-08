@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Date;
 
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +23,10 @@ public class JwtProvider {
     private SecretKey secretKey;
 
     public JwtProvider(@Value("${spring.jwt.secret}") String secretKey) {
-        this.secretKey = new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
+        byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
+        // 키가 32바이트보다 작으면 패딩 추가
+        keyBytes = Arrays.copyOf(keyBytes, 32);
+        this.secretKey = new SecretKeySpec(keyBytes, "HmacSHA256");
     }
 
     public String create(String category, String userId, String userNick, String userRole, Long expiredMs) {
@@ -59,6 +63,7 @@ public class JwtProvider {
 
     // 토큰의 유효성을 검사
     public boolean validateToken(String token) {
+        log.info("JWT Secret during validation: {}", secretKey); 
         try {
             Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token);
             return true;

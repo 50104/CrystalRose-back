@@ -48,8 +48,7 @@ public class ImageService {
     }
 
     private String uploadToS3(Path filePath) {
-        amazonS3Client.putObject(new PutObjectRequest(s3Bucket, filePath.getFileName().toString(), filePath.toFile())
-                .withCannedAcl(CannedAccessControlList.PublicRead));
+        amazonS3Client.putObject(new PutObjectRequest(s3Bucket, filePath.getFileName().toString(), filePath.toFile()));
         return amazonS3Client.getUrl(s3Bucket, filePath.getFileName().toString()).toString();
     }
 }
