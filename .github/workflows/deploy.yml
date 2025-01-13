@@ -1,0 +1,35 @@
+name : Deploy To EC2
+
+# Event : 실행되는 시점을 설정
+# main이라는 브랜치에 push 될 때 아래 Workflow를 실행
+on:
+  push:
+    branches:
+      - main
+
+# 하나의 Workflow는 1개 이상의 Job으로 구성
+# 여러 Job은 기본적으로 병렬로 실행되지만, 의존성을 설정하여 순차적으로 실행 가능
+jobs:
+  # Job을 식별하기 위한 id
+  Deploy:
+    # ubuntu 환경 / 가장 최신 버전(latest)
+    runs-on: ubuntu-latest
+
+    # step : 특정 작업을 수행하는 가장 작은 단위
+    # Job은 여러 Step들로 구성
+    steps:
+      - name: SSH(원격 접속)로 EC2에 접속하기
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script_stop: true
+          script: |
+            cd /home/ubuntu/CristalRose-back
+            git pull origin main
+            rm -rf ~/.gradle/caches/
+            sudo rm -rf build/libs
+            ./gradlew clean build
+            sudo fuser -k -n tcp 4000 || true
+            nohup java -jar build/libs/*SNAPSHOT.jar > ./output.log 2>&1 &
