@@ -81,7 +81,18 @@ tasks.named('test') {
 
 processResources {
     inputs.property("SPRING_JWT_SECRET", System.getenv("SPRING_JWT_SECRET"))
-    filesMatching("application.properties") {
-        expand("SPRING_JWT_SECRET": System.getenv("SPRING_JWT_SECRET"))
+    inputs.property("CLOUD_AWS_CREDENTIALS_ACCESS_KEY", System.getenv("CLOUD_AWS_CREDENTIALS_ACCESS_KEY"))
+    inputs.property("CLOUD_AWS_CREDENTIALS_SECRET_KEY", System.getenv("CLOUD_AWS_CREDENTIALS_SECRET_KEY"))
+    inputs.property("CLOUD_AWS_REGION_STATIC", System.getenv("CLOUD_AWS_REGION_STATIC"))
+    inputs.property("CLOUD_AWS_S3_BUCKET", System.getenv("CLOUD_AWS_S3_BUCKET"))
+
+    filesMatching('**/*.properties') {
+        expand(
+            "SPRING_JWT_SECRET": System.getenv("SPRING_JWT_SECRET"),
+            "CLOUD_AWS_CREDENTIALS_ACCESS_KEY": System.getenv("CLOUD_AWS_CREDENTIALS_ACCESS_KEY"),
+            "CLOUD_AWS_CREDENTIALS_SECRET_KEY": System.getenv("CLOUD_AWS_CREDENTIALS_SECRET_KEY"),
+            "CLOUD_AWS_REGION_STATIC": System.getenv("CLOUD_AWS_REGION_STATIC"),
+            "CLOUD_AWS_S3_BUCKET": System.getenv("CLOUD_AWS_S3_BUCKET")
+        )
     }
 }
