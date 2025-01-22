@@ -42,6 +42,9 @@ jobs:
             echo "$APPLICATION_OAUTH2_YML" > src/main/resources/application-oauth2.yml
             rm -rf ~/.gradle/caches/
             sudo rm -rf build/libs
-            ./gradlew clean build
+            chmod +x ./gradlew
+            
+            SPRING_JWT_SECRET="$SPRING_JWT_SECRET" CLOUD_AWS_CREDENTIALS_ACCESS_KEY="$CLOUD_AWS_CREDENTIALS_ACCESS_KEY" CLOUD_AWS_CREDENTIALS_SECRET_KEY="$CLOUD_AWS_CREDENTIALS_SECRET_KEY" CLOUD_AWS_REGION_STATIC="$CLOUD_AWS_REGION_STATIC" CLOUD_AWS_S3_BUCKET="$CLOUD_AWS_S3_BUCKET" ./gradlew clean build
+            
             sudo fuser -k -n tcp 4000 || true
             nohup java -jar build/libs/*SNAPSHOT.jar > ./output.log 2>&1 &

@@ -16,7 +16,7 @@ public class RedisService {
     this.redisRepository = redisRepository;
   }
 
-  // @Cacheable(cacheNames = "getRedis", key = "'redis:page:' + #page + ':size:' + #size", cacheManager = "redisCacheManager")
+  @Cacheable(cacheNames = "getRedis", key = "'redis:page:' + #page + ':size:' + #size", cacheManager = "redisCacheManager")
   public List<Redis> getRedis(int page, int size) {
     Pageable pageable = PageRequest.of(page - 1, size);
     Page<Redis> pageOfRedis = redisRepository.findAllByOrderByCreatedAtDesc(pageable);
