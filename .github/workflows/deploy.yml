@@ -22,23 +22,24 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         env:
           APPLICATION_YML: ${{ secrets.APPLICATION_YML }}
-          APPLICATION_AWS_PROPERTIES: ${{ secrets.APPLICATION_AWS_PROPERTIES }}
-          APPLICATION_OAUTH2_PROPERTIES: ${{ secrets.APPLICATION_OAUTH2_PROPERTIES }}
+          APPLICATION_OAUTH2_YML: ${{ secrets.APPLICATION_OAUTH2_YML }}
+          SPRING_JWT_SECRET: ${{ secrets.SPRING_JWT_SECRET }}
+          CLOUD_AWS_CREDENTIALS_ACCESS_KEY: ${{ secrets.CLOUD_AWS_CREDENTIALS_ACCESS_KEY }}
+          CLOUD_AWS_CREDENTIALS_SECRET_KEY: ${{ secrets.CLOUD_AWS_CREDENTIALS_SECRET_KEY }}
+          CLOUD_AWS_REGION_STATIC: ${{ secrets.CLOUD_AWS_REGION_STATIC }}
+          CLOUD_AWS_S3_BUCKET: ${{ secrets.CLOUD_AWS_S3_BUCKET }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          envs: APPLICATION_YML
           script_stop: true
           script: |
             cd /home/ubuntu/CristalRose-back
             rm -rf src/main/resources/application.yml
-            rm -rf src/main/resources/application-aws.properties
-            rm -rf src/main/resources/application-oauth2.properties
+            rm -rf src/main/resources/application-oauth2.yml
             git pull origin main
             echo "$APPLICATION_YML" > src/main/resources/application.yml
-            echo "$APPLICATION_AWS_PROPERTIES" > src/main/resources/application-aws.properties
-            echo "$APPLICATION_OAUTH2_PROPERTIES" > src/main/resources/application-oauth2.properties
+            echo "$APPLICATION_OAUTH2_YML" > src/main/resources/application-oauth2.yml
             rm -rf ~/.gradle/caches/
             sudo rm -rf build/libs
             ./gradlew clean build

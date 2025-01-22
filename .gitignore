@@ -42,6 +42,7 @@ application.properties
 application.yml
 application-aws.properties
 application-oauth2.properties
+application-oauth2.yml
 gradle/.DS_Store
 src/.DS_Store
 src/main/.DS_Store
