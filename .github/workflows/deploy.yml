@@ -21,22 +21,22 @@ jobs:
       - name: SSH(원격 접속)로 EC2에 접속하기
         uses: appleboy/ssh-action@v1.0.3
         env:
-          APPLICATION_PROPERTIES: ${{ secrets.APPLICATION_PROPERTIES }}
+          APPLICATION_YML: ${{ secrets.APPLICATION_YML }}
           APPLICATION_AWS_PROPERTIES: ${{ secrets.APPLICATION_AWS_PROPERTIES }}
           APPLICATION_OAUTH2_PROPERTIES: ${{ secrets.APPLICATION_OAUTH2_PROPERTIES }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          envs: APPLICATION_PROPERTIES
+          envs: APPLICATION_YML
           script_stop: true
           script: |
             cd /home/ubuntu/CristalRose-back
-            rm -rf src/main/resources/application.properties
+            rm -rf src/main/resources/application.yml
             rm -rf src/main/resources/application-aws.properties
             rm -rf src/main/resources/application-oauth2.properties
             git pull origin main
-            echo "$APPLICATION_PROPERTIES" > src/main/resources/application.properties
+            echo "$APPLICATION_YML" > src/main/resources/application.yml
             echo "$APPLICATION_AWS_PROPERTIES" > src/main/resources/application-aws.properties
             echo "$APPLICATION_OAUTH2_PROPERTIES" > src/main/resources/application-oauth2.properties
             rm -rf ~/.gradle/caches/

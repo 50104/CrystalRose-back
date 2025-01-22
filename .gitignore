@@ -39,6 +39,7 @@ out/
 logs/
 gitmessage.txt
 application.properties
+application.yml
 application-aws.properties
 application-oauth2.properties
 gradle/.DS_Store
