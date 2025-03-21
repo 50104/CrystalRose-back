@@ -1,6 +1,9 @@
 package com.rose.back.user.service;
 
+import java.util.List;
+
 import com.rose.back.user.dto.UserDTO;
+import com.rose.back.user.dto.request.MemberListReqDto;
 
 public interface UserService {
     
@@ -11,4 +14,6 @@ public interface UserService {
     public UserDTO updateUser(UserDTO request);
 
     public void modify(UserDTO userDto);
+
+    public List<MemberListReqDto> findAll();
 }

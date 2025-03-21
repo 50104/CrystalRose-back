@@ -1,6 +1,10 @@
 package com.rose.back.user.service.implement;
 
 import lombok.RequiredArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -8,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.rose.back.user.dto.UserDTO;
+import com.rose.back.user.dto.request.MemberListReqDto;
 import com.rose.back.user.entity.UserEntity;
 import com.rose.back.user.repository.UserRepository;
 import com.rose.back.user.service.UserService;
@@ -104,5 +109,18 @@ public class UserServiceImpl implements UserService {
         }
         user.setUserNick(userDTO.getUserNick());
         userRepository.save(user);
+    }
+
+    public List<MemberListReqDto> findAll() {
+        List<UserEntity> members = userRepository.findAll();
+        List<MemberListReqDto> memberListResDtos = new ArrayList<>();
+        for (UserEntity m : members) {
+          MemberListReqDto memberListResDto = new MemberListReqDto();
+            memberListResDto.setUserNo(m.getUserNo());
+            memberListResDto.setUserId(m.getUserId());
+            memberListResDto.setUserEmail(m.getUserEmail());
+            memberListResDtos.add(memberListResDto);
+        }
+        return memberListResDtos;
     }
 }

@@ -3,9 +3,13 @@ package com.rose.back.user.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 
 import com.rose.back.user.dto.UserDTO;
+import com.rose.back.user.dto.request.MemberListReqDto;
 import com.rose.back.user.dto.request.PasswordValidationRequest;
 import com.rose.back.user.service.UserService;
 import com.rose.back.user.util.FileUtil;
@@ -70,5 +74,11 @@ public class UserController implements UserControllerDocs{
         }
         userService.modify(userDTO);
         return ResponseEntity.ok("사진 변경 성공");
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<?> memberList() {
+      List<MemberListReqDto> dtos = userService.findAll();
+      return new ResponseEntity<>(dtos, HttpStatus.OK);
     }
 }
