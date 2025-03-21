@@ -1,6 +1,7 @@
 package com.rose.back.chat.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -9,6 +10,12 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @Configuration
 @EnableWebSocketMessageBroker
 public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
+  
+  private final StompHandler stompHandler;
+
+  public StompWebSocketConfig(StompHandler stompHandler) {
+    this.stompHandler = stompHandler;
+  }
 
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -27,4 +34,11 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
     registry.enableSimpleBroker("/topic"); // 내장브로커
     // registry.enableStompBrokerRelay("/topic"); // 외장브로커(RabbitMQ, ActiveMQ, Kafka)에 메세지 전달
   }
+
+  // 웹소켓 요청(connect, subscribe, disconnect)등의 요청시에는 http header 등 http메세지를 넣어올 수 있고, 
+  // 이를 interceptor를 통해 가로채 토큰 등 검증 가능
+  @Override
+	public void configureClientInboundChannel(ChannelRegistration registration) {
+    registration.interceptors(stompHandler);
+	}
 }

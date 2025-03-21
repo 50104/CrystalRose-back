@@ -50,5 +50,6 @@ public class UserEntity {
     private String userNick;
 
     @Column(name = "ap_date")
-    private final LocalDate apDate = LocalDate.now();
+    @Builder.Default
+    private LocalDate apDate = LocalDate.now();
 }
