@@ -50,5 +50,5 @@ public class UserEntity {
     private String userNick;
 
     @Column(name = "ap_date")
-    private LocalDate apDate = LocalDate.now();
+    private final LocalDate apDate = LocalDate.now();
 }
