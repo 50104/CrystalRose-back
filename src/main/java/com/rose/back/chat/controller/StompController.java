@@ -7,14 +7,17 @@ import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
 
 import com.rose.back.chat.dto.ChatMessageReqDto;
+import com.rose.back.chat.service.ChatService;
 
 @Controller
 public class StompController {
   
   private final SimpMessageSendingOperations messagingTemplate;
+  private final ChatService chatService;
 
-  public StompController(SimpMessageSendingOperations messagingTemplate) {
+  public StompController(SimpMessageSendingOperations messagingTemplate, ChatService chatService) {
     this.messagingTemplate = messagingTemplate;
+    this.chatService = chatService;
   } 
 
   // // 방법1 : MessageMapping(수신)과 SendTo(topic에 메세지 전달)한꺼번에 처리
@@ -32,6 +35,7 @@ public class StompController {
   @MessageMapping("/{roomId}")
   public void sendMessage(@DestinationVariable("roomId") Long roomId, ChatMessageReqDto chatMessageReqDto) {
     System.out.println("roomId : " + roomId + ", message : " + chatMessageReqDto.getMessage());
+    chatService.saveMessage(roomId, chatMessageReqDto);
     messagingTemplate.convertAndSend("/topic/" + roomId, chatMessageReqDto); // sendTo 대신 convertAndSend로 대체
   }
 }
