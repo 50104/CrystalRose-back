@@ -30,8 +30,8 @@ public class ChatRoom extends BaseTimeEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(nullable = false, name = "room_id")
-  private String roomId;
+  @Column(nullable = false, name = "room_name")
+  private String roomName;
 
   @Builder.Default
   private String isGroupChat="N";

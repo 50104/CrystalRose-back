@@ -2,6 +2,7 @@ package com.rose.back.chat.service;
 
 import java.util.List;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,8 @@ import com.rose.back.chat.repository.ChatRoomRepository;
 import com.rose.back.chat.repository.ReadStatusRepository;
 import com.rose.back.user.entity.UserEntity;
 import com.rose.back.user.repository.UserRepository;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 @Transactional
@@ -65,5 +68,25 @@ public class ChatService {
         .build();
         readStatusRepository.save(readStatus);
     }
+  }
+
+  public void createGroupRoom(String chatRoomName) {
+    UserEntity userEntity = userRepository.findByUserEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+    if (userEntity == null) {
+        throw new EntityNotFoundException("사용자가 존재하지 않습니다.");
+    }
+    // 채팅방 생성
+    ChatRoom chatRoom = ChatRoom.builder()
+      .roomName(chatRoomName)
+      .isGroupChat("Y")
+      .build();
+    chatRoomRepository.save(chatRoom);
+
+    // 채팅 잠여자로 개설자 추가
+    ChatParticipant chatParticipant = ChatParticipant.builder()
+      .chatRoom(chatRoom)
+      .userEntity(userEntity)
+      .build();
+    chatParticipantRepository.save(chatParticipant);  
   }
 }
