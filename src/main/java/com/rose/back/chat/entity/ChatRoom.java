@@ -1,0 +1,44 @@
+package com.rose.back.chat.entity;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.rose.back.board.content.entity.BaseTimeEntity;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Entity(name = "chat_room")
+@Table(name = "chat_room")
+public class ChatRoom extends BaseTimeEntity {
+  
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+
+  @Column(nullable = false, name = "room_id")
+  private String roomId;
+
+  @Builder.Default
+  private String isGroupChat="N";
+
+  @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.REMOVE)
+  private List<ChatParticipant> chatParticipants = new ArrayList<>();
+
+  @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.REMOVE, orphanRemoval = true)
+  private List<ChatMessage> chatMessages = new ArrayList<>();
+}
