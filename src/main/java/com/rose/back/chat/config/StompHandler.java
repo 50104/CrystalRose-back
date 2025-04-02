@@ -1,20 +1,28 @@
 package com.rose.back.chat.config;
 
+import com.rose.back.chat.service.ChatService;
 import com.rose.back.user.provider.JwtProvider;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
 
 @Component
 public class StompHandler implements ChannelInterceptor {
 
   private final JwtProvider jwtProvider;
+  private final ChatService chatService;
 
-  public StompHandler(JwtProvider jwtProvider) {
+  public StompHandler(JwtProvider jwtProvider, ChatService chatService) {
     this.jwtProvider = jwtProvider;
+    this.chatService = chatService;
   }
 
   @Override
@@ -39,6 +47,23 @@ public class StompHandler implements ChannelInterceptor {
         }
       } else {
         System.out.println("토큰이 존재하지 않거나 유효하지 않습니다.");
+      }
+    }
+
+    if (StompCommand.SUBSCRIBE == accessor.getCommand()) {
+      System.out.println("SUBSCRIBE 검증");
+      String token = accessor.getFirstNativeHeader("access");
+
+      if (token == null || !jwtProvider.validateToken(token)) {
+        throw new AuthenticationServiceException("유효하지 않은 토큰입니다.");
+      }
+
+      Claims claims = jwtProvider.getClaims(token);
+      String email = claims.getSubject();
+      String roomId = accessor.getDestination().split("/")[2];
+
+      if (!chatService.isRoomPaticipant(email, Long.parseLong(roomId))) {
+        throw new AuthenticationServiceException("해당 방에 참여 권한이 없습니다.");
       }
     }
     return message;

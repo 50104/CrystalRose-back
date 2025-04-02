@@ -1,5 +1,6 @@
 package com.rose.back.user.provider;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
@@ -40,6 +41,10 @@ public class JwtProvider {
                 .signWith(secretKey)
                 .compact();
     }
+
+    public Claims getClaims(String token) {
+    return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload();
+  }
 
     public String getUserId(String token) {
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("userId", String.class);

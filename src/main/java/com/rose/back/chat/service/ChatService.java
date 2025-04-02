@@ -132,4 +132,53 @@ public class ChatService {
       .build();
     chatParticipantRepository.save(chatParticipant);  
   }
+
+  // 참여자가 아닌 경우 조회 불가
+  public List<ChatMessageReqDto> getChatHistory(Long roomId) {
+    ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("채팅방이 존재하지 않습니다."));
+
+    UserEntity userEntity = userRepository.findByUserEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+    if (userEntity == null) {
+        throw new EntityNotFoundException("사용자가 존재하지 않습니다.");
+    }
+
+    List<ChatParticipant> chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom); // 채팅방 참여자 조회
+    boolean check = false;
+    for(ChatParticipant c : chatParticipants) {
+      if(c.getUserEntity().equals(userEntity)) {
+        check = true;
+      }
+    }
+    if(!check) throw new IllegalArgumentException("채팅방에 참여하고 있지 않은 사용자입니다.");
+    
+    // 특정 room에 대한 message 조회
+    List<ChatMessage> chatMessages = chatMessageRepository.findByChatRoomOrderByCreatedTimeAsc(chatRoom);
+    List<ChatMessageReqDto> chatMessageDtos = new ArrayList<>();
+    for(ChatMessage c : chatMessages) {
+      ChatMessageReqDto chatMessageDto = ChatMessageReqDto.builder()
+        .message(c.getContent())
+        .senderEmail(c.getUserEntity().getUserEmail())
+        .build();
+      chatMessageDtos.add(chatMessageDto);
+    }
+    return chatMessageDtos;
+  }
+
+  // 특정 방에 대한 참여 권한 조회
+  public boolean isRoomPaticipant(String email, Long roomId){
+    ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("채팅방이 존재하지 않습니다.")); // 채팅방 조회
+
+    UserEntity userEntity = userRepository.findByUserEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+    if (userEntity == null) {
+        throw new EntityNotFoundException("사용자가 존재하지 않습니다.");
+    }
+
+    List<ChatParticipant> chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom); // 채팅방 참여자 조회
+    for(ChatParticipant c : chatParticipants) {
+      if(c.getUserEntity().equals(userEntity)) {
+        return true;
+      }
+    }
+    return false;
+  }
 }
