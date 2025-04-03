@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.rose.back.chat.dto.ChatMessageReqDto;
 import com.rose.back.chat.dto.ChatRoomListResDto;
+import com.rose.back.chat.dto.MyChatListResDto;
 import com.rose.back.chat.entity.ChatMessage;
 import com.rose.back.chat.entity.ChatParticipant;
 import com.rose.back.chat.entity.ChatRoom;
@@ -193,6 +194,47 @@ public class ChatService {
     List<ReadStatus> readStatuses = readStatusRepository.findByChatRoomAndMember(chatRoom, userEntity); // 읽음 여부 조회
     for(ReadStatus r : readStatuses) {
       r.updateIsRead(true);
+    }
+  }
+
+  public List<MyChatListResDto> getMyChatRooms() {
+    UserEntity userEntity = userRepository.findByUserEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+    if (userEntity == null) {
+        throw new EntityNotFoundException("사용자가 존재하지 않습니다.");
+    }
+    List<ChatParticipant> chatParticipants = chatParticipantRepository.findAllByMember(userEntity);
+    List<MyChatListResDto> chatListResDtos = new ArrayList<>();
+    for(ChatParticipant c : chatParticipants) {
+      Long count = readStatusRepository.countByChatRoomAndMemberAndIsReadFalse(c.getChatRoom(), userEntity);
+      MyChatListResDto dto = MyChatListResDto.builder()
+        .roomId(c.getChatRoom().getId())
+        .roomName(c.getChatRoom().getRoomName())
+        .isGroupChat(c.getChatRoom().getIsGroupChat())
+        .unReadCount(count)
+        .build();
+      chatListResDtos.add(dto);
+    }
+    return chatListResDtos;
+  }
+
+  // 채팅방 나가기
+  public void leaveGroupChatRoom(Long roomId){
+    ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("채팅방이 존재하지 않습니다.")); // 채팅방 조회
+
+    UserEntity userEntity = userRepository.findByUserEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+    if (userEntity == null) {
+        throw new EntityNotFoundException("사용자가 존재하지 않습니다.");
+    }
+
+    if(chatRoom.getIsGroupChat().equals("N")){
+      throw new IllegalArgumentException("그룹 채팅방이 아닙니다.");
+    }
+    ChatParticipant c = chatParticipantRepository.findByChatRoomAndMember(chatRoom, userEntity).orElseThrow(() -> new EntityNotFoundException("참여자를 찾을 수 없습니다."));
+    chatParticipantRepository.delete(c);
+
+    List<ChatParticipant> chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom);
+    if(chatParticipants.isEmpty()){
+      chatRoomRepository.delete(chatRoom);
     }
   }
 }

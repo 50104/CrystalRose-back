@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.rose.back.chat.dto.ChatMessageReqDto;
 import com.rose.back.chat.dto.ChatRoomListResDto;
+import com.rose.back.chat.dto.MyChatListResDto;
 import com.rose.back.chat.service.ChatService;
 
 @RestController
@@ -57,6 +59,20 @@ public class ChatController {
   @PostMapping("/room/{roomId}/read")
   public ResponseEntity<?> messageRead(@PathVariable("roomId") Long roomId) {
     chatService.messageRead(roomId);
+    return ResponseEntity.ok().build();
+  }
+
+  // 내 채팅방 목록 조회 : roomId, roomName, 그룹 채팅 여부, 메세지 읽음 개수
+  @GetMapping("/my/rooms") 
+  public ResponseEntity<?> getMyChatRooms(){
+    List<MyChatListResDto> myChatListResDtos = chatService.getMyChatRooms();
+    return new ResponseEntity<>(myChatListResDtos, HttpStatus.OK);
+  }
+
+  // 채팅방 나가기
+  @DeleteMapping("/room/group/{roomId}/leave")
+  public ResponseEntity<?> leaveGroupChatRoom(@PathVariable("roomId") Long roomId) {
+    chatService.leaveGroupChatRoom(roomId);
     return ResponseEntity.ok().build();
   }
 }

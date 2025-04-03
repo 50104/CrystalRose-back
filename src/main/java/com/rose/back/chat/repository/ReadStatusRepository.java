@@ -11,4 +11,6 @@ import com.rose.back.user.entity.UserEntity;
 public interface ReadStatusRepository extends JpaRepository<ReadStatus, Long> {
   
   List<ReadStatus> findByChatRoomAndMember(ChatRoom chatRoom, UserEntity userEntity); 
+
+  Long countByChatRoomAndMemberAndIsReadFalse(ChatRoom chatRoom, UserEntity userEntity); 
 }
