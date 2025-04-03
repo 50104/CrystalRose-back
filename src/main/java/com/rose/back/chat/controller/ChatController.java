@@ -52,4 +52,11 @@ public class ChatController {
     List<ChatMessageReqDto> chatMessageDtos = chatService.getChatHistory(roomId);
     return new ResponseEntity<>(chatMessageDtos, HttpStatus.OK);
   }
+
+  // 채팅 메세지 읽음 처리
+  @PostMapping("/room/{roomId}/read")
+  public ResponseEntity<?> messageRead(@PathVariable("roomId") Long roomId) {
+    chatService.messageRead(roomId);
+    return ResponseEntity.ok().build();
+  }
 }
