@@ -117,9 +117,12 @@ public class ChatService {
     if (userEntity == null) {
         throw new EntityNotFoundException("사용자가 존재하지 않습니다.");
     }
+    if(chatRoom.getIsGroupChat().equals("N")) {
+      throw new IllegalArgumentException("그룹 채팅방이 아닙니다.");
+    }
 
     // 기존 참여자 여부 확인
-    Optional<ChatParticipant> participant = chatParticipantRepository.findByChatRoomAndMember(chatRoom, userEntity);
+    Optional<ChatParticipant> participant = chatParticipantRepository.findByChatRoomAndUserEntity(chatRoom, userEntity);
     if(!participant.isPresent()) {
       addParticipantToRoom(chatRoom, userEntity);
     }
@@ -153,7 +156,7 @@ public class ChatService {
     if(!check) throw new IllegalArgumentException("채팅방에 참여하고 있지 않은 사용자입니다.");
     
     // 특정 room에 대한 message 조회
-    List<ChatMessage> chatMessages = chatMessageRepository.findByChatRoomOrderByCreatedTimeAsc(chatRoom);
+    List<ChatMessage> chatMessages = chatMessageRepository.findByChatRoomOrderByCreatedDateAsc(chatRoom);
     List<ChatMessageReqDto> chatMessageDtos = new ArrayList<>();
     for(ChatMessage c : chatMessages) {
       ChatMessageReqDto chatMessageDto = ChatMessageReqDto.builder()
@@ -191,7 +194,7 @@ public class ChatService {
         throw new EntityNotFoundException("사용자가 존재하지 않습니다.");
     }
 
-    List<ReadStatus> readStatuses = readStatusRepository.findByChatRoomAndMember(chatRoom, userEntity); // 읽음 여부 조회
+    List<ReadStatus> readStatuses = readStatusRepository.findByChatRoomAndUserEntity(chatRoom, userEntity); // 읽음 여부 조회
     for(ReadStatus r : readStatuses) {
       r.updateIsRead(true);
     }
@@ -202,10 +205,10 @@ public class ChatService {
     if (userEntity == null) {
         throw new EntityNotFoundException("사용자가 존재하지 않습니다.");
     }
-    List<ChatParticipant> chatParticipants = chatParticipantRepository.findAllByMember(userEntity);
+    List<ChatParticipant> chatParticipants = chatParticipantRepository.findAllByUserEntity(userEntity);
     List<MyChatListResDto> chatListResDtos = new ArrayList<>();
     for(ChatParticipant c : chatParticipants) {
-      Long count = readStatusRepository.countByChatRoomAndMemberAndIsReadFalse(c.getChatRoom(), userEntity);
+      Long count = readStatusRepository.countByChatRoomAndUserEntityAndIsReadFalse(c.getChatRoom(), userEntity);
       MyChatListResDto dto = MyChatListResDto.builder()
         .roomId(c.getChatRoom().getId())
         .roomName(c.getChatRoom().getRoomName())
@@ -229,12 +232,40 @@ public class ChatService {
     if(chatRoom.getIsGroupChat().equals("N")){
       throw new IllegalArgumentException("그룹 채팅방이 아닙니다.");
     }
-    ChatParticipant c = chatParticipantRepository.findByChatRoomAndMember(chatRoom, userEntity).orElseThrow(() -> new EntityNotFoundException("참여자를 찾을 수 없습니다."));
+    ChatParticipant c = chatParticipantRepository.findByChatRoomAndUserEntity(chatRoom, userEntity).orElseThrow(() -> new EntityNotFoundException("참여자를 찾을 수 없습니다."));
     chatParticipantRepository.delete(c);
 
     List<ChatParticipant> chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom);
     if(chatParticipants.isEmpty()){
       chatRoomRepository.delete(chatRoom);
     }
+  }
+
+  public Long getOrCreatePrivateRoom(Long otherUserNo) {
+    UserEntity userEntity = userRepository.findByUserEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+    if (userEntity == null) {
+        throw new EntityNotFoundException("사용자가 존재하지 않습니다.");
+    }
+    UserEntity otherUser = userRepository.findByUserNo(otherUserNo);
+    if (otherUser == null) {
+        throw new EntityNotFoundException("사용자가 존재하지 않습니다.");
+    }
+
+    // 나와 상대방이 1:1 채팅에 이미 참석하고 있다면 해당 roomId return
+    Optional<ChatRoom> chatRoom = chatParticipantRepository.findExistingPrivateRoom(userEntity.getUserNo(), otherUser.getUserNo());
+    if(chatRoom.isPresent()){
+      return chatRoom.get().getId();
+    }
+    // 만약 1:1 채팅방이 없을 경우 기존 채팅방 개설
+        ChatRoom newRoom = ChatRoom.builder()
+          .isGroupChat("N")
+          .roomName(userEntity.getUserNo() + "-" + otherUser.getUserNo())
+          .build();
+        chatRoomRepository.save(newRoom);
+    // 두 사람 모두 참여자로 새롭게 추가
+      addParticipantToRoom(newRoom, userEntity);
+      addParticipantToRoom(newRoom, otherUser);
+
+      return newRoom.getId();
   }
 }
