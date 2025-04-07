@@ -58,11 +58,10 @@ public class StompHandler implements ChannelInterceptor {
         throw new AuthenticationServiceException("유효하지 않은 토큰입니다.");
       }
 
-      Claims claims = jwtProvider.getClaims(token);
-      String email = claims.getSubject();
+      String userId = jwtProvider.getUserId(token);
       String roomId = accessor.getDestination().split("/")[2];
 
-      if (!chatService.isRoomPaticipant(email, Long.parseLong(roomId))) {
+      if (!chatService.isRoomPaticipant(userId, Long.parseLong(roomId))) {
         throw new AuthenticationServiceException("해당 방에 참여 권한이 없습니다.");
       }
     }
