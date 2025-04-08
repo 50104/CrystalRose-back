@@ -37,7 +37,8 @@ jobs:
             cd /home/ubuntu/CristalRose-back
             rm -rf src/main/resources/application.yml
             rm -rf src/main/resources/application-oauth2.yml
-            git pull origin main
+            git fetch origin
+            git reset --hard origin/main
             echo "$APPLICATION_YML" > src/main/resources/application.yml
             echo "$APPLICATION_OAUTH2_YML" > src/main/resources/application-oauth2.yml
             rm -rf ~/.gradle/caches/
