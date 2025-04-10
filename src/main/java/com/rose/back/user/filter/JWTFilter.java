@@ -32,18 +32,17 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String requestUri = request.getRequestURI(); // 재로그인, 무한로프 방지
-        log.debug("Request URI: {}", requestUri);
-        if (requestUri.matches("^\\/login(?:\\/.*)?$")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-        if (requestUri.matches("^\\/oauth2(?:\\/.*)?$")) {
+        log.info("Request URI: {}", requestUri);
+        if (requestUri.matches("^\\/login(?:\\/.*)?$") ||
+            requestUri.matches("^\\/oauth2(?:\\/.*)?$") ||
+            requestUri.matches("^\\/reissue$")) {
             filterChain.doFilter(request, response);
             return;
         }
 
+
         String accessToken = request.getHeader("access");
-        log.debug("Access token: {}", accessToken);
+        log.info("Access token: {}", accessToken);
 
         if (accessToken == null) {
             filterChain.doFilter(request, response);

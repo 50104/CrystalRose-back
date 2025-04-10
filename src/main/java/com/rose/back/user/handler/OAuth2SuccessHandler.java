@@ -35,10 +35,16 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String userNick = oAuth2User.getName();
         String userId = oAuth2User.getUsername();
         String userRole = auth.getAuthority();
-        String refresh = jwtProvider.create("refresh", userId, userRole, userNick, 24 * 60 * 60 * 1000L);
+        String refresh = jwtProvider.create("refresh", userId, userNick, userRole, 24 * 60 * 60 * 1000L);
         addRefreshEntity(userId, refresh, 86400000L);
 
-        response.addCookie(createCookie("refresh", refresh));
+        String cookieStr = "refresh=" + refresh
+                + "; Max-Age=" + (24 * 60 * 60)
+                + "; Path=/"
+                + "; HttpOnly"
+                + "; Secure"
+                + "; SameSite=None";
+        response.setHeader("Set-Cookie", cookieStr);
         response.sendRedirect("http://localhost:3000/getAccess");
     }
     
@@ -54,14 +60,5 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         refreshEntity.setRefresh(refresh);
         refreshEntity.setExpiration(date);
         refreshRepository.save(refreshEntity);
-    }
-
-    private Cookie createCookie(String key, String value) {
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(60 * 60 * 60);// 1시간
-        cookie.setPath("/");
-        cookie.setSecure(true);
-        cookie.setHttpOnly(true);
-        return cookie;
     }
 }

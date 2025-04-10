@@ -34,7 +34,7 @@ public class ReissueController implements ReissueControllerDocs{
     @PostMapping("/reissue")
     @Transactional
     public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
-        log.debug("Reissue started");
+        log.info("Reissue started");
         // refresh token 확인
         String refresh = null;
         Cookie[] cookies = request.getCookies();
@@ -45,11 +45,11 @@ public class ReissueController implements ReissueControllerDocs{
                 }
             }
         } else {
-            log.debug("No cookies");
+            log.info("No cookies");
             return new ResponseEntity<>("no cookies", HttpStatus.BAD_REQUEST);
         }
         if (refresh == null) {
-            log.debug("refresh null");
+            log.info("refresh null");
             return new ResponseEntity<>("refresh null", HttpStatus.BAD_REQUEST);
         }
 
@@ -57,7 +57,7 @@ public class ReissueController implements ReissueControllerDocs{
         try {
             jwtProvider.isExpired(refresh);
         } catch (ExpiredJwtException e) {
-            log.debug("refresh expired");
+            log.info("refresh expired");
             return new ResponseEntity<>("refresh expired", HttpStatus.BAD_REQUEST);
         }
 
@@ -65,14 +65,14 @@ public class ReissueController implements ReissueControllerDocs{
         String category = jwtProvider.getCategory(refresh);
 
         if (!"refresh".equals(category)) {
-            log.debug("Invalid refresh category");
+            log.info("Invalid refresh category");
             return new ResponseEntity<>("invalid refresh category", HttpStatus.BAD_REQUEST);
         }
     
         // DB 존재여부 확인
         Boolean isExist = refreshRepository.existsByRefresh(refresh);
         if (!isExist) {
-            log.debug("Invalid refresh database");
+            log.info("Invalid refresh database");
             return new ResponseEntity<>("invalid refresh database", HttpStatus.BAD_REQUEST);
         }
 
@@ -87,10 +87,20 @@ public class ReissueController implements ReissueControllerDocs{
         refreshRepository.deleteByRefresh(refresh);
         addRefreshEntity(userId, newRefresh, 24 * 60 * 60 * 1000L);
 
-        response.setHeader("access", newAccess);
-        response.addCookie(createCookie("refresh", newRefresh));
+        String cookieStr = "refresh=" + newRefresh
+                + "; Max-Age=" + (24 * 60 * 60)
+                + "; Path=/"
+                + "; HttpOnly"
+                + "; Secure"
+                + "; SameSite=None";
+        response.setHeader("Set-Cookie", cookieStr);
 
-        log.debug("reissue success: {}", userId);
+        response.setHeader("access", newAccess);
+        // response.addCookie(createCookie("refresh", newRefresh));
+
+        log.info("reissue success: {}", userId);
+        log.info("access token 재발급 성공: {}", newAccess);
+        log.info("refresh token 재발급 성공: {}", newRefresh);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -105,14 +115,6 @@ public class ReissueController implements ReissueControllerDocs{
         refreshEntity.setRefresh(refresh);
         refreshEntity.setExpiration(date);
         refreshRepository.save(refreshEntity);
-        log.debug("new refresh: {}", userId);
-    }
-
-    private Cookie createCookie(String key, String value) {
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(24 * 60 * 60);
-        cookie.setHttpOnly(true);
-        log.debug("Cookie created: {}={}", key, value);
-        return cookie;
+        log.info("new refresh: {}", userId);
     }
 }

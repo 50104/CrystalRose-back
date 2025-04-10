@@ -40,7 +40,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException { 
         String userId = obtainUsername(request);
         String userPwd = obtainPassword(request);
-        log.debug("Attempting authentication for user: {}", userId);
+        log.info("Attempting authentication for user: {}", userId);
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(userId, userPwd); 
         return authenticationManager.authenticate(token);
     }
@@ -66,7 +66,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.setHeader("access", access);
         response.addCookie(createCookie("refresh", refresh));
         response.setStatus(HttpStatus.OK.value());
-        log.debug("Authentication successful for user: {}", userId);
+        log.info("Authentication successful for user: {}", userId);
         System.out.println("ooo");
     }
     
@@ -88,7 +88,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
         response.setStatus(401);
-        log.debug("Authentication failed: {}", failed.getMessage());
+        log.info("Authentication failed: {}", failed.getMessage());
         System.out.println("xxx");
     }
     
