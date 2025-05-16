@@ -1,0 +1,22 @@
+package com.rose.back.common.constants;
+
+public enum ResponseCode {
+    SUCCESS("SU"),
+    VALIDATION_FAIL("VF"),
+    DUPLICATE_ID("DI"),
+    DUPLICATE_EMAIL("DE"),
+    SIGN_IN_FAIL("SF"),
+    CERTIFICATION_FAIL("CF"),
+    MAIL_FAIL("MF"),
+    DATABASE_ERROR("DBE");
+
+    private final String code;
+
+    ResponseCode(String code) {
+        this.code = code;
+    }
+
+    public String getCode() {
+        return code;
+    }
+}
