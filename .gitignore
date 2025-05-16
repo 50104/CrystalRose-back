@@ -46,3 +46,6 @@ application-oauth2.yml
 gradle/.DS_Store
 src/.DS_Store
 src/main/.DS_Store
+
+# 특정 테스트 디렉토리 무시
+/src/test/java/com/rose/back/test/

@@ -12,8 +12,8 @@ import java.util.*;
 
 import lombok.RequiredArgsConstructor;
 
-@RestController
 // @RequestMapping("/")
+@RestController
 @RequiredArgsConstructor
 public class AdminController implements AdminControllerDocs{
 
