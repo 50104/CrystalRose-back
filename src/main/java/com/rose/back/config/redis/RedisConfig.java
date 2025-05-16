@@ -69,4 +69,10 @@ public class RedisConfig {
     // RedisPubSubService의 특정 메서드가 수신된 메세지를 처리할 수 있도록 지정
     return new MessageListenerAdapter(redisPubSubService, "onMessage");
   }
+
+  // JWT 관련 RedisTemplate (key-value 저장)
+  @Bean
+  public StringRedisTemplate jwtRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
+    return new StringRedisTemplate(redisConnectionFactory);
+  }
 }

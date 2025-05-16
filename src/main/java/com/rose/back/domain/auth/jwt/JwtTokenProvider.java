@@ -43,34 +43,37 @@ public class JwtTokenProvider {
     }
 
     public Claims getClaims(String token) {
-    return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload();
-  }
+        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload();
+    }
 
     public String getUserId(String token) {
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("userId", String.class);
+        return getClaims(token).get("userId", String.class);
     }
 
     public String getUserRole(String token) {
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("userRole", String.class);
+        return getClaims(token).get("userRole", String.class);
     }
 
     public String getUserNick(String token) {
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("userNick", String.class);
+        return getClaims(token).get("userNick", String.class);
     }
 
     public String getCategory(String token) {
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("category", String.class);
+        return getClaims(token).get("category", String.class);
     }
 
-    public Boolean isExpired(String token) {
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
+    public void validateExpiration(String token) throws ExpiredJwtException {
+        Date expiration = getClaims(token).getExpiration();
+        if (expiration.before(new Date())) {
+            throw new ExpiredJwtException(null, null, "JWT has expired");
+        }
     }
 
     // 토큰의 유효성을 검사
     public boolean validateToken(String token) {
         log.info("JWT Secret during validation: {}", secretKey); 
         try {
-            Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token);
+            getClaims(token);
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
             log.info("잘못된 JWT 서명입니다.");
@@ -82,5 +85,11 @@ public class JwtTokenProvider {
             log.info("JWT 토큰이 잘못되었습니다.");
         }
         return false;
+    }
+
+    // 토큰 만료시간 계산
+    public long getExpiration(String token) {
+        Date expiration = getClaims(token).getExpiration();
+        return expiration.getTime() - System.currentTimeMillis();
     }
 }

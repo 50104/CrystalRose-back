@@ -27,7 +27,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import com.rose.back.domain.auth.jwt.JwtTokenProvider;
 import com.rose.back.domain.auth.oauth2.CustomOAuth2UserService;
 import com.rose.back.domain.auth.oauth2.CustomUserDetailsService;
-import com.rose.back.domain.user.repository.RefreshRepository;
+import com.rose.back.domain.auth.service.AccessTokenBlacklistService;
+import com.rose.back.domain.auth.service.RefreshTokenService;
 import com.rose.back.global.filter.CustomLogoutFilter;
 import com.rose.back.global.filter.JWTFilter;
 import com.rose.back.global.filter.LoginFilter;
@@ -52,7 +53,8 @@ public class WebSecurityConfig {
     private final CustomOAuth2UserService oAuth2UserServiceImplement;
     private final CustomUserDetailsService customUserDetailsService;
     private final JwtTokenProvider jwtProvider;
-    private final RefreshRepository refreshRepository;
+    private final RefreshTokenService refreshTokenService;
+    private final AccessTokenBlacklistService accessTokenBlacklistService;
 
     @Bean
     AuthenticationManager authenticationManager() {
@@ -93,9 +95,9 @@ public class WebSecurityConfig {
             .exceptionHandling(exceptionHandling -> exceptionHandling
                 .authenticationEntryPoint(new FailedAuthenticationEntryPoint()) // 인증 실패 핸들러 설정
             )
-            .addFilterAt(new LoginFilter(authenticationManager(), jwtProvider, refreshRepository), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(new JWTFilter(jwtProvider), LoginFilter.class) // JWT 인증 필터 추가
-            .addFilterBefore(new CustomLogoutFilter(jwtProvider, refreshRepository), LogoutFilter.class)
+            .addFilterAt(new LoginFilter(authenticationManager(), jwtProvider, refreshTokenService), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(new JWTFilter(jwtProvider, accessTokenBlacklistService), LoginFilter.class) // JWT 인증 필터 추가
+            .addFilterBefore(new CustomLogoutFilter(jwtProvider, refreshTokenService, accessTokenBlacklistService), LogoutFilter.class)
             .csrf((auth) -> auth.disable())
             .formLogin((auth) -> auth.disable())
             .httpBasic((auth) -> auth.disable());

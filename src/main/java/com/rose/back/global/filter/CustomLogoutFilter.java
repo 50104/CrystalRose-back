@@ -12,7 +12,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
 
 import com.rose.back.domain.auth.jwt.JwtTokenProvider;
-import com.rose.back.domain.user.repository.RefreshRepository;
+import com.rose.back.domain.auth.service.AccessTokenBlacklistService;
+import com.rose.back.domain.auth.service.RefreshTokenService;
 
 import java.io.IOException;
 
@@ -20,11 +21,13 @@ import java.io.IOException;
 public class CustomLogoutFilter extends GenericFilterBean {
     
     private final JwtTokenProvider jwtProvider;
-    private final RefreshRepository refreshRepository;
+    private final RefreshTokenService refreshTokenService;
+    private final AccessTokenBlacklistService accessTokenBlacklistService; 
 
-    public CustomLogoutFilter(JwtTokenProvider jwtProvider, RefreshRepository refreshRepository) {
+    public CustomLogoutFilter(JwtTokenProvider jwtProvider, RefreshTokenService refreshTokenService, AccessTokenBlacklistService accessTokenBlacklistService) {
         this.jwtProvider = jwtProvider;
-        this.refreshRepository = refreshRepository;
+        this.refreshTokenService = refreshTokenService;
+        this.accessTokenBlacklistService = accessTokenBlacklistService;
     }
 
     @Override
@@ -33,14 +36,24 @@ public class CustomLogoutFilter extends GenericFilterBean {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
         String requestUri = httpRequest.getRequestURI(); // 로그아웃 요청이 아닌 경우
-        if (!requestUri.matches("^\\/logout$")) {
+        String requestMethod = httpRequest.getMethod(); // 로그아웃 POST 요청(refresh token 전달)
+
+        // 로그아웃 요청이 확정된 이후
+        if (!"/logout".equals(requestUri) || !"POST".equals(requestMethod)) {
             chain.doFilter(request, response);
             return;
         }
-        String requestMethod = httpRequest.getMethod(); // 로그아웃 POST 요청(refresh token 전달)
-        if (!requestMethod.equals("POST")) {
-            chain.doFilter(request, response);
-            return;
+
+        // AccessToken 헤더에서 추출
+        String accessToken = httpRequest.getHeader("access");
+        if (accessToken != null) {
+            try {
+                jwtProvider.validateExpiration(accessToken); // 만료되었으면 예외 발생
+                long exp = jwtProvider.getExpiration(accessToken);
+                accessTokenBlacklistService.blacklist(accessToken, exp);
+            } catch (ExpiredJwtException ignored) {
+                // 이미 만료된 경우 블랙리스트 안 해도 됨
+            }
         }
 
         // refresh token 확인
@@ -53,49 +66,32 @@ public class CustomLogoutFilter extends GenericFilterBean {
                 }
             }
         }
+
         if (refresh == null) {
             httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
 
-        // 토큰 만료 확인
         try {
-            if (jwtProvider.isExpired(refresh)) {
-                httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                return;
-            }
+            jwtProvider.validateExpiration(refresh); // 만료된 경우 예외 발생
         } catch (ExpiredJwtException e) {
             httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
-        } catch (Exception e) {
-            httpResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            return;
         }
 
-        // 토큰 카테고리 확인
-        try {
-            String category = jwtProvider.getCategory(refresh);
-            if (!"refresh".equals(category)) {
-                httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                return;
-            }
-        } catch (Exception e) {
-            httpResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            return;
-        }
-
-        // DB 존재여부 확인
-        boolean isExist = refreshRepository.existsByRefresh(refresh);
-        if (!isExist) {
+        if (!"refresh".equals(jwtProvider.getCategory(refresh))) {
             httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
 
-        // Refresh 토큰 DB에서 제거
-        refreshRepository.deleteByRefresh(refresh);
+        String userId = jwtProvider.getUserId(refresh);
+        refreshTokenService.delete(userId); // Redis에서 삭제
 
         Cookie cookie = new Cookie("refresh", null);
         cookie.setMaxAge(0);
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
         cookie.setPath("/");
 
         httpResponse.addCookie(cookie);

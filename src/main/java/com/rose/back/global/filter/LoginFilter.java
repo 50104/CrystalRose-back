@@ -15,8 +15,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.rose.back.domain.auth.jwt.JwtTokenProvider;
 import com.rose.back.domain.auth.oauth2.CustomUserDetails;
-import com.rose.back.domain.user.entity.RefreshEntity;
-import com.rose.back.domain.user.repository.RefreshRepository;
+import com.rose.back.domain.auth.service.RefreshTokenService;
 
 import java.io.IOException;
 import java.util.*;
@@ -27,12 +26,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtProvider;
-    private final RefreshRepository refreshRepository;
+    private final RefreshTokenService refreshTokenService;
 
-    public LoginFilter(AuthenticationManager authenticationManager, JwtTokenProvider jwtProvider, RefreshRepository refreshRepository) {
+    public LoginFilter(AuthenticationManager authenticationManager, JwtTokenProvider jwtProvider, RefreshTokenService refreshTokenService) {
         this.authenticationManager = authenticationManager;
         this.jwtProvider = jwtProvider;
-        this.refreshRepository = refreshRepository;
+        this.refreshTokenService = refreshTokenService;
     }
 
     // 로그인 요청
@@ -54,34 +53,19 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         //역할은 Collection 으로 저장되어있음
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-        Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
-        GrantedAuthority auth = iterator.next();
-        
-        String userRole = auth.getAuthority();
+        String userRole = authorities.iterator().next().getAuthority();
         String userNick = customUserDetails.getUserNick();
+
         String access = jwtProvider.create("access", userId, userRole, userNick, 30*60*1000L); // 30분
         String refresh = jwtProvider.create("refresh", userId, userRole, userNick, 24*60*60*1000L); // 1일
-        addRefreshEntity(userId, refresh, 86400000L); // 1일
+
+        refreshTokenService.delete(userId);
+        refreshTokenService.save(userId, refresh, 24 * 60 * 60 * 1000L);
 
         response.setHeader("access", access);
         response.addCookie(createCookie("refresh", refresh));
         response.setStatus(HttpStatus.OK.value());
         log.info("Authentication successful for user: {}", userId);
-        System.out.println("ooo");
-    }
-    
-    // Refresh 토큰 저장
-    private void addRefreshEntity(String userId, String refresh, Long expiredMs) {
-        List<RefreshEntity> existingTokens = refreshRepository.findByUserId(userId);
-        if (!existingTokens.isEmpty()) {
-            refreshRepository.deleteAll(existingTokens);
-        }
-        Date date = new Date(System.currentTimeMillis() + expiredMs);
-        RefreshEntity refreshEntity = new RefreshEntity();
-        refreshEntity.setUserId(userId);
-        refreshEntity.setRefresh(refresh);
-        refreshEntity.setExpiration(date);
-        refreshRepository.save(refreshEntity);
     }
 
     //로그인 실패
@@ -89,13 +73,15 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
         response.setStatus(401);
         log.info("Authentication failed: {}", failed.getMessage());
-        System.out.println("xxx");
     }
     
     private Cookie createCookie(String key, String value) {
         Cookie cookie = new Cookie(key, value);
         cookie.setMaxAge(24*60*60);
         cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setAttribute("SameSite", "None");
         return cookie;
     }
 

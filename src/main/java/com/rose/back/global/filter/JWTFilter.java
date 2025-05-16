@@ -13,21 +13,26 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.rose.back.domain.auth.jwt.JwtTokenProvider;
 import com.rose.back.domain.auth.oauth2.CustomUserDetails;
+import com.rose.back.domain.auth.service.AccessTokenBlacklistService;
 import com.rose.back.domain.user.dto.UserInfoDto;
 
 import io.jsonwebtoken.ExpiredJwtException;
 
 import java.io.IOException;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class JWTFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtProvider;
+    private final AccessTokenBlacklistService accessTokenBlacklistService;
+
+    public JWTFilter(JwtTokenProvider jwtProvider, AccessTokenBlacklistService accessTokenBlacklistService) {
+        this.jwtProvider = jwtProvider;
+        this.accessTokenBlacklistService = accessTokenBlacklistService;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -48,10 +53,17 @@ public class JWTFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+
+        // 블랙리스트 확인
+        if (accessTokenBlacklistService.isBlacklisted(accessToken)) {
+            log.info("Access token is blacklisted");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
     
         // 토큰 만료 확인
         try {
-            jwtProvider.isExpired(accessToken);
+            jwtProvider.validateExpiration(accessToken);
         } catch (ExpiredJwtException e) {
             log.info("access token expired");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
