@@ -2,6 +2,7 @@ package com.rose.back.domain.auth.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import com.rose.back.domain.auth.controller.docs.AuthControllerDocs;
 import com.rose.back.domain.auth.service.AuthService;
 import com.rose.back.domain.user.dto.UserInfoDto;
 import com.rose.back.domain.user.dto.request.EmailVerifyRequest;
@@ -10,15 +11,21 @@ import com.rose.back.domain.user.dto.request.IdCheckRequest;
 import com.rose.back.domain.user.dto.response.EmailVerifyResponse;
 import com.rose.back.domain.user.dto.response.EmailSendResponse;
 import com.rose.back.domain.user.dto.response.IdCheckResponse;
+
 import com.rose.back.domain.user.dto.response.CommonResponse;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import lombok.extern.slf4j.Slf4j;
 
@@ -93,5 +100,10 @@ public class AuthController implements AuthControllerDocs{
 
         log.info("비밀번호 초기화 컨트롤러 실행");
         return authService.resetUserPwd(request.getUserEmail(), request.getUserId());
+    }
+
+    @PostMapping("/withdraw")
+    public ResponseEntity<?> withdraw(HttpServletRequest request, HttpServletResponse response, @RequestBody Map<String, String> body) {
+        return authService.withdraw(request, response, body);
     }
 }

@@ -26,9 +26,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.rose.back.domain.auth.jwt.JwtTokenProvider;
 import com.rose.back.domain.auth.oauth2.CustomOAuth2UserService;
-import com.rose.back.domain.auth.oauth2.CustomUserDetailsService;
 import com.rose.back.domain.auth.service.AccessTokenBlacklistService;
+import com.rose.back.domain.auth.service.CustomUserDetailsService;
 import com.rose.back.domain.auth.service.RefreshTokenService;
+import com.rose.back.domain.user.repository.UserRepository;
 import com.rose.back.global.filter.CustomLogoutFilter;
 import com.rose.back.global.filter.JWTFilter;
 import com.rose.back.global.filter.LoginFilter;
@@ -55,6 +56,7 @@ public class WebSecurityConfig {
     private final JwtTokenProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
     private final AccessTokenBlacklistService accessTokenBlacklistService;
+    private final UserRepository userRepository;
 
     @Bean
     AuthenticationManager authenticationManager() {
@@ -83,6 +85,7 @@ public class WebSecurityConfig {
                 .requestMatchers("/", "/login", "/join", "/connect/**", "/reissue", "/api/v1/auth/**", "/oauth2/**").permitAll() // 특정 URL 패턴에 대한 접근 권한 설정
                 .requestMatchers("/api/v1/user/**").hasRole("USER") // 특정 URL 패턴에 대한 접근 권한 설정 (USER 역할 필요)
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN") // 특정 URL 패턴에 대한 접근 권한 설정 (ADMIN 역할 필요)
+                .requestMatchers("/api/v1/auth/withdraw/**").authenticated()
                 .anyRequest().permitAll() // 모든 요청에 대해 인증이 필요함
             )
             .oauth2Login(oauth2 -> oauth2
@@ -95,7 +98,7 @@ public class WebSecurityConfig {
             .exceptionHandling(exceptionHandling -> exceptionHandling
                 .authenticationEntryPoint(new FailedAuthenticationEntryPoint()) // 인증 실패 핸들러 설정
             )
-            .addFilterAt(new LoginFilter(authenticationManager(), jwtProvider, refreshTokenService), UsernamePasswordAuthenticationFilter.class)
+            .addFilterAt(new LoginFilter(authenticationManager(), jwtProvider, refreshTokenService, userRepository), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(new JWTFilter(jwtProvider, accessTokenBlacklistService), LoginFilter.class) // JWT 인증 필터 추가
             .addFilterBefore(new CustomLogoutFilter(jwtProvider, refreshTokenService, accessTokenBlacklistService), LogoutFilter.class)
             .csrf((auth) -> auth.disable())

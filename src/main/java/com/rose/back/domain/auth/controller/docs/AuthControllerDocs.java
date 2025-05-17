@@ -1,11 +1,16 @@
-package com.rose.back.domain.auth.controller;
+package com.rose.back.domain.auth.controller.docs;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import com.rose.back.domain.user.dto.UserInfoDto;
 import com.rose.back.domain.user.dto.request.EmailVerifyRequest;
@@ -24,6 +29,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import com.rose.back.global.exception.ErrorResponse;
+import com.rose.back.global.exception.JwtReissueErrorResponses;
 
 @Tag(name = "Auth", description = "Auth 관련 API입니다.")
 public interface AuthControllerDocs {
@@ -202,4 +208,11 @@ public interface AuthControllerDocs {
         )
     })
     ResponseEntity<?> findUserPwd(@RequestBody EmailSendRequest request);
+
+    @Operation(summary = "회원 탈퇴", description = "회원 탈퇴(회원 정보 삭제 및 토큰 무효화)를 수행합니다.")
+    @JwtReissueErrorResponses
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "회원 탈퇴 성공")
+    })
+    ResponseEntity<?> withdraw(HttpServletRequest request, HttpServletResponse response, @RequestBody Map<String, String> body);
 }
