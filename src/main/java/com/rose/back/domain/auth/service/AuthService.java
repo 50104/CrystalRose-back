@@ -33,4 +33,6 @@ public interface AuthService {
     ResponseEntity<? super CommonResponse> resetUserPwd(String userEmail, String userId); // 비밀번호 초기화
     
     ResponseEntity<?> withdraw(HttpServletRequest request, HttpServletResponse response, Map<String, String> body);
+    
+    ResponseEntity<?> cancelWithdraw(String accessToken, HttpServletResponse response);
 }

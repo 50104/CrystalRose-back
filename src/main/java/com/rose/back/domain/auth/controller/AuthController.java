@@ -106,4 +106,9 @@ public class AuthController implements AuthControllerDocs{
     public ResponseEntity<?> withdraw(HttpServletRequest request, HttpServletResponse response, @RequestBody Map<String, String> body) {
         return authService.withdraw(request, response, body);
     }
+
+    @PutMapping("/withdraw/cancel")
+    public ResponseEntity<?> cancelWithdraw(@RequestHeader("access") String accessToken, HttpServletResponse response) {
+        return authService.cancelWithdraw(accessToken, response);
+    }
 }

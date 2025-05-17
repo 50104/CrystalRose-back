@@ -291,4 +291,22 @@ public class AuthServiceImpl implements AuthService {
         emailService.sendWithdrawalNotice(user.getUserEmail(), user.getUserNick());
         log.info("탈퇴 요청: 유저 {}({})가 탈퇴 요청을 하였습니다.", user.getUserNick(), userId);
     }
+
+    // 회원 탈퇴 예약 철회
+    public ResponseEntity<?> cancelWithdraw(String accessToken, HttpServletResponse response) {
+        String userId = jwtProvider.getUserId(accessToken);
+        UserEntity user = authRepository.findByUserId(userId);
+
+        if (user.getReservedDeleteAt() == null) {
+            return ResponseEntity.badRequest().body("탈퇴 요청 상태가 아닙니다.");
+        }
+
+        user.setReservedDeleteAt(null);
+        user.setUserStatus(UserStatus.ACTIVE);
+        authRepository.saveAndFlush(user);
+
+        refreshTokenService.delete(userId); // 기존 토큰 무효화, 재로그인 요구, access 제거
+
+        return ResponseEntity.ok().body("탈퇴 철회가 완료되었습니다. 다시 로그인해주세요.");
+    }
 }

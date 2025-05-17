@@ -215,4 +215,11 @@ public interface AuthControllerDocs {
         @ApiResponse(responseCode = "204", description = "회원 탈퇴 성공")
     })
     ResponseEntity<?> withdraw(HttpServletRequest request, HttpServletResponse response, @RequestBody Map<String, String> body);
+
+    @Operation(summary = "회원 탈퇴 철회", description = "회원 탈퇴 예약을 철회합니다.")
+    @JwtReissueErrorResponses
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "회원 탈퇴 철회 성공")
+    })
+    ResponseEntity<?> cancelWithdraw(@RequestHeader("access") String accessToken, HttpServletResponse response);
 }

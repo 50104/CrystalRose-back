@@ -1,11 +1,13 @@
-package com.rose.back.domain.auth.oauth2;
+package com.rose.back.domain.auth.service;
 
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.rose.back.domain.auth.oauth2.CustomUserDetails;
 import com.rose.back.domain.user.dto.UserInfoDto;
 import com.rose.back.domain.user.entity.UserEntity;
 import com.rose.back.domain.user.repository.UserRepository;
@@ -22,6 +24,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         if (user == null) {
             throw new UsernameNotFoundException("User not found with username: " + username);
         }
+        
         UserInfoDto userDto = UserInfoDto.builder()
                 .userName(user.getUserId())
                 .userPwd(user.getUserPwd())
