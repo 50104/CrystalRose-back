@@ -1,4 +1,4 @@
-package com.rose.back.domain.board.content.dto;
+package com.rose.back.domain.board.dto;
 
 import java.time.LocalDateTime;
 

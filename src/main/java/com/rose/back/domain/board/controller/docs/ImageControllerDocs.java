@@ -1,4 +1,4 @@
-package com.rose.back.domain.board.content.controller.docs;
+package com.rose.back.domain.board.controller.docs;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

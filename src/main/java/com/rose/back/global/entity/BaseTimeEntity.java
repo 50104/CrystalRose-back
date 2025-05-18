@@ -1,4 +1,4 @@
-package com.rose.back.domain.board.content.entity;
+package com.rose.back.global.entity;
 
 import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;

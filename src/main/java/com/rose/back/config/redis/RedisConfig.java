@@ -71,7 +71,7 @@ public class RedisConfig {
   }
 
   // JWT 관련 RedisTemplate (key-value 저장)
-  @Bean
+  @Bean(name = "jwtRedisTemplate")
   public StringRedisTemplate jwtRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
     return new StringRedisTemplate(redisConnectionFactory);
   }

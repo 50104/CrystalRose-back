@@ -1,5 +1,6 @@
-package com.rose.back.domain.board.content.controller;
+package com.rose.back.domain.board.controller;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,9 +13,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.rose.back.infra.file.ImageService;
+import com.rose.back.domain.board.service.ImageService;
 
-import io.jsonwebtoken.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,7 +35,7 @@ public class ImageController {
         }
         Map<String, Object> responseData = new HashMap<>();
         try {
-            String s3Url = imageService.imageUpload(file);
+            String s3Url = imageService.uploadBoardImage(file);
             responseData.put("uploaded", true);
             responseData.put("url", s3Url);
             return ResponseEntity.ok(responseData);

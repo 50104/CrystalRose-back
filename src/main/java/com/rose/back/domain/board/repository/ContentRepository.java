@@ -1,8 +1,8 @@
-package com.rose.back.domain.board.content.repository;
+package com.rose.back.domain.board.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.rose.back.domain.board.content.entity.ContentEntity;
+import com.rose.back.domain.board.entity.ContentEntity;
 
 import java.util.*;
 

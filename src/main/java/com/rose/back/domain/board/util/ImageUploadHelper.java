@@ -1,22 +1,24 @@
-package com.rose.back.infra.file;
+package com.rose.back.domain.board.util;
 
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.rose.back.domain.board.content.entity.Board;
+import com.rose.back.domain.board.entity.ImageEntity;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 @Component
-public class ImageUploadUtil {
-    public List<Board> parseFileInfo(Long boardID, List<MultipartFile> multipartFiles) throws Exception {
+public class ImageUploadHelper {
+
+    public List<ImageEntity> parseFileInfo(Long boardID, List<MultipartFile> multipartFiles) throws IOException {
         // 반환을 할 파일 리스트
-        List<Board> fileList = new ArrayList<>();
+        List<ImageEntity> fileList = new ArrayList<>();
 
         // 파일 이름을 업로드 한 날짜로 변경 후 저장
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd");
@@ -64,7 +66,7 @@ public class ImageUploadUtil {
                 // 각 이름은 겹치면 안되므로 나노 초까지 동원하여 지정
                 String new_file_name = System.nanoTime() + originalFileExtension;
                 // 생성 후 리스트에 추가
-                Board board = Board.builder()
+                ImageEntity board = ImageEntity.builder()
                         .boardIdx(boardID)
                         .originalFileName(multipartFile.getOriginalFilename())
                         .storedFileName(path + "/" + new_file_name)

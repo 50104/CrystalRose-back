@@ -1,11 +1,11 @@
-package com.rose.back.domain.board.content.service;
+package com.rose.back.domain.board.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.rose.back.domain.board.content.dto.ContentRequestDto;
-import com.rose.back.domain.board.content.entity.ContentEntity;
-import com.rose.back.domain.board.content.repository.ContentRepository;
+import com.rose.back.domain.board.dto.ContentRequestDto;
+import com.rose.back.domain.board.entity.ContentEntity;
+import com.rose.back.domain.board.repository.ContentRepository;
 
 import java.util.*;
 

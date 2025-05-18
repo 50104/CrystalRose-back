@@ -3,7 +3,7 @@ package com.rose.back.domain.chat.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.rose.back.domain.board.content.entity.BaseTimeEntity;
+import com.rose.back.global.entity.BaseTimeEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

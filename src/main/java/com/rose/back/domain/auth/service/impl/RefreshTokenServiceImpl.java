@@ -2,19 +2,21 @@ package com.rose.back.domain.auth.service.impl;
 
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.rose.back.domain.auth.service.RefreshTokenService;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class RefreshTokenServiceImpl implements RefreshTokenService {
 
-    private final StringRedisTemplate jwtRedisTemplate;
     private static final String REFRESH_PREFIX = "RT:";
+    private final StringRedisTemplate jwtRedisTemplate;
+
+    public RefreshTokenServiceImpl(@Qualifier("jwtRedisTemplate") StringRedisTemplate jwtRedisTemplate) {
+        this.jwtRedisTemplate = jwtRedisTemplate;
+    }
 
     @Override
     public void save(String userId, String refreshToken, long expirationMillis) {

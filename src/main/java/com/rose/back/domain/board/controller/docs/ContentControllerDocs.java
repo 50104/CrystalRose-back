@@ -1,4 +1,4 @@
-package com.rose.back.domain.board.content.controller.docs;
+package com.rose.back.domain.board.controller.docs;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -9,7 +9,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.rose.back.domain.board.content.dto.ContentRequestDto;
+import com.rose.back.domain.board.dto.ContentRequestDto;
 import com.rose.back.global.exception.CommonErrorResponses;
 import com.rose.back.global.exception.ImageUploadErrorResponses;
 

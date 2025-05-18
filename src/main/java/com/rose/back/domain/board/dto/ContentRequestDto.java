@@ -1,4 +1,4 @@
-package com.rose.back.domain.board.content.dto;
+package com.rose.back.domain.board.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

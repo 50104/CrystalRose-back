@@ -1,7 +1,7 @@
 package com.rose.back.domain.chat.entity;
 
-import com.rose.back.domain.board.content.entity.BaseTimeEntity;
 import com.rose.back.domain.user.entity.UserEntity;
+import com.rose.back.global.entity.BaseTimeEntity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

@@ -1,4 +1,4 @@
-package com.rose.back.domain.board.content.controller;
+package com.rose.back.domain.board.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -7,10 +7,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.rose.back.domain.board.content.dto.ContentRequestDto;
-import com.rose.back.domain.board.content.entity.Board;
-import com.rose.back.domain.board.content.service.BoardService;
-import com.rose.back.domain.board.content.service.ContentService;
+import com.rose.back.domain.board.dto.ContentRequestDto;
+import com.rose.back.domain.board.entity.ImageEntity;
+import com.rose.back.domain.board.service.ContentService;
+import com.rose.back.domain.board.service.ImageService;
 
 import java.util.*;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ContentController {
 
-    private final BoardService boardService;
+    private final ImageService imageService;
     private final ContentService contentService;
 
     @GetMapping("/editor")
@@ -134,7 +134,7 @@ public class ContentController {
     ) throws Exception {
         log.info("[POST][/board] - 게시판 생성 컨트롤러, 파일 개수: {}", files.size());
         try {
-            boardService.addBoard(Board.builder().build(), files);
+            imageService.saveImagesForBoard(ImageEntity.builder().build(), files);
             Map<String, String> response = new HashMap<>();
             response.put("message", "게시판 생성 성공");
             return ResponseEntity.ok().body(response);
@@ -150,8 +150,8 @@ public class ContentController {
     public ResponseEntity<Map<String, Object>> getBoard(@RequestParam long id) {
         log.info("[GET][/board] - 게시판 조회 컨트롤러, ID: {}", id);
         try {
-            Board board = boardService.findBoard(id).orElseThrow(() -> new RuntimeException("게시판을 찾을 수 없습니다."));
-            String imgPath = board.getStoredFileName();
+            ImageEntity imageEntity = imageService.findBoard(id).orElseThrow(() -> new RuntimeException("게시판을 찾을 수 없습니다."));
+            String imgPath = imageEntity.getStoredFileName();
             log.info("저장된 이미지 경로: {}", imgPath);
             Map<String, Object> response = new HashMap<>();
             response.put("imgPath", imgPath);

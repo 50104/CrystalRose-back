@@ -1,4 +1,4 @@
-package com.rose.back.domain.board.content.entity;
+package com.rose.back.domain.board.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
