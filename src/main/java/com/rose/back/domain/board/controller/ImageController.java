@@ -28,14 +28,14 @@ public class ImageController {
 
     @ResponseBody
     @PostMapping("/upload")
-    public ResponseEntity<Map<String, Object>> imageUpload(@RequestParam("file") MultipartFile file) throws Exception {
+    public ResponseEntity<Map<String, Object>> imageUpload(@RequestParam("file") MultipartFile file, Long boardNo) throws Exception {
         log.info("[POST][/image/upload] - 이미지 업로드 컨트롤러: {}", file);
         if (file == null || file.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("error", "파일 누락"));
         }
         Map<String, Object> responseData = new HashMap<>();
         try {
-            String s3Url = imageService.uploadBoardImage(file);
+            String s3Url = imageService.saveImageS3(file, boardNo);
             responseData.put("uploaded", true);
             responseData.put("url", s3Url);
             return ResponseEntity.ok(responseData);

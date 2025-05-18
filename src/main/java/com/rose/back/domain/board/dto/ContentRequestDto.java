@@ -1,5 +1,9 @@
 package com.rose.back.domain.board.dto;
 
+import java.util.List;
+
+import org.springframework.web.multipart.MultipartFile;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -18,4 +22,6 @@ public class ContentRequestDto{
 
     @NotBlank(message = "[NotBlank] 사용자 ID ") 
     private String userId;
+
+    private List<MultipartFile> images;
 }

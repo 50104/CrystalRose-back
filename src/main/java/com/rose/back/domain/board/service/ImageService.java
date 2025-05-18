@@ -1,24 +1,24 @@
 package com.rose.back.domain.board.service;
 
+import com.rose.back.domain.board.entity.ContentEntity;
 import com.rose.back.domain.board.entity.ImageEntity;
+import com.rose.back.domain.board.entity.ImageTempEntity;
+import com.rose.back.domain.board.repository.ContentRepository;
 import com.rose.back.domain.board.repository.ImageRepository;
-import com.rose.back.domain.board.util.ImageUploadHelper;
+import com.rose.back.domain.board.repository.ImageTempRepository;
 import com.rose.back.infra.S3.S3Uploader;
 
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.NoSuchElementException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,15 +26,16 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class ImageService {
-
-    private final ImageRepository imageRepository;
-    private final ImageUploadHelper imageUploadHelper;
+  
     private final S3Uploader s3Uploader;
+    private final ImageTempRepository imageTempRepository;
+    private final ImageRepository imageRepository;
+    private final ContentRepository contentRepository;
 
     @Value("${img.upload-dir}")
     private String imgDir;
 
-    public String uploadBoardImage(MultipartFile file) throws IOException {
+    public String saveImageS3(MultipartFile file, Long boardNo) throws IOException {
         if (file.isEmpty()) {
             throw new IOException("파일이 없습니다.");
         }
@@ -42,45 +43,43 @@ public class ImageService {
         if (fileName == null || !fileName.contains(".")) {
             throw new IOException("파일명 오류: 확장자가 없습니다.");
         }
-        String ext = fileName.substring(fileName.lastIndexOf("."));
-        String uuidFileName = UUID.randomUUID() + ext;
-
-        Path uploadDir = Paths.get(imgDir).toAbsolutePath();
-        if (!Files.exists(uploadDir)) {
-            Files.createDirectories(uploadDir);
-        }
-        Path filePath = uploadDir.resolve(uuidFileName);
-        file.transferTo(filePath.toFile());
         try {
-            String s3Url = s3Uploader.uploadFile(filePath);
-            Files.delete(filePath);
-            return s3Url;
+            String fileUrl = s3Uploader.uploadFile(file, boardNo);
+
+            imageTempRepository.save(ImageTempEntity.builder()
+                .fileUrl(fileUrl)
+                .uploadedAt(new Date())
+                .build());
+
+            return fileUrl;
         } catch (Exception e) {
             log.error("S3 업로드 실패", e); // 전체 스택 출력
             throw new IOException("S3 업로드 실패: " + e.getMessage());
         }
     }
 
-    public List<ImageEntity> saveImagesForBoard(ImageEntity imageEntity, List<MultipartFile> files) throws Exception {
-        // 파일을 저장하고 그 Board 에 대한 list 를 가지고 있는다
-        List<ImageEntity> list = imageUploadHelper.parseFileInfo(imageEntity.getId(), files);
+    @Transactional
+    public void saveImageEntity(Long boardNo, MultipartFile file, String fileUrl) {
+        ContentEntity content = contentRepository.findById(boardNo)
+            .orElseThrow(() -> new NoSuchElementException("게시글이 존재하지 않음: " + boardNo));
 
-        if (list.isEmpty()){
-            return new ArrayList<>(); // 파일 없을 경우 빈 리스트 반환
-        } else { // 파일에 대해 DB에 저장하고 가지고 있을 것
-            List<ImageEntity> pictureBeans = new ArrayList<>();
-            for (ImageEntity boards : list) {
-                pictureBeans.add(imageRepository.save(boards));
-            }
-            return pictureBeans; // 저장한 목록 반환
+        ImageEntity image = ImageEntity.builder()
+            .originalFileName(file.getOriginalFilename())
+            .storedFileName(fileUrl.substring(fileUrl.lastIndexOf("/") + 1))
+            .fileUrl(fileUrl)
+            .fileSize(file.getSize())
+            .content(content)
+            .build();
+        ImageEntity saved = imageRepository.save(image);
+        log.info("이미지 엔티티 저장됨: id={}, fileUrl={}", saved.getId(), saved.getFileUrl());
+    }
+
+    // 전체 이미지 리스트 처리
+    @Transactional
+    public void saveImagesForBoard(Long boardNo, List<MultipartFile> files) throws IOException {
+        for (MultipartFile file : files) {
+            String fileUrl = s3Uploader.uploadFile(file, boardNo);
+            saveImageEntity(boardNo, file, fileUrl);
         }
-    }
-
-    public List<ImageEntity> findBoards() {
-        return imageRepository.findAll();
-    }
-
-    public Optional<ImageEntity> findBoard(Long id) {
-        return imageRepository.findById(id);
     }
 }

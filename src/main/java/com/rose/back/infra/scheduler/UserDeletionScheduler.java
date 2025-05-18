@@ -1,4 +1,4 @@
-package com.rose.back.scheduler;
+package com.rose.back.infra.scheduler;
 
 import com.rose.back.domain.auth.repository.AuthRepository;
 import com.rose.back.domain.user.entity.UserEntity;

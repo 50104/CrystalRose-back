@@ -66,6 +66,9 @@ dependencies {
 
   // redis
   implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+  // HTML 태그 파싱
+  implementation 'org.jsoup:jsoup:1.17.2'
 }
 
 // log4j2 사용을 위해 Logback 제거

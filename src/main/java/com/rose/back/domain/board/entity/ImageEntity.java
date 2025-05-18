@@ -13,19 +13,19 @@ import jakarta.persistence.*;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
+@Entity(name = "board_Image")
+@Table(name = "board_Image")
 public class ImageEntity extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    private long boardIdx;
-
-    private String originalFileName;
-
     private String storedFileName;
 
-    private long fileSize;
+    private String fileUrl;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "board_no")
+    private ContentEntity content;
 }

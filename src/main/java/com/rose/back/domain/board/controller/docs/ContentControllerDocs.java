@@ -97,7 +97,10 @@ public interface ContentControllerDocs {
             )
         )
     })
-    ResponseEntity<Map<String, Object>> saveLogic(@ModelAttribute ContentRequestDto req);
+    ResponseEntity<Map<String, Object>> saveContentWithImages(
+        @ModelAttribute @Validated ContentRequestDto req,
+        @RequestParam(value = "files", required = false) List<MultipartFile> files
+    );
 
     @Operation(summary = "게시글 수정", description = "특정 게시글을 수정합니다.")
     @CommonErrorResponses
@@ -199,55 +202,4 @@ public interface ContentControllerDocs {
         )
     })
     ResponseEntity<Map<String, String>> deleteC(@PathVariable("boardNo") Long boardNo);
-
-    @Operation(summary = "게시판 생성", description = "게시판을 생성합니다. (파일 업로드 포함)")
-    @CommonErrorResponses
-    @ImageUploadErrorResponses
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "게시판 생성 성공"),
-        @ApiResponse(
-            responseCode = "409",
-            description = "게시판 생성 실패",
-            content = @Content(
-                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
-                examples = @ExampleObject(
-                    name = "Conflict",
-                    value = """
-                    {
-                      "status": 409,
-                      "error": "CONFLICT",
-                      "message": "게시판 생성에 실패했습니다.",
-                      "path": "/api/v1/content/create",
-                    }
-                    """
-                )
-            )
-        )
-    })
-    ResponseEntity<Map<String, String>> createBoard(@Validated @RequestParam("files") List<MultipartFile> files) throws Exception;
-
-    @Operation(summary = "게시판 조회", description = "게시판 정보를 조회합니다.")
-    @CommonErrorResponses
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "게시판 조회 성공"),
-        @ApiResponse(
-            responseCode = "409",
-            description = "게시판 조회 실패",
-            content = @Content(
-                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
-                examples = @ExampleObject(
-                    name = "Conflict",
-                    value = """
-                    {
-                      "status": 409,
-                      "error": "CONFLICT",
-                      "message": "게시판 정보를 조회할 수 없습니다.",
-                      "path": "/api/v1/content/board",
-                    }
-                    """
-                )
-            )
-        )
-    })
-    ResponseEntity<Map<String, Object>> getBoard(@RequestParam long id);
 }
