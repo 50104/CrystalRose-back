@@ -97,7 +97,7 @@ public interface ContentControllerDocs {
             )
         )
     })
-    ResponseEntity<Map<String, Object>> saveContentWithImages(
+    ResponseEntity<Map<String, Object>> saveContent(
         @ModelAttribute @Validated ContentRequestDto req,
         @RequestParam(value = "files", required = false) List<MultipartFile> files
     );

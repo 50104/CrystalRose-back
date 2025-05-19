@@ -65,9 +65,8 @@ public class ImageService {
 
         ImageEntity image = ImageEntity.builder()
             .originalFileName(file.getOriginalFilename())
-            .storedFileName(fileUrl.substring(fileUrl.lastIndexOf("/") + 1))
+            .storedFileName(fileUrl.replace("https://cristalrose-web.s3.ap-northeast-2.amazonaws.com/", ""))
             .fileUrl(fileUrl)
-            .fileSize(file.getSize())
             .content(content)
             .build();
         ImageEntity saved = imageRepository.save(image);

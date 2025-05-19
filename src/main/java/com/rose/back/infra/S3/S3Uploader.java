@@ -8,8 +8,10 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 
@@ -26,11 +28,13 @@ public class S3Uploader {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    public String uploadFile(MultipartFile file, Long boardNo) throws IOException {
+    public String uploadFile(@RequestParam("file") MultipartFile file, 
+                            @RequestParam(value = "boardNo", required = false) Long boardNo) throws IOException {
         String originalName = file.getOriginalFilename();
+        log.info("S3Uploader 호출됨 - originalName: {}, size: {}, boardNo: {}", originalName, file.getSize(), boardNo);
         String extension = getExtension(originalName);
         String uuid = UUID.randomUUID().toString().substring(0, 8);
-        String timeStamp = new SimpleDateFormat("yyyyMMdd/HH/mmss").format(new Date());
+        String timeStamp = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
         String key = String.format("boards/%s/%s%s", timeStamp, uuid, extension);
 
         try (InputStream inputStream = file.getInputStream()) {
@@ -49,22 +53,21 @@ public class S3Uploader {
 
     private String getExtension(String filename) {
         if (filename == null || !filename.contains(".")) {
-            throw new IllegalArgumentException("파일 확장자가 없습니다.");
+            log.warn("파일명 null 또는 확장자 없음: {}", filename);
+            return ".bin";
         }
         return filename.substring(filename.lastIndexOf(".")).toLowerCase();
     }
 
     public void deleteFile(String fileUrl) {
-        try { 
-            String key = extractKeyFromUrl(fileUrl);
+        try {
+            String key = fileUrl.replace("https://cristalrose-web.s3.ap-northeast-2.amazonaws.com/", "");
             amazonS3.deleteObject(bucket, key);
-            log.info("S3 이미지 삭제 완료: {}", key);
+            log.info("S3 삭제 완료: {}", key);
+        } catch (AmazonServiceException e) {
+            log.error("S3 삭제 실패 (Amazon 예외): {}", e.getErrorMessage());
         } catch (Exception e) {
-            log.error("S3 이미지 삭제 실패: {}", fileUrl, e);
+            log.error("S3 삭제 실패 (기타 예외): {}", e.getMessage());
         }
-    }
-
-    private String extractKeyFromUrl(String url) {
-        return url.substring(url.indexOf(".com/") + 5);
     }
 }

@@ -3,12 +3,10 @@ package com.rose.back.domain.board.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.rose.back.domain.board.dto.ContentRequestDto;
-import com.rose.back.domain.board.entity.ImageEntity;
 import com.rose.back.domain.board.service.ContentService;
 import com.rose.back.domain.board.service.ImageService;
 
@@ -51,7 +49,7 @@ public class ContentController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<Map<String, Object>> saveContentWithImages(
+    public ResponseEntity<Map<String, Object>> saveContent(
         @ModelAttribute ContentRequestDto req,
         @RequestParam(value = "files", required = false) List<MultipartFile> files) {
 
@@ -68,6 +66,7 @@ public class ContentController {
             }
             Map<String, Object> response = new HashMap<>();
             response.put("data", Collections.singletonMap("boardNo", savedBoardNo));
+            log.info("/save 응답 데이터 구조 확인: {}", response);
             return ResponseEntity.ok().body(response);
 
         } catch (Exception e) {
@@ -85,6 +84,7 @@ public class ContentController {
             contentService.updateOneContent(req, boardNo);
             Map<String, Object> response = new HashMap<>();
             response.put("data", Collections.singletonMap("boardNo", boardNo));
+            log.info("/save/{boardNo} 응답 데이터 구조 확인: {}", response);
             return ResponseEntity.ok().body(response);
         } catch (Exception e) {
             log.error("게시글 수정 실패: {}", e.getMessage());

@@ -23,6 +23,8 @@ public class ImageEntity extends BaseTimeEntity {
 
     private String storedFileName;
 
+    private String originalFileName;
+
     private String fileUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)

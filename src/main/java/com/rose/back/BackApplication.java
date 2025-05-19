@@ -1,5 +1,7 @@
 package com.rose.back;
 
+import java.util.TimeZone;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
@@ -14,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 public class BackApplication {
 
 	public static void main(String[] args) {
+    TimeZone.setDefault(TimeZone.getTimeZone("Asia/Seoul"));
 		SpringApplication.run(BackApplication.class, args);
 
 		log.info("Info level log message / 정보 메세지 예시");

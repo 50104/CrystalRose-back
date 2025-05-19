@@ -28,7 +28,7 @@ public class ImageController {
 
     @ResponseBody
     @PostMapping("/upload")
-    public ResponseEntity<Map<String, Object>> imageUpload(@RequestParam("file") MultipartFile file, Long boardNo) throws Exception {
+    public ResponseEntity<Map<String, Object>> imageUpload(@RequestParam("file") MultipartFile file, @RequestParam(value = "boardNo", required = false) Long boardNo) throws Exception {
         log.info("[POST][/image/upload] - 이미지 업로드 컨트롤러: {}", file);
         if (file == null || file.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("error", "파일 누락"));
@@ -40,7 +40,7 @@ public class ImageController {
             responseData.put("url", s3Url);
             return ResponseEntity.ok(responseData);
         } catch (IOException e) {
-            log.error("이미지 업로드 실패: {}", e.getMessage());
+            log.error("이미지 업로드 실패", e);
             responseData.put("uploaded", false);
             responseData.put("error", "이미지 업로드에 실패했습니다.");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseData);

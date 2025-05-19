@@ -5,6 +5,8 @@ import lombok.*;
 
 import java.util.Date;
 
+import org.springframework.data.annotation.CreatedDate;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,6 +22,8 @@ public class ImageTempEntity {
 
     private String fileUrl;
 
+    @CreatedDate
     @Temporal(TemporalType.TIMESTAMP)
+    @Column(updatable = false)
     private Date uploadedAt;
 }
