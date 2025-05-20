@@ -4,7 +4,10 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -108,5 +111,10 @@ public class ContentService {
                 imageTempRepository.delete(temp);
                 log.info("임시 이미지 DB 삭제 완료: {}", fileUrl);
             });
+    }
+
+    public Page<ContentEntity> selectContentPage(int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "boardNo"));
+        return contentRepository.findAll(pageable);
     }
 }

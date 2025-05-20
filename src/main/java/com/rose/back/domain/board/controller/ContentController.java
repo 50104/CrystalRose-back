@@ -1,12 +1,16 @@
 package com.rose.back.domain.board.controller;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.rose.back.common.util.PageUtil;
 import com.rose.back.domain.board.dto.ContentRequestDto;
+import com.rose.back.domain.board.entity.ContentEntity;
 import com.rose.back.domain.board.service.ContentService;
 import com.rose.back.domain.board.service.ImageService;
 
@@ -95,16 +99,18 @@ public class ContentController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<Map<String, Object>> listPage() {
-        log.info("[GET][/board/list] - 게시글 리스트 컨트롤러");
+    public ResponseEntity<?> listPage(
+        @RequestParam(name = "page", defaultValue = "1") int page) {
+
+        log.info("[GET][/board/list] - 게시글 목록 조회 컨트롤러, 페이지: {}", page);
+
         try {
-            Map<String, Object> map = new HashMap<>();
-            map.put("ContentList", contentService.selectContent());
-            return ResponseEntity.ok().body(map);
+            Page<ContentEntity> contentPage = contentService.selectContentPage(page, 3);
+            return ResponseEntity.ok(PageUtil.toPageResponse(contentPage));
         } catch (Exception e) {
-            log.error("게시글 리스트 불러오기 실패: {}", e.getMessage());
+            log.error("게시글 목록 조회 실패: {}", e.getMessage(), e);
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("error", "게시글 리스트 불러오기 실패: " + e.getMessage());
+            errorResponse.put("error", "게시글 목록 조회 실패: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
