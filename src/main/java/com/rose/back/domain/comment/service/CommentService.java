@@ -29,7 +29,21 @@ public class CommentService {
     public List<CommentResponseDto> getComments(Long boardNo) {
         List<CommentEntity> comments = commentRepository.findByContentEntityBoardNo(boardNo);
         return comments.stream()
-                .map(CommentResponseDto::fromEntity)
+                .map(comment -> {
+                    if (comment.isDeleted()) {
+                        return CommentResponseDto.builder()
+                                .id(comment.getId())
+                                .userId(comment.getUserId())
+                                .createdDate(comment.getCreatedDate().toString())
+                                .parentId(comment.getParent() != null ? comment.getParent().getId() : null)
+                                .parentNickname(comment.getParent() != null ? comment.getParent().getUserId() : null)
+                                .deleted(true)
+                                .content(null)
+                                .build();
+                    } else {
+                        return CommentResponseDto.fromEntity(comment);
+                    }
+                })
                 .collect(Collectors.toList());
     }
 
@@ -37,12 +51,18 @@ public class CommentService {
     public void addComment(Long boardNo, CommentRequestDto dto) {
         ContentEntity content = contentRepository.findById(boardNo)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다"));
+        CommentEntity parent = null;
+        if (dto.getParentId() != null) {
+            parent = commentRepository.findById(dto.getParentId())
+                .orElseThrow(() -> new IllegalArgumentException("부모 댓글이 존재하지 않습니다."));
+        }
         log.info("댓글 저장 시도: boardNo={}, userId={}, content={}", boardNo, dto.getUserId(), dto.getContent());
 
         CommentEntity comment = CommentEntity.builder()
                 .content(dto.getContent())
                 .userId(dto.getUserId())
                 .contentEntity(content)
+                .parent(parent)
                 .build();
 
         commentRepository.save(comment);
@@ -52,6 +72,16 @@ public class CommentService {
     public void deleteComment(Long commentId) {
         CommentEntity comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 존재하지 않습니다"));
-        commentRepository.delete(comment);
+        comment.markAsDeleted();
+    }
+
+    @Transactional
+    public void updateComment(Long commentId, CommentRequestDto dto) {
+        CommentEntity comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 존재하지 않습니다"));
+
+        log.info("댓글 수정: id={}, 새로운 내용={}", commentId, dto.getContent());
+
+        comment.updateContent(dto.getContent());
     }
 }

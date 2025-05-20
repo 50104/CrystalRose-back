@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -60,6 +61,18 @@ public class CommentController implements CommentControllerDocs {
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             log.error("댓글 삭제 실패: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+    }
+
+    @PatchMapping("/comments/{commentId}")
+    public ResponseEntity<Void> updateComment(@PathVariable("commentId") Long commentId, @RequestBody CommentRequestDto dto) {
+        log.info("[PATCH][/board/comments/{}] - 댓글 수정 요청, payload: {}", commentId, dto);
+        try {
+            commentService.updateComment(commentId, dto);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            log.error("댓글 수정 실패: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }

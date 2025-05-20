@@ -1,8 +1,12 @@
 package com.rose.back.domain.comment.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.rose.back.domain.board.entity.ContentEntity;
 import com.rose.back.global.entity.BaseTimeEntity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -11,6 +15,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,4 +45,22 @@ public class CommentEntity extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_no", nullable = false)
     private ContentEntity contentEntity;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private CommentEntity parent;
+
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+    private List<CommentEntity> children = new ArrayList<>();
+
+    public void updateContent(String content) {
+        this.content = content;
+    }
+
+    @Column(nullable = false)
+    private boolean deleted = false;
+
+    public void markAsDeleted() {
+        this.deleted = true;
+    }
 }
