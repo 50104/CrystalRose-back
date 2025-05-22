@@ -3,8 +3,6 @@ package com.rose.back.domain.user.entity;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import com.rose.back.domain.user.enums.UserStatus;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -69,4 +67,10 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     @Column(length = 30, name = "user_status")
     private UserStatus userStatus;
+
+    public enum UserStatus {
+        ACTIVE,
+        WITHDRAWAL_PENDING,
+        DELETED
+    }
 }

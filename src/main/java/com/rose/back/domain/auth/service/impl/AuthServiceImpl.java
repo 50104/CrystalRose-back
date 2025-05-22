@@ -21,7 +21,7 @@ import com.rose.back.domain.user.dto.response.IdCheckResponse;
 import com.rose.back.domain.user.dto.response.CommonResponse;
 import com.rose.back.domain.user.entity.CertificationEntity;
 import com.rose.back.domain.user.entity.UserEntity;
-import com.rose.back.domain.user.enums.UserStatus;
+import com.rose.back.domain.user.entity.UserEntity.UserStatus;
 import com.rose.back.domain.user.repository.CertificationRepository;
 import com.rose.back.domain.user.repository.UserRepository;
 import com.rose.back.global.service.EmailService;

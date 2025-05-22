@@ -17,7 +17,7 @@ import com.rose.back.domain.auth.jwt.JwtTokenProvider;
 import com.rose.back.domain.auth.oauth2.CustomUserDetails;
 import com.rose.back.domain.auth.service.RefreshTokenService;
 import com.rose.back.domain.user.entity.UserEntity;
-import com.rose.back.domain.user.enums.UserStatus;
+import com.rose.back.domain.user.entity.UserEntity.UserStatus;
 import com.rose.back.domain.user.repository.UserRepository;
 
 import java.io.IOException;
