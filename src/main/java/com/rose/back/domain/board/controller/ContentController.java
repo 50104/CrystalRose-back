@@ -42,7 +42,7 @@ public class ContentController {
         log.info("[GET][/board/editor/{}] - 게시글 수정 시도 컨트롤러", boardNo);
         try {
             Map<String, Object> map = new HashMap<>();
-            map.put("data", contentService.selectOneContent(boardNo));
+            map.put("data", contentService.selectOneContentDto(boardNo));
             return ResponseEntity.ok().body(map);
         } catch (Exception e) {
             log.error("게시글 수정 페이지 불러오기 실패: {}", e.getMessage());
@@ -120,7 +120,7 @@ public class ContentController {
         log.info("[GET][/board/content/{}] - 게시글 조회 컨트롤러", boardNo);
         try {
             Map<String, Object> map = new HashMap<>();
-            map.put("Content", contentService.selectOneContent(boardNo));
+            map.put("Content", contentService.selectOneContentDto(boardNo));
             return ResponseEntity.ok().body(map);
         } catch (Exception e) {
             log.error("게시글 조회 실패: {}", e.getMessage());

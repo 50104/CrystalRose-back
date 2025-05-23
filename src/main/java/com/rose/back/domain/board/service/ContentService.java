@@ -12,11 +12,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.rose.back.domain.board.dto.ContentRequestDto;
+import com.rose.back.domain.board.dto.ContentWithWriterDto;
 import com.rose.back.domain.board.entity.ContentEntity;
 import com.rose.back.domain.board.entity.ImageEntity;
 import com.rose.back.domain.board.repository.ContentRepository;
 import com.rose.back.domain.board.repository.ImageRepository;
 import com.rose.back.domain.board.repository.ImageTempRepository;
+import com.rose.back.domain.user.entity.UserEntity;
+import com.rose.back.domain.user.repository.UserRepository;
 import com.rose.back.infra.S3.S3Uploader;
 
 import java.util.*;
@@ -34,13 +37,18 @@ public class ContentService {
     private final ImageRepository imageRepository;
     private final ImageTempRepository imageTempRepository;
     private final S3Uploader s3Uploader;
+    private final UserRepository userRepository;
 
     @Transactional
     public Long saveContent(ContentRequestDto req) {
         ContentEntity content = new ContentEntity();
         content.setBoardTitle(req.getBoardTitle());
         content.setBoardContent(req.getBoardContent());
-        content.setUserId(req.getUserId());
+        UserEntity user = userRepository.findByUserId(req.getUserId());
+        if (user == null) {
+            throw new IllegalArgumentException("해당 유저를 찾을 수 없습니다.");
+        }
+        content.setWriter(user);
         ContentEntity savedContent = contentRepository.save(content);
 
         Document doc = Jsoup.parse(req.getBoardContent());
@@ -62,10 +70,12 @@ public class ContentService {
         return contentRepository.findAll();
     }
 
-    public ContentEntity selectOneContent(Long boardNo) {
-        return contentRepository.findByBoardNo(boardNo)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 게시글: " + boardNo));
+    public ContentWithWriterDto selectOneContentDto(Long boardNo) {
+        ContentEntity content = contentRepository.findByBoardNo(boardNo)
+            .orElseThrow(() -> new NoSuchElementException("존재하지 않는 게시글"));
+        return ContentWithWriterDto.from(content);
     }
+
 
     @Transactional
     public void deleteOneContent(Long boardNo) {
@@ -88,7 +98,11 @@ public class ContentService {
         content.setBoardNo(boardNo);
         content.setBoardTitle(req.getBoardTitle());
         content.setBoardContent(req.getBoardContent());
-        content.setUserId(req.getUserId());
+        UserEntity user = userRepository.findByUserId(req.getUserId());
+        if (user == null) {
+            throw new IllegalArgumentException("해당 유저를 찾을 수 없습니다.");
+        }
+        content.setWriter(user);
         contentRepository.save(content);
     }
     
