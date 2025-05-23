@@ -74,29 +74,4 @@ public interface AdminControllerDocs {
                     """))),
     })
     ResponseEntity<Void> rejectWiki(@Parameter(description = "거절할 도감의 ID", required = true) Long id);
-
-    @Operation(summary = "메인 페이지", description = "메인 페이지로 입장합니다")
-    @CommonErrorResponses
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "메인 페이지 입장 성공"),
-        @ApiResponse(
-            responseCode = "409",
-            description = "메인 페이지 입장 충돌",
-            content = @Content(
-                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
-                examples = @ExampleObject(
-                    name = "Conflict",
-                    value = """
-                    {
-                      "status": 409,
-                      "error": "CONFLICT",
-                      "message": "메인 페이지 입장에 실패했습니다.",
-                      "path": "/api/v1/admin/main"
-                    }
-                    """
-                )
-            )
-        )
-    })
-    String mainApi();
 }

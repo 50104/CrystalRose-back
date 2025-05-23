@@ -1,9 +1,12 @@
 package com.rose.back.domain.report.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.rose.back.domain.board.entity.ContentEntity;
 import com.rose.back.domain.board.repository.ContentRepository;
+import com.rose.back.domain.report.dto.ReportResponseDto;
 import com.rose.back.domain.report.entity.Report;
 import com.rose.back.domain.report.repository.ReportRepository;
 import com.rose.back.domain.user.entity.UserEntity;
@@ -39,5 +42,11 @@ public class ReportService {
         report.setReason(reason);
 
         reportRepository.save(report);
+    }
+
+    public List<ReportResponseDto> getAllReports() { // 관리자 신고 내역 조회
+        return reportRepository.findAll().stream()
+            .map(ReportResponseDto::from)
+            .toList();
     }
 }
