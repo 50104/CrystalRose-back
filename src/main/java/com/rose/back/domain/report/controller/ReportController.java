@@ -1,11 +1,15 @@
 package com.rose.back.domain.report.controller;
 
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rose.back.domain.auth.oauth2.CustomUserDetails;
@@ -28,6 +32,14 @@ public class ReportController {
         log.info("[POST][/api/reports] - 신고 요청: {}", dto);
         reportService.reportPost(userDetails.getUserNo(), dto.postId(), dto.reason());
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @GetMapping("/check")
+    public ResponseEntity<Map<String, Boolean>> checkReport(@RequestParam Long postId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        log.info("[GET][/api/reports/check] - 신고 여부 확인 요청: postId={}, userId={}", postId, userDetails.getUserNo());
+        Long reporterId = userDetails.getUserNo();
+        boolean alreadyReported = reportService.isAlreadyReported(reporterId, postId);
+        return ResponseEntity.ok(Map.of("alreadyReported", alreadyReported));
     }
 
     public record ReportRequestDto(Long postId, String reason) {}

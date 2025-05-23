@@ -33,6 +33,10 @@ public class ReportService {
             .orElseThrow(() -> new EntityNotFoundException("신고자 없음"));
         ContentEntity post = contentRepository.findById(postId)
             .orElseThrow(() -> new EntityNotFoundException("게시글 없음"));
+        boolean alreadyReported = reportRepository.existsByReporterAndTargetPost(reporter, post);
+        if (alreadyReported) {
+            throw new IllegalStateException("이미 해당 게시글을 신고하였습니다.");
+        }
         UserEntity targetUser = post.getWriter();
 
         Report report = new Report();
@@ -48,5 +52,9 @@ public class ReportService {
         return reportRepository.findAll().stream()
             .map(ReportResponseDto::from)
             .toList();
+    }
+
+    public boolean isAlreadyReported(Long reporterId, Long postId) {
+        return reportRepository.existsByReporter_UserNoAndTargetPost_BoardNo(reporterId, postId);
     }
 }

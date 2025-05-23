@@ -15,13 +15,16 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.Setter;
 
 @Setter
 @Getter
 @Entity(name = "user_report")
-@Table(name = "user_report")
+@Table(name = "user_report", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"reporter_id", "target_post_id"})
+})
 public class Report {
 
     @Id

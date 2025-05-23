@@ -20,14 +20,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
-@Table(name = "user_block",
-      uniqueConstraints = @UniqueConstraint(columnNames = {"blocker_id", "blocked_id"}))
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Entity(name = "user_block")
+@Table(name = "user_block",
+      uniqueConstraints = @UniqueConstraint(columnNames = {"blocker_id", "blocked_id"}))
 public class UserBlock {
 
     @Id
