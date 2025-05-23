@@ -71,6 +71,7 @@ public class ReissueController implements ReissueControllerDocs{
         String userId = jwtProvider.getUserId(refresh);
         String userNick = jwtProvider.getUserNick(refresh);
         String userRole = jwtProvider.getUserRole(refresh);
+        Long userNo = jwtProvider.getUserNo(refresh);
     
         // 레디스 존재여부 확인
         if (!refreshTokenService.isValid(userId, refresh)) {
@@ -78,8 +79,8 @@ public class ReissueController implements ReissueControllerDocs{
             return new ResponseEntity<>("invalid refresh redis", HttpStatus.BAD_REQUEST);
         }
 
-        String newAccess = jwtProvider.create("access", userId, userNick, userRole, 30 * 60 * 1000L);
-        String newRefresh = jwtProvider.create("refresh", userId, userNick, userRole, 24 * 60 * 60 * 1000L);
+        String newAccess = jwtProvider.create("access", userId, userNick, userRole, 30 * 60 * 1000L, userNo);
+        String newRefresh = jwtProvider.create("refresh", userId, userNick, userRole, 24 * 60 * 60 * 1000L, userNo);
     
         // redis 갱신
         refreshTokenService.delete(userId); // 기존 토큰 삭제

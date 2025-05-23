@@ -50,6 +50,7 @@ public class CommentEntity extends BaseTimeEntity {
     @JoinColumn(name = "parent_id")
     private CommentEntity parent;
 
+    @Builder.Default
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     private List<CommentEntity> children = new ArrayList<>();
 
@@ -57,6 +58,7 @@ public class CommentEntity extends BaseTimeEntity {
         this.content = content;
     }
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean deleted = false;
 

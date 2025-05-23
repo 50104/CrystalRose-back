@@ -68,9 +68,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String userId = authentication.getName();
         String userRole = authentication.getAuthorities().iterator().next().getAuthority();
         String userNick = customUserDetails.getUserNick();
+        Long userNo = customUserDetails.getUserNo();
 
-        String access = jwtProvider.create("access", userId, userRole, userNick, 30*60*1000L); // 30분
-        String refresh = jwtProvider.create("refresh", userId, userRole, userNick, 24*60*60*1000L); // 1일
+        String access = jwtProvider.create("access", userId, userNick, userRole, 30*60*1000L, userNo); // 30분
+        String refresh = jwtProvider.create("refresh", userId, userNick, userRole, 24*60*60*1000L, userNo); // 1일
 
         refreshTokenService.delete(userId);
         refreshTokenService.save(userId, refresh, 24 * 60 * 60 * 1000L);

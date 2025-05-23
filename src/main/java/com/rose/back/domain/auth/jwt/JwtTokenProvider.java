@@ -30,9 +30,10 @@ public class JwtTokenProvider {
         this.secretKey = new SecretKeySpec(keyBytes, "HmacSHA256");
     }
 
-    public String create(String category, String userId, String userNick, String userRole, Long expiredMs) {
+    public String create(String category, String userId, String userNick, String userRole, Long expiredMs, Long userNo) {
         return Jwts.builder()
                 .claim("category",category) // access, refresh
+                .claim("userNo", userNo)
                 .claim("userId", userId)
                 .claim("userRole", userRole)
                 .claim("userNick", userNick)
@@ -48,6 +49,10 @@ public class JwtTokenProvider {
 
     public String getUserId(String token) {
         return getClaims(token).get("userId", String.class);
+    }
+
+    public Long getUserNo(String token) {
+        return getClaims(token).get("userNo", Long.class);
     }
 
     public String getUserRole(String token) {

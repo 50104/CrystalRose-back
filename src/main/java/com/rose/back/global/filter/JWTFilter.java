@@ -15,6 +15,8 @@ import com.rose.back.domain.auth.jwt.JwtTokenProvider;
 import com.rose.back.domain.auth.oauth2.CustomUserDetails;
 import com.rose.back.domain.auth.service.AccessTokenBlacklistService;
 import com.rose.back.domain.user.dto.UserInfoDto;
+import com.rose.back.domain.user.entity.UserEntity;
+import com.rose.back.domain.user.repository.UserRepository;
 
 import io.jsonwebtoken.ExpiredJwtException;
 
@@ -28,8 +30,10 @@ public class JWTFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtProvider;
     private final AccessTokenBlacklistService accessTokenBlacklistService;
+    private final UserRepository userRepository;
 
-    public JWTFilter(JwtTokenProvider jwtProvider, AccessTokenBlacklistService accessTokenBlacklistService) {
+    public JWTFilter(JwtTokenProvider jwtProvider, AccessTokenBlacklistService accessTokenBlacklistService, UserRepository userRepository) {
+        this.userRepository = userRepository;
         this.jwtProvider = jwtProvider;
         this.accessTokenBlacklistService = accessTokenBlacklistService;
     }
@@ -83,8 +87,10 @@ public class JWTFilter extends OncePerRequestFilter {
         // userId, userRole 값 획득
         String userId = jwtProvider.getUserId(accessToken);
         String userRole = jwtProvider.getUserRole(accessToken);
+        UserEntity user = userRepository.findByUserId(userId); 
 
         UserInfoDto userDto = UserInfoDto.builder()
+                .userNo(user.getUserNo())
                 .userName(userId)
                 .userRole(userRole)
                 .build();

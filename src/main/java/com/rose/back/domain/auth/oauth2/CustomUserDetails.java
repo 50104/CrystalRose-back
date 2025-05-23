@@ -28,6 +28,10 @@ public class CustomUserDetails  implements UserDetails {
         return collection;
     }
 
+    public Long getUserNo() {
+        return userDTO.getUserNo();
+    }
+
     @Override
     public String getPassword() {
         return userDTO.getUserPwd();

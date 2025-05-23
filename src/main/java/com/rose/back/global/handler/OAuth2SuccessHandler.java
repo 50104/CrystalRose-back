@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import com.rose.back.domain.auth.jwt.JwtTokenProvider;
 import com.rose.back.domain.auth.oauth2.CustomOAuth2User;
 import com.rose.back.domain.auth.service.RefreshTokenService;
+import com.rose.back.domain.user.repository.UserRepository;
 
 import java.io.IOException;
 import java.util.*;
@@ -23,6 +24,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     
     private final JwtTokenProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
+    private final UserRepository userRepository; 
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -31,8 +33,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String userRole = authorities.iterator().next().getAuthority();
         String userNick = oAuth2User.getName();
         String userId = oAuth2User.getUsername();
+        Long userNo = userRepository.findByUserId(userId).getUserNo();
 
-        String refresh = jwtProvider.create("refresh", userId, userNick, userRole, 24 * 60 * 60 * 1000L);
+        String refresh = jwtProvider.create("refresh", userId, userNick, userRole, 24 * 60 * 60 * 1000L, userNo);
 
         refreshTokenService.delete(userId);
         refreshTokenService.save(userId, refresh, 24 * 60 * 60 * 1000L);

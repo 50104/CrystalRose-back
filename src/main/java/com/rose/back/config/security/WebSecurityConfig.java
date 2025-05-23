@@ -99,7 +99,7 @@ public class WebSecurityConfig {
                 .authenticationEntryPoint(new FailedAuthenticationEntryPoint()) // 인증 실패 핸들러 설정
             )
             .addFilterAt(new LoginFilter(authenticationManager(), jwtProvider, refreshTokenService, userRepository), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(new JWTFilter(jwtProvider, accessTokenBlacklistService), LoginFilter.class) // JWT 인증 필터 추가
+            .addFilterBefore(new JWTFilter(jwtProvider, accessTokenBlacklistService, userRepository), LoginFilter.class) // JWT 인증 필터 추가
             .addFilterBefore(new CustomLogoutFilter(jwtProvider, refreshTokenService, accessTokenBlacklistService), LogoutFilter.class)
             .csrf((auth) -> auth.disable())
             .formLogin((auth) -> auth.disable())
