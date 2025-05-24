@@ -11,6 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.rose.back.domain.board.dto.ContentListDto;
 import com.rose.back.domain.board.dto.ContentRequestDto;
 import com.rose.back.domain.board.dto.ContentWithWriterDto;
 import com.rose.back.domain.board.entity.ContentEntity;
@@ -127,8 +128,9 @@ public class ContentService {
             });
     }
 
-    public Page<ContentEntity> selectContentPage(int page, int size) {
+    public Page<ContentListDto> selectContentPage(int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "boardNo"));
-        return contentRepository.findAll(pageable);
+        return contentRepository.findAll(pageable)
+            .map(ContentListDto::from);
     }
 }

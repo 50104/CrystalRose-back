@@ -14,7 +14,7 @@ import jakarta.persistence.Table;
 import lombok.Data;
 
 @Data
-@Entity(name = "board_content")
+@Entity
 @Table(name = "board_content")
 public class ContentEntity {
 

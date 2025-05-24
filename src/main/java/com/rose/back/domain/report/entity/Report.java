@@ -21,7 +21,7 @@ import lombok.Setter;
 
 @Setter
 @Getter
-@Entity(name = "user_report")
+@Entity
 @Table(name = "user_report", uniqueConstraints = {
     @UniqueConstraint(columnNames = {"reporter_id", "target_post_id"})
 })

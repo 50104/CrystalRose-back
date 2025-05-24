@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.rose.back.common.util.PageUtil;
+import com.rose.back.domain.board.dto.ContentListDto;
 import com.rose.back.domain.board.dto.ContentRequestDto;
-import com.rose.back.domain.board.entity.ContentEntity;
 import com.rose.back.domain.board.service.ContentService;
 import com.rose.back.domain.board.service.ImageService;
 
@@ -103,9 +103,8 @@ public class ContentController {
         @RequestParam(name = "page", defaultValue = "1") int page) {
 
         log.info("[GET][/board/list] - 게시글 목록 조회 컨트롤러, 페이지: {}", page);
-
         try {
-            Page<ContentEntity> contentPage = contentService.selectContentPage(page, 3);
+            Page<ContentListDto> contentPage = contentService.selectContentPage(page, 3);
             return ResponseEntity.ok(PageUtil.toPageResponse(contentPage));
         } catch (Exception e) {
             log.error("게시글 목록 조회 실패: {}", e.getMessage(), e);

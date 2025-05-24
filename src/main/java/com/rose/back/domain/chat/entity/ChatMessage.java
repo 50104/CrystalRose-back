@@ -26,7 +26,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Entity(name = "chat_message")
+@Entity
 @Table(name = "chat_message")
 public class ChatMessage extends BaseTimeEntity {
   

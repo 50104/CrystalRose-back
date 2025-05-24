@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "user_certification")
+@Entity
 @Table(name = "user_certification")
 public class CertificationEntity {
 

@@ -15,7 +15,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@Entity(name = "rose_wiki")
+@Entity
 @Table(name = "rose_wiki")
 public class WikiEntity extends BaseTimeEntity {
   

@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Entity(name = "chat_participant")
+@Entity
 @Table(name = "chat_participant")
 public class ChatParticipant extends BaseTimeEntity {
   

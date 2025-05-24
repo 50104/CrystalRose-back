@@ -13,7 +13,7 @@ import jakarta.persistence.*;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name = "board_Image")
+@Entity
 @Table(name = "board_Image")
 public class ImageEntity extends BaseTimeEntity {
 
