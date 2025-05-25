@@ -1,13 +1,18 @@
 package com.rose.back.domain.chat.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rose.back.domain.chat.dto.ChatMessageReqDto;
 import com.rose.back.domain.chat.dto.ChatRoomListResDto;
 import com.rose.back.domain.chat.dto.MyChatListResDto;
@@ -23,9 +28,13 @@ import com.rose.back.domain.user.entity.UserEntity;
 import com.rose.back.domain.user.repository.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class ChatService {
   
   private final ChatRoomRepository chatRoomRepository;
@@ -33,15 +42,7 @@ public class ChatService {
   private final ChatMessageRepository chatMessageRepository;
   private final ReadStatusRepository readStatusRepository;
   private final UserRepository userRepository;
-
-  public ChatService(ChatRoomRepository chatRoomRepository, ChatParticipantRepository chatParticipantRepository, 
-  ChatMessageRepository chatMessageRepository, ReadStatusRepository readStatusRepository, UserRepository userRepository) {
-    this.chatRoomRepository = chatRoomRepository;
-    this.chatParticipantRepository = chatParticipantRepository;
-    this.chatMessageRepository = chatMessageRepository;
-    this.readStatusRepository = readStatusRepository;
-    this.userRepository = userRepository;
-  }
+  private final StringRedisTemplate stringRedisTemplate;
 
   public void saveMessage(Long roomId, ChatMessageReqDto chatMessageReqDto) {
     // 채팅방 조회
@@ -138,34 +139,38 @@ public class ChatService {
   }
 
   // 참여자가 아닌 경우 조회 불가
-  public List<ChatMessageReqDto> getChatHistory(Long roomId) {
+  public List<ChatMessageReqDto> getChatHistory(Long roomId, LocalDateTime cursorCreatedAt) {
     ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("채팅방이 존재하지 않습니다.7"));
 
     UserEntity userEntity = userRepository.findByUserId(SecurityContextHolder.getContext().getAuthentication().getName());
+
     if (userEntity == null) {
         throw new EntityNotFoundException("사용자가 존재하지 않습니다8.");
     }
 
-    List<ChatParticipant> chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom); // 채팅방 참여자 조회
-    boolean check = false;
-    for(ChatParticipant c : chatParticipants) {
-      if(c.getUserEntity().equals(userEntity)) {
-        check = true;
-      }
+    boolean isParticipant = chatParticipantRepository.findByChatRoom(chatRoom).stream()
+      .anyMatch(p -> p.getUserEntity().equals(userEntity));
+    if (!isParticipant) {
+      throw new IllegalArgumentException("채팅방에 참여하고 있지 않은 사용자입니다.9");
     }
-    if(!check) throw new IllegalArgumentException("채팅방에 참여하고 있지 않은 사용자입니다.9");
-    
-    // 특정 room에 대한 message 조회
-    List<ChatMessage> chatMessages = chatMessageRepository.findByChatRoomOrderByCreatedDateAsc(chatRoom);
-    List<ChatMessageReqDto> chatMessageDtos = new ArrayList<>();
-    for(ChatMessage c : chatMessages) {
-      ChatMessageReqDto chatMessageDto = ChatMessageReqDto.builder()
-        .message(c.getContent())
-        .senderId(c.getUserEntity().getUserId())
-        .build();
-      chatMessageDtos.add(chatMessageDto);
+
+    List<ChatMessage> chatMessages;
+    if (cursorCreatedAt != null) {
+      chatMessages = chatMessageRepository.findTop30ByChatRoomAndCreatedDateBeforeOrderByCreatedDateDesc(chatRoom, cursorCreatedAt);
+    } else {
+      chatMessages = chatMessageRepository.findTop30ByChatRoomOrderByCreatedDateDesc(chatRoom);
     }
-    return chatMessageDtos;
+
+    Collections.reverse(chatMessages); // 최신순 → 오래된 순으로 변환
+
+    return chatMessages.stream().map(m ->
+      ChatMessageReqDto.builder()
+          .id(m.getId())
+          .message(m.getContent())
+          .senderId(m.getUserEntity().getUserId())
+          .createdDate(m.getCreatedDate())
+          .build()
+    ).collect(Collectors.toList());
   }
 
   // 특정 방에 대한 참여 권한 조회
@@ -187,16 +192,33 @@ public class ChatService {
   }
 
   public void messageRead(Long roomId) {
-    ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("채팅방이 존재하지 않습니다.12")); // 채팅방 조회
+    ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("채팅방이 존재하지 않습니다.12"));
 
     UserEntity userEntity = userRepository.findByUserId(SecurityContextHolder.getContext().getAuthentication().getName());
+
     if (userEntity == null) {
-        throw new EntityNotFoundException("사용자가 존재하지 않습니다.13");
+      throw new EntityNotFoundException("사용자가 존재하지 않습니다.13");
     }
 
-    List<ReadStatus> readStatuses = readStatusRepository.findByChatRoomAndUserEntity(chatRoom, userEntity); // 읽음 여부 조회
-    for(ReadStatus r : readStatuses) {
+    List<ReadStatus> readStatuses = readStatusRepository.findByChatRoomAndUserEntity(chatRoom, userEntity);
+    for (ReadStatus r : readStatuses) {
       r.updateIsRead(true);
+      readStatusRepository.save(r);
+    }
+
+    // 브로드캐스트 추가
+    ChatMessageReqDto readNotice = ChatMessageReqDto.builder()
+        .type("READ")
+        .roomId(roomId)
+        .senderId(userEntity.getUserId())
+        .message("읽음 처리됨")
+        .build();
+
+    try {
+      String json = new ObjectMapper().writeValueAsString(readNotice);
+      stringRedisTemplate.convertAndSend("chat", json);
+    } catch (Exception e) {
+      log.error("읽음 메시지 브로드캐스트 실패", e);
     }
   }
 

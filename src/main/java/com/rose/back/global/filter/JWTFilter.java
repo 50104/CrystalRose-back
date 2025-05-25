@@ -39,6 +39,12 @@ public class JWTFilter extends OncePerRequestFilter {
     }
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        return uri.matches("^/connect(/.*)?$");
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String requestUri = request.getRequestURI(); // 재로그인, 무한로프 방지
         log.info("Request URI: {}", requestUri);
