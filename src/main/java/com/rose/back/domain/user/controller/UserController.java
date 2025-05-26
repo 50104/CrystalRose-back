@@ -23,63 +23,77 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/user")
-public class UserController implements UserControllerDocs{
-    
+public class UserController implements UserControllerDocs {
+
     private final UserService userService;
     private final FileUtil fileUtil;
 
-    @GetMapping("/data") // 로그인한 사용자 정보 가져오기
-    public ResponseEntity<?> get(){
-        log.info("사용자 정보 컨트롤러 실행");
-
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserInfoDto userDto = userService.get(userId);
-        return ResponseEntity.ok(userDto);
+    @GetMapping("/data")
+    public ResponseEntity<?> get() {
+        log.info("[GET][/api/user/data] - 사용자 정보 조회 요청");
+        try {
+            String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+            UserInfoDto userDto = userService.get(userId);
+            return ResponseEntity.ok(userDto);
+        } catch (Exception e) {
+            log.error("사용자 정보 조회 실패: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("조회 실패");
+        }
     }
 
     @PostMapping("/validatePassword")
-    public ResponseEntity<Boolean> validatePassword(@RequestBody PwdValidationRequest request) {
-        log.info("비밀번호 확인 컨트롤러 실행");
-
-        boolean isValid = userService.validatePassword(request.getUserId(), request.getUserPwd());
-        return ResponseEntity.ok(isValid);
+    public ResponseEntity<?> validatePassword(@RequestBody PwdValidationRequest request) {
+        log.info("[POST][/api/user/validatePassword] - 비밀번호 확인 요청");
+        try {
+            boolean isValid = userService.validatePassword(request.getUserId(), request.getUserPwd());
+            return ResponseEntity.ok(isValid);
+        } catch (Exception e) {
+            log.error("비밀번호 확인 실패: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("확인 실패");
+        }
     }
 
     @PutMapping("/update")
-    public ResponseEntity<?> updateUser( @RequestPart("user") UserInfoDto user) {
-        log.info("사용자 정보 수정 컨트롤러 실행");
-
+    public ResponseEntity<?> updateUser(@RequestPart("user") UserInfoDto user) {
+        log.info("[PUT][/api/user/update] - 사용자 정보 수정 요청");
         try {
             UserInfoDto updatedUser = userService.updateUser(user);
             return ResponseEntity.ok(updatedUser);
         } catch (Exception e) {
+            log.error("사용자 정보 수정 실패: {}", e.getMessage(), e);
             return ResponseEntity.status(500).body("정보 수정 실패");
         }
     }
 
     @PostMapping("/modify")
     public ResponseEntity<String> modify(@ModelAttribute UserInfoDto userDTO) {
-        log.info("사용자 프로필 이미지 변경 컨트롤러 실행");
+        log.info("[POST][/api/user/modify] - 프로필 이미지 변경 요청");
+        try {
+            String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+            userDTO.setUserName(userId);
 
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        userDTO.setUserName(userId);
-
-        if (userDTO.getUserProfileFile() != null && !userDTO.getUserProfileFile().isEmpty() && !Boolean.parseBoolean(userDTO.getIsDelete())) {
-            try {
+            if (userDTO.getUserProfileFile() != null && !userDTO.getUserProfileFile().isEmpty() && !Boolean.parseBoolean(userDTO.getIsDelete())) {
                 String userProfileImg = fileUtil.saveFile(userDTO.getUserProfileFile(), userId);
                 userDTO.setUserProfileImg(userProfileImg);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("File upload failed.");
             }
+
+            userService.modify(userDTO);
+            return ResponseEntity.ok("사진 변경 성공");
+        } catch (Exception e) {
+            log.error("프로필 이미지 변경 실패: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("File upload failed.");
         }
-        userService.modify(userDTO);
-        return ResponseEntity.ok("사진 변경 성공");
     }
 
     @GetMapping("/list")
     public ResponseEntity<?> memberList() {
-      List<MemberSearchCondition> dtos = userService.findAll();
-      return new ResponseEntity<>(dtos, HttpStatus.OK);
+        log.info("[GET][/api/user/list] - 사용자 목록 조회 요청");
+        try {
+            List<MemberSearchCondition> dtos = userService.findAll();
+            return ResponseEntity.ok(dtos);
+        } catch (Exception e) {
+            log.error("사용자 목록 조회 실패: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("목록 조회 실패");
+        }
     }
 }

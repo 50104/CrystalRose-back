@@ -39,7 +39,7 @@ public interface AdminControllerDocs {
                     }
                     """)))
     })
-    List<AdminResponse> getPendingWikiList();
+    ResponseEntity<?> getPendingWikiList();
 
     @Operation(summary = "도감 승인", description = "특정 ID의 도감을 승인합니다. ADMIN 권한이 필요합니다.")
     @CommonErrorResponses
@@ -56,7 +56,7 @@ public interface AdminControllerDocs {
                     }
                     """))),
     })
-    ResponseEntity<Void> approveWiki(@Parameter(description = "승인할 도감의 ID", required = true) Long id);
+    ResponseEntity<?> approveWiki(@Parameter(description = "승인할 도감의 ID", required = true) Long id);
 
     @Operation(summary = "도감 거절", description = "특정 ID의 도감을 거절합니다. ADMIN 권한이 필요합니다.")
     @CommonErrorResponses
@@ -73,5 +73,25 @@ public interface AdminControllerDocs {
                     }
                     """))),
     })
-    ResponseEntity<Void> rejectWiki(@Parameter(description = "거절할 도감의 ID", required = true) Long id);
+    ResponseEntity<?> rejectWiki(@Parameter(description = "거절할 도감의 ID", required = true) Long id);
+
+    @Operation(summary = "신고 내역 조회", description = "관리자의 신고 내역을 조회합니다. ADMIN 권한이 필요합니다.")
+    @CommonErrorResponses
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "신고 내역 조회 성공",
+            content = @Content(mediaType = "application/json",
+                array = @ArraySchema(schema = @Schema(implementation = AdminResponse.class)))
+        ),
+        @ApiResponse(responseCode = "409", description = "신고 내역 조회 실패",
+            content = @Content(schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                examples = @ExampleObject(name = "Conflict", value = """
+                    {
+                      "status": 409,
+                      "error": "CONFLICT",
+                      "message": "신고 내역 조회에 실패했습니다.",
+                      "path": "/api/v1/admin/reports"
+                    }
+                    """)))
+    })
+    ResponseEntity<?> getReports();
 }

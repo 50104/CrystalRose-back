@@ -67,7 +67,7 @@ public interface UserControllerDocs {
             )
         )
     })
-    ResponseEntity<Boolean> validatePassword(PwdValidationRequest request);
+    ResponseEntity<?> validatePassword(PwdValidationRequest request);
 
     @Operation(summary = "사용자 정보 수정", description = "사용자 정보를 수정합니다.")
     @CommonErrorResponses
