@@ -9,7 +9,6 @@ import com.rose.back.domain.user.dto.UserInfoDto;
 import com.rose.back.domain.user.dto.request.MemberSearchCondition;
 import com.rose.back.domain.user.dto.request.PwdValidationRequest;
 import com.rose.back.domain.user.service.UserService;
-import com.rose.back.infra.file.FileUtil;
 
 import java.util.List;
 
@@ -26,7 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 public class UserController implements UserControllerDocs {
 
     private final UserService userService;
-    private final FileUtil fileUtil;
 
     @GetMapping("/data")
     public ResponseEntity<?> get() {
@@ -70,14 +68,9 @@ public class UserController implements UserControllerDocs {
         log.info("[POST][/api/user/modify] - 프로필 이미지 변경 요청");
         try {
             String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-            userDTO.setUserName(userId);
+            userDTO.setUserName(userId); 
 
-            if (userDTO.getUserProfileFile() != null && !userDTO.getUserProfileFile().isEmpty() && !Boolean.parseBoolean(userDTO.getIsDelete())) {
-                String userProfileImg = fileUtil.saveFile(userDTO.getUserProfileFile(), userId);
-                userDTO.setUserProfileImg(userProfileImg);
-            }
-
-            userService.modify(userDTO);
+            userService.modify(userDTO); 
             return ResponseEntity.ok("사진 변경 성공");
         } catch (Exception e) {
             log.error("프로필 이미지 변경 실패: {}", e.getMessage(), e);

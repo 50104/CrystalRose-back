@@ -51,6 +51,26 @@ public class S3Uploader {
         }
     }
 
+    public String uploadProfile(MultipartFile file, String userId) throws IOException {
+        String originalName = file.getOriginalFilename();
+        log.info("S3 프로필 업로드 호출됨 - originalName: {}, userId: {}", originalName, userId);
+        String extension = getExtension(originalName);
+        String key = String.format("profiles/%s_%s%s", userId, UUID.randomUUID(), extension);  // 파일명 중복 방지
+
+        try (InputStream inputStream = file.getInputStream()) {
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentLength(file.getSize());
+            metadata.setContentType(file.getContentType());
+
+            amazonS3.putObject(bucket, key, inputStream, metadata);
+            log.info("S3 프로필 업로드 성공: key={}", key);
+            return amazonS3.getUrl(bucket, key).toString();
+        } catch (IOException e) {
+            log.error("S3 프로필 업로드 실패: {}", e.getMessage());
+            throw new IOException("S3 업로드 실패", e);
+        }
+    }
+
     private String getExtension(String filename) {
         if (filename == null || !filename.contains(".")) {
             log.warn("파일명 null 또는 확장자 없음: {}", filename);

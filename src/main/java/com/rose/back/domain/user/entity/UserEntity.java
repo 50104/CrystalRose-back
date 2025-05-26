@@ -47,7 +47,7 @@ public class UserEntity {
     @Column(length = 50, name = "user_role")
     private String userRole;
 
-    @Column(length = 50, name = "user_profileImg")
+    @Column(name = "user_profileImg")
     private String userProfileImg;
 
     @Column(length = 50, name = "user_nick")

@@ -2,6 +2,7 @@ package com.rose.back.domain.user.service.impl;
 
 import lombok.RequiredArgsConstructor;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +17,7 @@ import com.rose.back.domain.user.dto.request.MemberSearchCondition;
 import com.rose.back.domain.user.entity.UserEntity;
 import com.rose.back.domain.user.repository.UserRepository;
 import com.rose.back.domain.user.service.UserService;
-import com.rose.back.infra.file.FileUtil;
+import com.rose.back.infra.S3.S3Uploader;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -28,7 +29,7 @@ public class UserServiceImpl implements UserService {
     
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final FileUtil fileUtil;
+    private final S3Uploader s3Uploader;
 
     @Override
     public UserInfoDto get(String userId) { // 로그인한 사용자 정보 가져오기
@@ -90,25 +91,34 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void modify(UserInfoDto userDTO) {
-        UserEntity user = userRepository.findByUserId(userDTO.getUserName());
-        String beforeProfileImage = user.getUserProfileImg();
-        String profileImage = null;
-        MultipartFile multipartFile = userDTO.getUserProfileFile();
+    public void modify(UserInfoDto dto) {
+        UserEntity user = userRepository.findByUserId(dto.getUserName());
+        String beforeUrl = user.getUserProfileImg();
 
-        if (multipartFile != null) {
-            profileImage = fileUtil.saveFile(multipartFile, userDTO.getUserName());
-            user.setUserProfileImg(profileImage);
-        }
-        if (Boolean.parseBoolean(userDTO.getIsDelete())) {
-            if (beforeProfileImage != null) {
-                log.info("프로필 이미지 삭제 시도: " + beforeProfileImage);
-                fileUtil.deleteFile(beforeProfileImage);
+        try { // 이미지 새로 업로드
+            if (dto.getUserProfileFile() != null && !dto.getUserProfileFile().isEmpty()
+                    && !Boolean.parseBoolean(dto.getIsDelete())) {
+
+                String uploadedUrl = s3Uploader.uploadProfile(dto.getUserProfileFile(), dto.getUserName());
+                user.setUserProfileImg(uploadedUrl);
+
+                if (beforeUrl != null && !beforeUrl.isEmpty()) {
+                    s3Uploader.deleteFile(beforeUrl);
+                }
             }
-            user.setUserProfileImg(null);
+            if (Boolean.parseBoolean(dto.getIsDelete())) { // 삭제 요청 처리
+                if (beforeUrl != null) {
+                    s3Uploader.deleteFile(beforeUrl);
+                }
+                user.setUserProfileImg(null);
+            }
+            user.setUserNick(dto.getUserNick());
+            userRepository.save(user);
+            log.info("프로필 이미지 변경 성공: {}", dto.getUserName());
+        } catch (IOException e) {
+            log.error("S3 프로필 이미지 처리 중 오류 발생: {}", e.getMessage(), e);
+            throw new RuntimeException("프로필 이미지 처리 실패", e);
         }
-        user.setUserNick(userDTO.getUserNick());
-        userRepository.save(user);
     }
 
     public List<MemberSearchCondition> findAll() {
