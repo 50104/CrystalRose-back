@@ -73,7 +73,7 @@ public class ContentService {
 
     public ContentWithWriterDto selectOneContentDto(Long boardNo) {
         ContentEntity content = contentRepository.findByBoardNo(boardNo)
-            .orElseThrow(() -> new NoSuchElementException("존재하지 않는 게시글"));
+            .orElseThrow(() -> new NoSuchElementException("게시글이 존재하지 않습니다: " + boardNo));
         return ContentWithWriterDto.from(content);
     }
 
@@ -94,17 +94,38 @@ public class ContentService {
         log.info("게시글 및 연결된 이미지 삭제 완료: boardNo = {}", boardNo);
     }
 
+    @Transactional
     public void updateOneContent(ContentRequestDto req, Long boardNo) {
-        ContentEntity content = new ContentEntity();
-        content.setBoardNo(boardNo);
+        ContentEntity content = contentRepository.findByBoardNo(boardNo)
+            .orElseThrow(() -> new NoSuchElementException("게시글이 존재하지 않습니다: " + boardNo));
+
+        // 제목, 내용 갱신
         content.setBoardTitle(req.getBoardTitle());
         content.setBoardContent(req.getBoardContent());
+
         UserEntity user = userRepository.findByUserId(req.getUserId());
         if (user == null) {
             throw new IllegalArgumentException("해당 유저를 찾을 수 없습니다.");
         }
         content.setWriter(user);
         contentRepository.save(content);
+
+        // 기존 이미지 S3, DB 삭제
+        List<ImageEntity> oldImages = imageRepository.findByContent(content);
+        for (ImageEntity image : oldImages) {
+            log.info("기존 이미지 삭제: {}", image.getFileUrl());
+            s3Uploader.deleteFile(image.getFileUrl());
+        }
+        imageRepository.deleteAll(oldImages);
+
+        // HTML 내 이미지 URL 재분석 후 저장
+        Document doc = Jsoup.parse(req.getBoardContent());
+        Elements images = doc.select("img");
+        for (Element img : images) {
+            String imageUrl = img.attr("src");
+            if (imageUrl == null || imageUrl.isBlank()) continue;
+            saveImageAndDeleteTemp(imageUrl, content);
+        }
     }
     
     @Transactional
