@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.rose.back.domain.board.entity.ContentEntity;
+import com.rose.back.domain.user.entity.UserEntity;
 import com.rose.back.global.entity.BaseTimeEntity;
 
 import jakarta.persistence.CascadeType;
@@ -39,8 +40,9 @@ public class CommentEntity extends BaseTimeEntity {
     @Column(nullable = false)
     private String content;
 
-    @Column(nullable = false)
-    private String userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity writer;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_no", nullable = false)
