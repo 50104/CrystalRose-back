@@ -21,12 +21,12 @@ public class CommentResponseDto {
         return CommentResponseDto.builder()
                 .id(entity.getId())
                 .content(entity.getContent())
-                .userId(entity.getUserId())
+                .userId(entity.getWriter().getUserId())
                 .createdDate(entity.getCreatedDate() != null
                     ? entity.getCreatedDate().toString()
                     : "") // null 방지
                 .parentId(entity.getParent() != null ? entity.getParent().getId() : null)
-                .parentNickname(entity.getParent() != null ? entity.getParent().getUserId() : null)
+                .parentNickname(entity.getParent() != null ? entity.getParent().getWriter().getUserId() : null)
                 .deleted(entity.isDeleted())
                 .build();
     }

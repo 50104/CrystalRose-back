@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import com.rose.back.domain.report.dto.CommentReportResponseDto;
 import com.rose.back.domain.report.dto.ReportResponseDto;
 import com.rose.back.domain.report.service.ReportService;
 import com.rose.back.domain.user.controller.docs.AdminControllerDocs;
@@ -73,6 +74,18 @@ public class AdminController implements AdminControllerDocs {
         } catch (Exception e) {
             log.error("신고 내역 조회 실패: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().body("신고 내역 조회 실패");
+        }
+    }
+
+    @GetMapping("/comment-reports")
+    public ResponseEntity<List<CommentReportResponseDto>> getCommentReports() {
+        log.info("[GET][/api/v1/admin/comment-reports] - 관리자 댓글 신고 내역 조회 요청");
+        try {
+            List<CommentReportResponseDto> reports = adminService.getAllCommentReports();
+            return ResponseEntity.ok(reports);
+        } catch (Exception e) {
+            log.error("댓글 신고 내역 조회 실패: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(Collections.emptyList());
         }
     }
 }

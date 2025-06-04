@@ -12,9 +12,10 @@ import com.rose.back.domain.comment.dto.CommentRequestDto;
 import com.rose.back.domain.comment.dto.CommentResponseDto;
 import com.rose.back.domain.comment.entity.CommentEntity;
 import com.rose.back.domain.comment.repository.CommentRepository;
+import com.rose.back.domain.user.entity.UserEntity;
+import com.rose.back.domain.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -24,6 +25,7 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final ContentRepository contentRepository;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public List<CommentResponseDto> getComments(Long boardNo) {
@@ -33,10 +35,10 @@ public class CommentService {
                     if (comment.isDeleted()) {
                         return CommentResponseDto.builder()
                                 .id(comment.getId())
-                                .userId(comment.getUserId())
+                                .userId(comment.getWriter().getUserId())
                                 .createdDate(comment.getCreatedDate().toString())
                                 .parentId(comment.getParent() != null ? comment.getParent().getId() : null)
-                                .parentNickname(comment.getParent() != null ? comment.getParent().getUserId() : null)
+                                .parentNickname(comment.getParent() != null ? comment.getParent().getWriter().getUserId() : null)
                                 .deleted(true)
                                 .content(null)
                                 .build();
@@ -51,16 +53,21 @@ public class CommentService {
     public void addComment(Long boardNo, CommentRequestDto dto) {
         ContentEntity content = contentRepository.findById(boardNo)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다"));
+        UserEntity writer = userRepository.findByUserId(dto.getUserId());
+        if (writer == null) {
+            throw new IllegalArgumentException("작성자 유저가 존재하지 않습니다");
+        }
         CommentEntity parent = null;
         if (dto.getParentId() != null) {
             parent = commentRepository.findById(dto.getParentId())
                 .orElseThrow(() -> new IllegalArgumentException("부모 댓글이 존재하지 않습니다."));
         }
+
         log.info("댓글 저장 시도: boardNo={}, userId={}, content={}", boardNo, dto.getUserId(), dto.getContent());
 
         CommentEntity comment = CommentEntity.builder()
                 .content(dto.getContent())
-                .userId(dto.getUserId())
+                .writer(writer)
                 .contentEntity(content)
                 .parent(parent)
                 .build();

@@ -1,11 +1,18 @@
 package com.rose.back.domain.user.service;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.rose.back.domain.report.dto.CommentReportResponseDto;
+import com.rose.back.domain.report.entity.CommentReport;
+import com.rose.back.domain.report.repository.CommentReportRepository;
 import com.rose.back.domain.user.dto.AdminResponse;
+import com.rose.back.domain.user.entity.UserEntity;
+import com.rose.back.domain.comment.entity.CommentEntity;
 import com.rose.back.domain.wiki.entity.WikiEntity;
 import com.rose.back.domain.wiki.repository.WikiRepository;
 
@@ -22,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AdminService {
 
     private final WikiRepository wikiRepository;
+    private final CommentReportRepository commentReportRepository;
 
     public List<AdminResponse> getPendingList() {
         return wikiRepository.findAllByStatus(WikiEntity.Status.PENDING)
@@ -53,5 +61,36 @@ public class AdminService {
                 .status(wiki.getStatus().name())
                 .createdDate(wiki.getCreatedDate())
                 .build();
+    }
+
+    public List<CommentReportResponseDto> getAllCommentReports() {
+        List<CommentReport> reports = commentReportRepository.findAll();
+        log.info("조회된 댓글 신고 수: {}", reports.size());
+
+        return reports.stream()
+        .map(report -> {  
+            try {
+                return new CommentReportResponseDto(
+                    report.getId(),
+                    Optional.ofNullable(report.getReporter())
+                        .map(UserEntity::getUserNick)
+                        .orElse("탈퇴한 유저"),
+                    Optional.ofNullable(report.getTargetComment())
+                        .flatMap(comment -> Optional.ofNullable(comment.getWriter())
+                            .map(UserEntity::getUserNick))
+                        .orElse("알 수 없음"),
+                    Optional.ofNullable(report.getTargetComment())
+                        .map(CommentEntity::getContent)
+                        .orElse("댓글이 삭제됨"),
+                    report.getReason(),
+                    report.getReportedAt()
+                );
+            } catch (Exception e) {
+                log.error("Report 변환 중 예외 발생: reportId={}", report.getId(), e);
+                return null; // 예외 발생시 null 반환
+            }
+        })
+        .filter(Objects::nonNull)  // null 제거
+        .toList();
     }
 }

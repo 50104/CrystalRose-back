@@ -8,15 +8,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.rose.back.domain.auth.jwt.JwtTokenProvider;
 import com.rose.back.domain.auth.oauth2.CustomUserDetails;
 import com.rose.back.domain.auth.service.AccessTokenBlacklistService;
 import com.rose.back.domain.user.dto.UserInfoDto;
-import com.rose.back.domain.user.entity.UserEntity;
-import com.rose.back.domain.user.repository.UserRepository;
 
 import io.jsonwebtoken.ExpiredJwtException;
 
@@ -25,15 +22,12 @@ import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Component
 public class JWTFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtProvider;
     private final AccessTokenBlacklistService accessTokenBlacklistService;
-    private final UserRepository userRepository;
 
-    public JWTFilter(JwtTokenProvider jwtProvider, AccessTokenBlacklistService accessTokenBlacklistService, UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public JWTFilter(JwtTokenProvider jwtProvider, AccessTokenBlacklistService accessTokenBlacklistService) {
         this.jwtProvider = jwtProvider;
         this.accessTokenBlacklistService = accessTokenBlacklistService;
     }
@@ -93,12 +87,14 @@ public class JWTFilter extends OncePerRequestFilter {
         // userId, userRole 값 획득
         String userId = jwtProvider.getUserId(accessToken);
         String userRole = jwtProvider.getUserRole(accessToken);
-        UserEntity user = userRepository.findByUserId(userId); 
+        String userNick = jwtProvider.getUserNick(accessToken);
+        Long userNo = jwtProvider.getUserNo(accessToken);
 
         UserInfoDto userDto = UserInfoDto.builder()
-                .userNo(user.getUserNo())
+                .userNo(userNo)
                 .userName(userId)
                 .userRole(userRole)
+                .userNick(userNick)
                 .build();
 
         CustomUserDetails customUserDetails = new CustomUserDetails(userDto);
@@ -106,6 +102,11 @@ public class JWTFilter extends OncePerRequestFilter {
         // 인증 객체 생성
         Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authToken);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.info("Authentication class: {}", authentication.getClass());
+        log.info("Principal class: {}", authentication.getPrincipal().getClass());
+        log.info("Principal: {}", authentication.getPrincipal());
 
         filterChain.doFilter(request, response);
     }
