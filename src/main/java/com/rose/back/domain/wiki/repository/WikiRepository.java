@@ -16,4 +16,6 @@ public interface WikiRepository extends JpaRepository<WikiEntity, Long> {
     Optional<WikiEntity> findByIdAndStatus(Long id, WikiEntity.Status status);
 
     boolean existsByImageUrl(String imageUrl);
+
+    Optional<WikiEntity> findById(Long id);
 }
