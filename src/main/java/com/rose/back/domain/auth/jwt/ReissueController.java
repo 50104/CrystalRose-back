@@ -4,6 +4,9 @@ import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -94,12 +97,10 @@ public class ReissueController implements ReissueControllerDocs{
         refreshCookie.setAttribute("SameSite", "None");
         response.addCookie(refreshCookie);
 
-        response.setHeader("access", newAccess);
-        // response.addCookie(createCookie("refresh", newRefresh));
-
         log.info("reissue success: {}", userId);
         log.info("access token 재발급 성공: {}", newAccess);
         log.info("refresh token 재발급 성공: {}", newRefresh);
-        return new ResponseEntity<>(HttpStatus.OK);
+
+        return ResponseEntity.ok(Map.of("accessToken", newAccess));
     }
 }

@@ -221,5 +221,5 @@ public interface AuthControllerDocs {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "회원 탈퇴 철회 성공")
     })
-    ResponseEntity<?> cancelWithdraw(@RequestHeader("access") String accessToken, HttpServletResponse response);
+    ResponseEntity<?> cancelWithdraw(HttpServletRequest request, HttpServletResponse response);
 }

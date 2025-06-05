@@ -9,6 +9,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
 
 import com.rose.back.domain.auth.jwt.JwtTokenProvider;
@@ -45,15 +46,13 @@ public class CustomLogoutFilter extends GenericFilterBean {
         }
 
         // AccessToken 헤더에서 추출
-        String accessToken = httpRequest.getHeader("access");
+        String accessToken = resolveAccessToken(httpRequest);
         if (accessToken != null) {
             try {
-                jwtProvider.validateExpiration(accessToken); // 만료되었으면 예외 발생
+                jwtProvider.validateExpiration(accessToken);
                 long exp = jwtProvider.getExpiration(accessToken);
                 accessTokenBlacklistService.blacklist(accessToken, exp);
-            } catch (ExpiredJwtException ignored) {
-                // 이미 만료된 경우 블랙리스트 안 해도 됨
-            }
+            } catch (ExpiredJwtException ignored) {} // 이미 만료된 경우 블랙리스트 제외
         }
 
         // refresh token 확인
@@ -96,5 +95,13 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
         httpResponse.addCookie(cookie);
         httpResponse.setStatus(HttpServletResponse.SC_OK);
+    }
+
+    private String resolveAccessToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 }

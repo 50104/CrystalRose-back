@@ -20,12 +20,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import lombok.extern.slf4j.Slf4j;
 
@@ -130,13 +132,25 @@ public class AuthController implements AuthControllerDocs {
     }
 
     @PutMapping("/withdraw/cancel")
-    public ResponseEntity<?> cancelWithdraw(@RequestHeader("access") String accessToken, HttpServletResponse response) {
+    public ResponseEntity<?> cancelWithdraw(HttpServletRequest request, HttpServletResponse response) {
         log.info("[PUT][/api/v1/auth/withdraw/cancel] - 탈퇴 취소 요청");
+        String accessToken = resolveAccessToken(request);
+        if (accessToken == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         try {
             return authService.cancelWithdraw(accessToken, response);
         } catch (Exception e) {
             log.error("탈퇴 취소 실패: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    private String resolveAccessToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 }

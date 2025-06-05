@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.rose.back.common.util.CertificationNumber;
 import com.rose.back.domain.auth.jwt.JwtTokenProvider;
@@ -213,7 +214,8 @@ public class AuthServiceImpl implements AuthService {
 
     // 회원 탈퇴
     public ResponseEntity<?> withdraw(HttpServletRequest request, HttpServletResponse response, Map<String, String> body) {
-        String accessToken = request.getHeader("access");
+        String authorizationHeader = request.getHeader("Authorization");
+        String accessToken = resolveToken(authorizationHeader);
         String refresh = null;
 
         for (Cookie cookie : Optional.ofNullable(request.getCookies()).orElse(new Cookie[0])) {
@@ -308,5 +310,12 @@ public class AuthServiceImpl implements AuthService {
         refreshTokenService.delete(userId); // 기존 토큰 무효화, 재로그인 요구, access 제거
 
         return ResponseEntity.ok().body("탈퇴 철회가 완료되었습니다. 다시 로그인해주세요.");
+    }
+
+    private String resolveToken(String bearerToken) {
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 }

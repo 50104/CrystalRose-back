@@ -63,24 +63,25 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     //로그인 성공 시 수행할 작업
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) {
-        //사용자의 아이디, 비밀번호, 역할, 닉네임을 갖는 CustomUserDetails 가져옴
-        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
-        String userId = authentication.getName();
-        String userRole = authentication.getAuthorities().iterator().next().getAuthority();
-        String userNick = customUserDetails.getUserNick();
-        Long userNo = customUserDetails.getUserNo();
 
-        String access = jwtProvider.create("access", userId, userNick, userRole, 30*60*1000L, userNo); // 30분
-        String refresh = jwtProvider.create("refresh", userId, userNick, userRole, 24*60*60*1000L, userNo); // 1일
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        String userId = authentication.getName();
+        String userRole = userDetails.getAuthorities().iterator().next().getAuthority();
+        String userNick = userDetails.getUserNick();
+        Long userNo = userDetails.getUserNo();
+
+        String access = jwtProvider.create("access", userId, userNick, userRole, 30 * 60 * 1000L, userNo); // 30분
+        String refresh = jwtProvider.create("refresh", userId, userNick, userRole, 24 * 60 * 60 * 1000L, userNo); // 1일
 
         refreshTokenService.delete(userId);
         refreshTokenService.save(userId, refresh, 24 * 60 * 60 * 1000L);
 
-        response.setHeader("access", access);
+        response.setHeader("Authorization", "Bearer " + access);
         if (Boolean.TRUE.equals(request.getAttribute("withdrawalPending"))) {
             response.setHeader("withdrawal", "true");
         }
         response.addCookie(createCookie("refresh", refresh));
+
         response.setStatus(HttpStatus.OK.value());
         log.info("Authentication successful for user: {}", userId);
     }

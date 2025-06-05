@@ -20,11 +20,11 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler { // OAuth2 인증 성공 시 호출
-    
+public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+
     private final JwtTokenProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
-    private final UserRepository userRepository; 
+    private final UserRepository userRepository;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -36,19 +36,18 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         Long userNo = userRepository.findByUserId(userId).getUserNo();
 
         String refresh = jwtProvider.create("refresh", userId, userNick, userRole, 24 * 60 * 60 * 1000L, userNo);
-
         refreshTokenService.delete(userId);
         refreshTokenService.save(userId, refresh, 24 * 60 * 60 * 1000L);
 
-        // 쿠키 세팅
+        // refresh 토큰만 쿠키에 저장
         Cookie cookie = new Cookie("refresh", refresh);
         cookie.setMaxAge(24 * 60 * 60);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         cookie.setPath("/");
         cookie.setAttribute("SameSite", "None");
-
         response.addCookie(cookie);
+
         response.sendRedirect("http://localhost:3000/getAccess");
     }
 }
