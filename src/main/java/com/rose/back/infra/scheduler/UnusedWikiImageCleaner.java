@@ -24,17 +24,23 @@ public class UnusedWikiImageCleaner {
     private final WikiRepository wikiRepo;
     private final S3Uploader s3Uploader;
 
+    private static final long THRESHOLD_MILLIS = 1000 * 60 * 60;  // 1시간
+
     @Scheduled(cron = "0 0 * * * *") // 1시간마다
     @Transactional
     public void clean() {
-        Date threshold = new Date(System.currentTimeMillis() - 1000 * 60 * 60);
+        Date threshold = new Date(System.currentTimeMillis() - THRESHOLD_MILLIS);
         List<WikiImageTempEntity> expired = tempRepo.findByUploadedAtBefore(threshold);
 
         for (WikiImageTempEntity temp : expired) {
-            if (!wikiRepo.existsByImageUrl(temp.getFileUrl())) {
-                s3Uploader.deleteFile(temp.getFileUrl());
-                tempRepo.delete(temp);
-                log.info("미사용 위키 이미지 삭제: {}", temp.getFileUrl());
+            try {
+                if (!wikiRepo.existsByImageUrl(temp.getFileUrl())) {
+                    s3Uploader.deleteFile(temp.getFileUrl());
+                    tempRepo.delete(temp);
+                    log.info("미사용 위키 이미지 삭제: {}", temp.getFileUrl());
+                }
+            } catch (Exception e) {
+                log.error("이미지 정리 중 오류: {}", e.getMessage(), e);
             }
         }
     }

@@ -12,8 +12,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.Builder;
 import lombok.Setter;
 
+@Builder
 @Setter
 @Entity
 @Table(name = "rose_mine")
@@ -30,4 +32,5 @@ public class RoseEntity extends BaseTimeEntity {
     private String nickname; // 사용자 지정 별명
     private LocalDate acquiredDate; // 획득 날짜
     private String locationNote; // 메모
+    private String imageUrl;
 }

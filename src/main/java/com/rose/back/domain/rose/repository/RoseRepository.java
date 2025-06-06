@@ -9,4 +9,6 @@ import com.rose.back.domain.rose.entity.RoseEntity;
 public interface RoseRepository extends JpaRepository<RoseEntity, Long> {
 
     List<RoseEntity> findAllByUserId(Long userId);
+
+    boolean existsByImageUrl(String imageUrl);
 }
