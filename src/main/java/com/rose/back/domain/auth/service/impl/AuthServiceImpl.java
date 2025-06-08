@@ -147,6 +147,7 @@ public class AuthServiceImpl implements AuthService {
                     .userNick(dto.getUserNick())
                     .userRole("ROLE_USER")
                     .userType("web")
+                    .userStatus(UserStatus.ACTIVE)
                     .apDate(LocalDate.now())
                     .build();
             userRepository.save(user);
