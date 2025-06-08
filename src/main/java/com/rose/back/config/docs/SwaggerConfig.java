@@ -18,7 +18,7 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .info(new Info()
                         .version("v1.0.0")
-                        .title("CristalRose API")
+                        .title("CrystalRose API")
                         .description("빛나는 크리스퇄 가드닝 API")
                 )
                 .servers(List.of(

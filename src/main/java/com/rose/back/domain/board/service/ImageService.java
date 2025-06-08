@@ -65,7 +65,7 @@ public class ImageService {
 
         ImageEntity image = ImageEntity.builder()
             .originalFileName(file.getOriginalFilename())
-            .storedFileName(fileUrl.replace("https://cristalrose-web.s3.ap-northeast-2.amazonaws.com/", ""))
+            .storedFileName(fileUrl.replace("https://crystalrose-web.s3.ap-northeast-2.amazonaws.com/", ""))
             .fileUrl(fileUrl)
             .content(content)
             .build();

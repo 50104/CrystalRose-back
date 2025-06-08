@@ -34,7 +34,7 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script_stop: true
           script: |
-            cd /home/ubuntu/CristalRose-back
+            cd /home/ubuntu/CrystalRose-back
             rm -rf src/main/resources/application.yml
             rm -rf src/main/resources/application-oauth2.yml
             git fetch origin

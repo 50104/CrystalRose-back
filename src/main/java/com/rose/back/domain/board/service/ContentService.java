@@ -134,7 +134,7 @@ public class ContentService {
         if (!imageRepository.existsByFileUrl(fileUrl)) {
             imageRepository.save(ImageEntity.builder()
                 .fileUrl(fileUrl)
-                .storedFileName(fileUrl.replace("https://cristalrose-web.s3.ap-northeast-2.amazonaws.com/", ""))
+                .storedFileName(fileUrl.replace("https://crystalrose-web.s3.ap-northeast-2.amazonaws.com/", ""))
                 .content(content)
                 .build());
             log.info("이미지 DB 저장 완료: {}", fileUrl);

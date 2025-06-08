@@ -81,7 +81,7 @@ public class S3Uploader {
 
     public void deleteFile(String fileUrl) {
         try {
-            String key = fileUrl.replace("https://cristalrose-web.s3.ap-northeast-2.amazonaws.com/", "");
+            String key = fileUrl.replace("https://crystalrose-web.s3.ap-northeast-2.amazonaws.com/", "");
             amazonS3.deleteObject(bucket, key);
             log.info("S3 삭제 완료: {}", key);
         } catch (AmazonServiceException e) {
