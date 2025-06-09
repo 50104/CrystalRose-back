@@ -1,9 +1,11 @@
-package com.rose.back.domain.wiki.entity;
+package com.rose.back.infra.S3;
 
 import java.util.Date;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -14,25 +16,27 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Getter
-@Setter
 @Builder
-@NoArgsConstructor
+@NoArgsConstructor 
 @AllArgsConstructor
-@Table(name = "temp_wiki_image")
-public class WikiImageTempEntity {
+@Table(name = "image_temp")
+public class ImageTempEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "file_url", nullable = false, unique = true, length = 500)
     private String fileUrl;
 
-    @Column(name = "uploaded_at", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "domain_type")
+    private DomainType domainType;
+
     @Temporal(TemporalType.TIMESTAMP)
     private Date uploadedAt;
+
+    public enum DomainType { BOARD, ROSE, WIKI, DIARY }
 }

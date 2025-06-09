@@ -15,7 +15,7 @@ import jakarta.persistence.*;
 @NoArgsConstructor
 @Entity
 @Table(name = "board_Image")
-public class ImageEntity extends BaseTimeEntity {
+public class ContentImageEntity extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

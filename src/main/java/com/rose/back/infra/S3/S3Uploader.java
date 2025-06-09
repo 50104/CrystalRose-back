@@ -8,7 +8,6 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.amazonaws.AmazonServiceException;
@@ -28,14 +27,15 @@ public class S3Uploader {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    public String uploadFile(@RequestParam("file") MultipartFile file, 
-                            @RequestParam(value = "boardNo", required = false) Long boardNo) throws IOException {
+    public String uploadFile(String folderName, MultipartFile file) throws IOException {
         String originalName = file.getOriginalFilename();
-        log.info("S3Uploader 호출됨 - originalName: {}, size: {}, boardNo: {}", originalName, file.getSize(), boardNo);
+        log.info("S3Uploader 호출됨 - originalName: {}, folder: {}", originalName, folderName);
+
         String extension = getExtension(originalName);
         String uuid = UUID.randomUUID().toString().substring(0, 8);
         String timeStamp = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
-        String key = String.format("boards/%s/%s%s", timeStamp, uuid, extension);
+
+        String key = String.format("%s/%s/%s%s", folderName, timeStamp, uuid, extension);
 
         try (InputStream inputStream = file.getInputStream()) {
             ObjectMetadata metadata = new ObjectMetadata();
@@ -44,9 +44,9 @@ public class S3Uploader {
 
             amazonS3.putObject(bucket, key, inputStream, metadata);
             log.info("S3 업로드 성공: key={}", key);
-            return amazonS3.getUrl(bucket, key).toString(); // 전체 URL 반환
+            return amazonS3.getUrl(bucket, key).toString();
         } catch (IOException e) {
-            log.error("S3 업로드 중 IO 오류: {}", e.getMessage());
+            log.error("S3 업로드 실패: {}", e.getMessage());
             throw new IOException("S3 업로드 실패", e);
         }
     }
@@ -54,8 +54,9 @@ public class S3Uploader {
     public String uploadProfile(MultipartFile file, String userId) throws IOException {
         String originalName = file.getOriginalFilename();
         log.info("S3 프로필 업로드 호출됨 - originalName: {}, userId: {}", originalName, userId);
+
         String extension = getExtension(originalName);
-        String key = String.format("profiles/%s_%s%s", userId, UUID.randomUUID(), extension);  // 파일명 중복 방지
+        String key = String.format("profiles/%s_%s%s", userId, UUID.randomUUID(), extension);
 
         try (InputStream inputStream = file.getInputStream()) {
             ObjectMetadata metadata = new ObjectMetadata();
@@ -73,7 +74,7 @@ public class S3Uploader {
 
     private String getExtension(String filename) {
         if (filename == null || !filename.contains(".")) {
-            log.warn("파일명 null 또는 확장자 없음: {}", filename);
+            log.warn("파일명 없음: {}", filename);
             return ".bin";
         }
         return filename.substring(filename.lastIndexOf(".")).toLowerCase();

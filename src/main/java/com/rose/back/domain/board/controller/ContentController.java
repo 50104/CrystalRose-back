@@ -12,8 +12,9 @@ import com.rose.back.common.util.PageUtil;
 import com.rose.back.domain.board.dto.ContentListDto;
 import com.rose.back.domain.board.dto.ContentRequestDto;
 import com.rose.back.domain.board.service.ContentService;
-import com.rose.back.domain.board.service.ImageService;
+import com.rose.back.domain.board.service.ContentImageService;
 
+import java.io.IOException;
 import java.util.*;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ContentController {
 
-    private final ImageService imageService;
+    private final ContentImageService contentImageService;
     private final ContentService contentService;
 
     @GetMapping("/editor")
@@ -66,7 +67,7 @@ public class ContentController {
                 for (MultipartFile file : files) {
                     log.info("파일 이름: {}", file.getOriginalFilename());
                 }
-                imageService.saveImagesForBoard(savedBoardNo, files); // 이미지 저장
+                contentImageService.saveImagesForBoard(savedBoardNo, files); // 이미지 저장
             }
             Map<String, Object> response = new HashMap<>();
             response.put("data", Collections.singletonMap("boardNo", savedBoardNo));
@@ -142,6 +143,22 @@ public class ContentController {
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "게시글 삭제 실패: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+    @ResponseBody
+    @PostMapping("/image/upload")
+    public ResponseEntity<Map<String, Object>> imageUpload(@RequestParam("file") MultipartFile file) {
+        log.info("[POST][/image/upload] - 이미지 업로드 요청: {}", file.getOriginalFilename());
+        if (file == null || file.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("uploaded", false, "error", "파일 누락"));
+        }
+        try {
+            String s3Url = contentImageService.saveImageS3(file);
+            return ResponseEntity.ok(Map.of("uploaded", true, "url", s3Url));
+        } catch (IOException e) {
+            log.error("이미지 업로드 실패: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(Map.of("uploaded", false, "error", e.getMessage()));
         }
     }
 }

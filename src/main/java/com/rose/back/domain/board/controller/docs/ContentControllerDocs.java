@@ -202,4 +202,30 @@ public interface ContentControllerDocs {
         )
     })
     ResponseEntity<Map<String, String>> deleteC(@PathVariable("boardNo") Long boardNo);
+
+    @Operation(summary = "이미지 업로드", description = "이미지를 업로드하고 S3 URL을 반환합니다.")
+    @CommonErrorResponses
+    @ImageUploadErrorResponses
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "이미지 업로드 성공"),
+        @ApiResponse(
+            responseCode = "409",
+            description = "이미지 업로드 실패",
+            content = @Content(
+                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                examples = @ExampleObject(
+                    name = "Conflict",
+                    value = """
+                    {
+                      "status": 409,
+                      "error": "CONFLICT",
+                      "message": "이미지 업로드에 실패했습니다.",
+                      "path": "/board/image/upload",
+                    }
+                    """
+                )
+            )
+        )
+    })
+    ResponseEntity<Map<String, Object>> imageUpload(@RequestParam("file") MultipartFile file) throws Exception;
 }

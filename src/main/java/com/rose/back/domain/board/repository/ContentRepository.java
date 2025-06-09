@@ -9,6 +9,8 @@ import java.util.*;
 public interface ContentRepository extends JpaRepository<ContentEntity, Long> {
 
     Optional<ContentEntity> findByBoardNo(Long boardNo);
+
     void deleteByBoardNo(Long boardNo);
+    
     boolean existsByBoardNo(Long boardNo);
 }

@@ -6,15 +6,15 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.rose.back.domain.board.entity.ContentImageEntity;
 import com.rose.back.domain.board.entity.ContentEntity;
-import com.rose.back.domain.board.entity.ImageEntity;
 
 @Repository
-public interface ImageRepository extends JpaRepository<ImageEntity, Long> {
+public interface ContentImageRepository extends JpaRepository<ContentImageEntity, Long> {
     
     boolean existsByFileUrl(String fileUrl);
 
-    List<ImageEntity> findByContent(ContentEntity content);
+    List<ContentImageEntity> findByContent(ContentEntity content);
 
-    Optional<ImageEntity> findByFileUrl(String fileUrl);
+    Optional<ContentImageEntity> findByFileUrl(String fileUrl);
 }

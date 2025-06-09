@@ -1,9 +1,11 @@
 package com.rose.back.infra.scheduler;
 
-import com.rose.back.domain.board.repository.ImageTempRepository;
-import com.rose.back.domain.board.repository.ImageRepository;
-import com.rose.back.domain.board.entity.ImageEntity;
-import com.rose.back.domain.board.entity.ImageTempEntity;
+import com.rose.back.domain.diary.repository.DiaryRepository;
+import com.rose.back.domain.rose.repository.RoseRepository;
+import com.rose.back.domain.wiki.repository.WikiRepository;
+import com.rose.back.domain.board.repository.ContentImageRepository;
+import com.rose.back.infra.S3.ImageTempEntity;
+import com.rose.back.infra.S3.ImageTempRepository;
 import com.rose.back.infra.S3.S3Uploader;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,33 +22,34 @@ import java.util.List;
 public class UnusedImageCleaner {
 
     private final ImageTempRepository imageTempRepository;
-    private final ImageRepository imageRepository;
+    private final ContentImageRepository imageRepository;
+    private final RoseRepository roseRepository;
+    private final WikiRepository wikiRepository;
+    private final DiaryRepository diaryRepository;
     private final S3Uploader s3Uploader;
 
-    @Scheduled(cron = "0 0 * * * *") // 매시 정각
+    @Scheduled(cron = "0 0 * * * *")
     @Transactional
-    public void cleanUnusedImages() {
-        Date oneHourAgo = new Date(System.currentTimeMillis() - 1000 * 60 * 60);
-        List<ImageTempEntity> temps = imageTempRepository.findByUploadedAtBefore(oneHourAgo);
-        // List<ImageEntity> imageList = imageRepository.findAll();
-        // for (ImageEntity image : imageList) {
-        //     log.info("board_image 에 저장된 fileUrl = {}", image.getFileUrl());
-        // }
-        for (ImageTempEntity temp : temps) {
-            String tempUrl = temp.getFileUrl();
-            
-            // for (ImageEntity image : imageList) {
-            //     if (image.getFileUrl().equals(tempUrl)) {
-            //         log.warn("일치하는 fileUrl tempUrl={}, imageUrl={}", tempUrl, image.getFileUrl());
-            //     }else {
-            //         log.info("서로 다름: \n temp: [{}] \n image: [{}]", tempUrl, image.getFileUrl());
-            //     }
-            // }
-            if (!imageRepository.existsByFileUrl(tempUrl)) {
-                // log.warn("S3 삭제 예정 이미지 확인: {}", tempUrl);
-                s3Uploader.deleteFile(temp.getFileUrl());
-                imageTempRepository.delete(temp);
-                log.info("삭제된 미사용 이미지: {}", tempUrl);
+    public void cleanAllUnusedImages() {
+        Date threshold = new Date(System.currentTimeMillis() - 1000 * 60 * 60);
+        List<ImageTempEntity> expired = imageTempRepository.findByUploadedAtBefore(threshold);
+
+        for (ImageTempEntity temp : expired) {
+            try {
+                boolean inUse = switch (temp.getDomainType()) {
+                    case BOARD -> imageRepository.existsByFileUrl(temp.getFileUrl());
+                    case ROSE -> roseRepository.existsByImageUrl(temp.getFileUrl());
+                    case WIKI -> wikiRepository.existsByImageUrl(temp.getFileUrl());
+                    case DIARY -> diaryRepository.existsByImageUrl(temp.getFileUrl());
+                };
+
+                if (!inUse) {
+                    s3Uploader.deleteFile(temp.getFileUrl());
+                    imageTempRepository.delete(temp);
+                    log.info("미사용 {} 이미지 삭제: {}", temp.getDomainType(), temp.getFileUrl());
+                }
+            } catch (Exception e) {
+                log.error("{} 이미지 삭제 실패: {}", temp.getDomainType(), e.getMessage(), e);
             }
         }
     }
