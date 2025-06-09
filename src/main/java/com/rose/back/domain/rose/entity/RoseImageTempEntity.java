@@ -10,7 +10,7 @@ import java.util.Date;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "rose_image_temp")
+@Table(name = "temp_rose_image")
 public class RoseImageTempEntity {
 
     @Id

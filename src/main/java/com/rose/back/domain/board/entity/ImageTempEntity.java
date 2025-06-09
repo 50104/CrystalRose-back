@@ -13,7 +13,7 @@ import org.springframework.data.annotation.CreatedDate;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "board_image_temp")
+@Table(name = "temp_board_image")
 public class ImageTempEntity {
 
     @Id

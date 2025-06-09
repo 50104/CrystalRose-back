@@ -26,7 +26,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "user_block",
+@Table(name = "report_user_block",
       uniqueConstraints = @UniqueConstraint(columnNames = {"blocker_id", "blocked_id"}))
 public class UserBlock {
 

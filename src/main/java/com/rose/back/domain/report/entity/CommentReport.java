@@ -18,7 +18,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@Table(name = "comment_report")
+@Table(name = "report_comment")
 public class CommentReport {
 
     @Id

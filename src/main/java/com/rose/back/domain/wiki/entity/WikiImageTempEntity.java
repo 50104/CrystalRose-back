@@ -22,7 +22,7 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "wiki_image_temp")
+@Table(name = "temp_wiki_image")
 public class WikiImageTempEntity {
 
     @Id
