@@ -33,7 +33,15 @@ jobs:
           CLOUD_AWS_REGION_STATIC: ${{ secrets.CLOUD_AWS_REGION_STATIC }}
           CLOUD_AWS_S3_BUCKET: ${{ secrets.CLOUD_AWS_S3_BUCKET }}
         run: |
-          ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'EOF'
+          ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << EOF
+            export APPLICATION_YML="${{ secrets.APPLICATION_YML }}"
+            export APPLICATION_OAUTH2_YML="${{ secrets.APPLICATION_OAUTH2_YML }}"
+            export SPRING_JWT_SECRET="${{ secrets.SPRING_JWT_SECRET }}"
+            export CLOUD_AWS_CREDENTIALS_ACCESS_KEY="${{ secrets.CLOUD_AWS_CREDENTIALS_ACCESS_KEY }}"
+            export CLOUD_AWS_CREDENTIALS_SECRET_KEY="${{ secrets.CLOUD_AWS_CREDENTIALS_SECRET_KEY }}"
+            export CLOUD_AWS_REGION_STATIC="${{ secrets.CLOUD_AWS_REGION_STATIC }}"
+            export CLOUD_AWS_S3_BUCKET="${{ secrets.CLOUD_AWS_S3_BUCKET }}"
+
             set -e
             cd /home/ubuntu
 
@@ -51,12 +59,6 @@ jobs:
 
             sudo rm -rf build/libs
             chmod +x ./gradlew
-            
-            export SPRING_JWT_SECRET="$SPRING_JWT_SECRET"
-            export CLOUD_AWS_CREDENTIALS_ACCESS_KEY="$CLOUD_AWS_CREDENTIALS_ACCESS_KEY"
-            export CLOUD_AWS_CREDENTIALS_SECRET_KEY="$CLOUD_AWS_CREDENTIALS_SECRET_KEY"
-            export CLOUD_AWS_REGION_STATIC="$CLOUD_AWS_REGION_STATIC"
-            export CLOUD_AWS_S3_BUCKET="$CLOUD_AWS_S3_BUCKET"
 
             ./gradlew clean build --no-daemon
 
