@@ -90,18 +90,18 @@ tasks.withType(JavaCompile) {
 }
 
 processResources {
-  def envMap = [
-    "SPRING_JWT_SECRET"                : System.getenv("SPRING_JWT_SECRET"),
-    "CLOUD_AWS_CREDENTIALS_ACCESS_KEY" : System.getenv("CLOUD_AWS_CREDENTIALS_ACCESS_KEY"),
-    "CLOUD_AWS_CREDENTIALS_SECRET_KEY" : System.getenv("CLOUD_AWS_CREDENTIALS_SECRET_KEY"),
-    "CLOUD_AWS_REGION_STATIC"          : System.getenv("CLOUD_AWS_REGION_STATIC"),
-    "CLOUD_AWS_S3_BUCKET"              : System.getenv("CLOUD_AWS_S3_BUCKET")
-  ]
+  // def envMap = [
+  //   "SPRING_JWT_SECRET"                : System.getenv("SPRING_JWT_SECRET"),
+  //   "CLOUD_AWS_CREDENTIALS_ACCESS_KEY" : System.getenv("CLOUD_AWS_CREDENTIALS_ACCESS_KEY"),
+  //   "CLOUD_AWS_CREDENTIALS_SECRET_KEY" : System.getenv("CLOUD_AWS_CREDENTIALS_SECRET_KEY"),
+  //   "CLOUD_AWS_REGION_STATIC"          : System.getenv("CLOUD_AWS_REGION_STATIC"),
+  //   "CLOUD_AWS_S3_BUCKET"              : System.getenv("CLOUD_AWS_S3_BUCKET")
+  // ]
 
-  filesMatching('**/*.yml') {
-    expand(envMap)
-  }
-  filesMatching('**/*.properties') {
-    expand(envMap)
-  }
+  // filesMatching('**/*.yml') {
+  //   expand(envMap)
+  // }
+  // filesMatching('**/*.properties') {
+  //   expand(envMap)
+  // }
 }
