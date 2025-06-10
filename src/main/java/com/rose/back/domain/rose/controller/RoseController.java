@@ -42,7 +42,7 @@ public class RoseController {
         }
     }
 
-    @PostMapping("/upload")
+    @PostMapping("/image/upload")
     public ResponseEntity<Map<String, Object>> upload(@RequestParam("file") MultipartFile file) {
         log.info("[POST][/api/v1/roses/image/upload] - 장미 이미지 업로드 요청: {}", file.getOriginalFilename());
         try {
