@@ -1,14 +1,22 @@
-name: Deploy To EC2
+name : Deploy To EC2
 
+# Event : 실행되는 시점을 설정
+# main이라는 브랜치에 push 될 때 아래 Workflow를 실행
 on:
   push:
     branches:
       - main
 
+# 하나의 Workflow는 1개 이상의 Job으로 구성
+# 여러 Job은 기본적으로 병렬로 실행되지만, 의존성을 설정하여 순차적으로 실행 가능
 jobs:
-  deploy:
+  # Job을 식별하기 위한 id
+  Deploy:
+    # ubuntu 환경 / 가장 최신 버전(latest)
     runs-on: ubuntu-latest
 
+    # step : 특정 작업을 수행하는 가장 작은 단위
+    # Job은 여러 Step들로 구성
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -18,33 +26,38 @@ jobs:
           echo "${{ secrets.EC2_PRIVATE_KEY_BASE64 }}" | base64 -d > private_key.pem
           chmod 600 private_key.pem
 
-      - name: Configure AWS credentials for CLI
+      - name: Verify SSH Key Format
         run: |
-          mkdir -p ~/.aws
-          echo "[default]" > ~/.aws/credentials
-          echo "aws_access_key_id = ${{ secrets.CLOUD_AWS_CREDENTIALS_ACCESS_KEY }}" >> ~/.aws/credentials
-          echo "aws_secret_access_key = ${{ secrets.CLOUD_AWS_CREDENTIALS_SECRET_KEY }}" >> ~/.aws/credentials
+          file private_key.pem
+          head -n 5 private_key.pem
 
       - name: SSH Deploy to EC2
+        env:
+          APPLICATION_YML: ${{ secrets.APPLICATION_YML }}
+          APPLICATION_OAUTH2_YML: ${{ secrets.APPLICATION_OAUTH2_YML }}
+          SPRING_JWT_SECRET: ${{ secrets.SPRING_JWT_SECRET }}
+          CLOUD_AWS_CREDENTIALS_ACCESS_KEY: ${{ secrets.CLOUD_AWS_CREDENTIALS_ACCESS_KEY }}
+          CLOUD_AWS_CREDENTIALS_SECRET_KEY: ${{ secrets.CLOUD_AWS_CREDENTIALS_SECRET_KEY }}
+          CLOUD_AWS_REGION_STATIC: ${{ secrets.CLOUD_AWS_REGION_STATIC }}
+          CLOUD_AWS_S3_BUCKET: ${{ secrets.CLOUD_AWS_S3_BUCKET }}
         run: |
           ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'EOF'
-            set -e
-
-            cd /home/ubuntu
-
-            if [ ! -d CrystalRose-back ]; then
-              git clone git@github.com:50104/CrystalRose-back.git
-            fi
-
-            cd CrystalRose-back
-
+            cd /home/ubuntu/CrystalRose-back
+            rm -rf src/main/resources/application.yml
+            rm -rf src/main/resources/application-oauth2.yml
             git fetch origin
             git reset --hard origin/main
-
-            aws s3 cp s3://crystalrose-web/config/application.yml src/main/resources/application.yml
-            aws s3 cp s3://crystalrose-web/config/application-oauth2.yml src/main/resources/application-oauth2.yml
-
+            echo "$APPLICATION_YML" > src/main/resources/application.yml
+            echo "$APPLICATION_OAUTH2_YML" > src/main/resources/application-oauth2.yml
+            sudo rm -rf build/libs
             chmod +x ./gradlew
+            
+            export SPRING_JWT_SECRET="$SPRING_JWT_SECRET"
+            export CLOUD_AWS_CREDENTIALS_ACCESS_KEY="$CLOUD_AWS_CREDENTIALS_ACCESS_KEY"
+            export CLOUD_AWS_CREDENTIALS_SECRET_KEY="$CLOUD_AWS_CREDENTIALS_SECRET_KEY"
+            export CLOUD_AWS_REGION_STATIC="$CLOUD_AWS_REGION_STATIC"
+            export CLOUD_AWS_S3_BUCKET="$CLOUD_AWS_S3_BUCKET"
+
             ./gradlew clean build --no-daemon
 
             sudo fuser -k -n tcp 4000 || true
