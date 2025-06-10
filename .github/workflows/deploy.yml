@@ -30,7 +30,13 @@ jobs:
           ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'EOF'
             set -e
 
-            cd /home/ubuntu/CrystalRose-back || git clone git@github.com:50104/CrystalRose-back.git && cd CrystalRose-back
+            cd /home/ubuntu
+
+            if [ ! -d CrystalRose-back ]; then
+              git clone git@github.com:50104/CrystalRose-back.git
+            fi
+
+            cd CrystalRose-back
 
             git fetch origin
             git reset --hard origin/main
