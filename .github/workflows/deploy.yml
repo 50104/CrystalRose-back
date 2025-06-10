@@ -18,48 +18,27 @@ jobs:
           echo "${{ secrets.EC2_PRIVATE_KEY_BASE64 }}" | base64 -d > private_key.pem
           chmod 600 private_key.pem
 
-      - name: Verify SSH Key Format
+      - name: Configure AWS credentials for CLI
         run: |
-          file private_key.pem
-          head -n 5 private_key.pem
+          mkdir -p ~/.aws
+          echo "[default]" > ~/.aws/credentials
+          echo "aws_access_key_id = ${{ secrets.CLOUD_AWS_CREDENTIALS_ACCESS_KEY }}" >> ~/.aws/credentials
+          echo "aws_secret_access_key = ${{ secrets.CLOUD_AWS_CREDENTIALS_SECRET_KEY }}" >> ~/.aws/credentials
 
-      - name: Deploy via SSH
-        env:
-          APPLICATION_YML: ${{ secrets.APPLICATION_YML }}
-          APPLICATION_OAUTH2_YML: ${{ secrets.APPLICATION_OAUTH2_YML }}
-          SPRING_JWT_SECRET: ${{ secrets.SPRING_JWT_SECRET }}
-          CLOUD_AWS_CREDENTIALS_ACCESS_KEY: ${{ secrets.CLOUD_AWS_CREDENTIALS_ACCESS_KEY }}
-          CLOUD_AWS_CREDENTIALS_SECRET_KEY: ${{ secrets.CLOUD_AWS_CREDENTIALS_SECRET_KEY }}
-          CLOUD_AWS_REGION_STATIC: ${{ secrets.CLOUD_AWS_REGION_STATIC }}
-          CLOUD_AWS_S3_BUCKET: ${{ secrets.CLOUD_AWS_S3_BUCKET }}
+      - name: SSH Deploy to EC2
         run: |
-          ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << EOF
-            export APPLICATION_YML="${{ secrets.APPLICATION_YML }}"
-            export APPLICATION_OAUTH2_YML="${{ secrets.APPLICATION_OAUTH2_YML }}"
-            export SPRING_JWT_SECRET="${{ secrets.SPRING_JWT_SECRET }}"
-            export CLOUD_AWS_CREDENTIALS_ACCESS_KEY="${{ secrets.CLOUD_AWS_CREDENTIALS_ACCESS_KEY }}"
-            export CLOUD_AWS_CREDENTIALS_SECRET_KEY="${{ secrets.CLOUD_AWS_CREDENTIALS_SECRET_KEY }}"
-            export CLOUD_AWS_REGION_STATIC="${{ secrets.CLOUD_AWS_REGION_STATIC }}"
-            export CLOUD_AWS_S3_BUCKET="${{ secrets.CLOUD_AWS_S3_BUCKET }}"
-
+          ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'EOF'
             set -e
-            cd /home/ubuntu
 
-            if [ ! -d CrystalRose-back ]; then
-              git clone git@github.com:50104/CrystalRose-back.git
-            fi
-
-            cd CrystalRose-back
+            cd /home/ubuntu/CrystalRose-back || git clone git@github.com:50104/CrystalRose-back.git && cd CrystalRose-back
 
             git fetch origin
             git reset --hard origin/main
 
-            echo "$APPLICATION_YML" > src/main/resources/application.yml
-            echo "$APPLICATION_OAUTH2_YML" > src/main/resources/application-oauth2.yml
+            aws s3 cp s3://crystalrose-web/config/application.yml src/main/resources/application.yml
+            aws s3 cp s3://crystalrose-web/config/application-oauth2.yml src/main/resources/application-oauth2.yml
 
-            sudo rm -rf build/libs
             chmod +x ./gradlew
-
             ./gradlew clean build --no-daemon
 
             sudo fuser -k -n tcp 4000 || true
