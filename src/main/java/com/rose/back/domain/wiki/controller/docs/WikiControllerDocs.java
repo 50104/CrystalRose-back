@@ -12,9 +12,13 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @Tag(name = "Wiki", description = "Wiki(도감) 관련 API입니다.")
 public interface WikiControllerDocs {
@@ -36,6 +40,28 @@ public interface WikiControllerDocs {
     })
     ResponseEntity<Void> registerWiki(@RequestBody(description = "등록할 도감 정보", required = true,
             content = @Content(schema = @Schema(implementation = WikiRequest.class))) WikiRequest dto);
+
+    @Operation(summary = "도감 이미지 업로드", description = "도감에 사용될 이미지를 업로드합니다.")
+    @CommonErrorResponses
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "이미지 업로드 성공"),
+            @ApiResponse(responseCode = "409", description = "이미지 업로드 실패",
+                    content = @Content(schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                            examples = @ExampleObject(name = "Conflict", value = """
+                                    {
+                                      "status": 409,
+                                      "error": "CONFLICT",
+                                      "message": "이미지 업로드에 실패했습니다.",
+                                      "path": "/api/v1/wiki/image/upload"
+                                    }
+                                    """))),
+    })
+    ResponseEntity<Map<String, Object>> upload (
+            @RequestBody(description = "업로드할 이미지 파일", required = true,
+                    content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                            schema = @Schema(type = "string", format = "binary")))
+            MultipartFile file
+    );
 
     @Operation(summary = "승인된 도감 목록 조회", description = "관리자가 승인한 도감 목록을 조회합니다.")
     @CommonErrorResponses

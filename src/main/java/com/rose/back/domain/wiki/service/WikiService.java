@@ -21,26 +21,27 @@ import lombok.extern.slf4j.Slf4j;
 public class WikiService {
 
     private final WikiRepository roseWikiRepository;
+    private final WikiImageService wikiImageService;
 
     public void registerWiki(WikiRequest dto) {
         try {
-            WikiEntity wiki = new WikiEntity();
-            wiki.setName(dto.getName());
-            wiki.setCategory(dto.getCategory());
-            wiki.setCultivarCode(dto.getCultivarCode());
-            wiki.setDescription(dto.getDescription());
-            wiki.setFlowerSize(dto.getFlowerSize());
-            wiki.setPetalCount(dto.getPetalCount());
-            wiki.setFragrance(dto.getFragrance());
-            wiki.setDiseaseResistance(dto.getDiseaseResistance());
-            wiki.setGrowthType(dto.getGrowthType());
-            wiki.setUsageType(dto.getUsageType());
-            wiki.setRecommendedPosition(dto.getRecommendedPosition());
-            wiki.setImageUrl(dto.getImageUrl());
-            wiki.setStatus(WikiEntity.Status.PENDING);
-
-            log.info("도감 저장 전 엔티티: {}", wiki);
+            WikiEntity wiki = WikiEntity.builder()
+                .name(dto.getName())
+                .category(dto.getCategory())
+                .cultivarCode(dto.getCultivarCode())
+                .description(dto.getDescription())
+                .flowerSize(dto.getFlowerSize())
+                .petalCount(dto.getPetalCount())
+                .fragrance(dto.getFragrance())
+                .diseaseResistance(dto.getDiseaseResistance())
+                .growthType(dto.getGrowthType())
+                .usageType(dto.getUsageType())
+                .recommendedPosition(dto.getRecommendedPosition())
+                .imageUrl(dto.getImageUrl())
+                .status(WikiEntity.Status.PENDING)
+                .build();
             roseWikiRepository.save(wiki);
+            wikiImageService.saveAndBindImage(dto.getImageUrl(), wiki);
         } catch (Exception e) {
             log.error("도감 등록 중 예외 발생: {}", e.getMessage(), e);
             throw new RuntimeException("도감 등록 실패", e);

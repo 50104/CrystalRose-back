@@ -1,6 +1,8 @@
 package com.rose.back.domain.wiki.controller;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,10 +11,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.rose.back.domain.wiki.dto.WikiRequest;
 import com.rose.back.domain.wiki.dto.WikiResponse;
+import com.rose.back.domain.wiki.service.WikiImageService;
 import com.rose.back.domain.wiki.service.WikiService;
 
 import jakarta.validation.Valid;
@@ -26,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 public class WikiController {
 
     private final WikiService wikiService;
+    private final WikiImageService wikiImageService;
 
     @PostMapping("/register")
     public ResponseEntity<Void> registerWiki(@RequestBody @Valid WikiRequest dto) {
@@ -36,6 +42,18 @@ public class WikiController {
         } catch (Exception e) {
             log.error("도감 등록 실패", e);
             return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PostMapping("image/upload")
+    public ResponseEntity<Map<String, Object>> upload(@RequestParam("file") MultipartFile file) {
+        log.info("[POST][/api/v1/wiki/image/upload] - 이미지 업로드 요청: {}", file.getOriginalFilename());
+        try {
+            String url = wikiImageService.uploadImage(file);
+            return ResponseEntity.ok(Map.of("uploaded", true, "url", url));
+        } catch (IOException e) {
+            log.error("이미지 업로드 실패", e);
+            return ResponseEntity.internalServerError().body(Map.of("uploaded", false, "error", e.getMessage()));
         }
     }
 
