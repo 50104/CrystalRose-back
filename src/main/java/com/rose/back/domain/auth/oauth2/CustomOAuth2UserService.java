@@ -59,6 +59,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .userType(oAuthResponse.getProvider())
                     .userNick(nickname)
                     .userRole("ROLE_USER")
+                    .userStatus(UserEntity.UserStatus.ACTIVE) 
                     .apDate(LocalDate.now())
                     .build();
             userRepository.save(user); 

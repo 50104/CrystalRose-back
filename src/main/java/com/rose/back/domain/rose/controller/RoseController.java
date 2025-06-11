@@ -2,11 +2,13 @@ package com.rose.back.domain.rose.controller;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,7 +34,7 @@ public class RoseController {
 
     @PostMapping("/mine")
     public ResponseEntity<?> registerRose(@RequestBody RoseRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        log.info("[POST][/api/roses/mine] - 내 장미 등록 요청: {}", request);
+        log.info("[POST][/api/roses/mine] - 내 장미 등록 요청");
         try {
             roseService.registerUserRose(userDetails, request);
             return ResponseEntity.ok().build();
@@ -44,7 +46,7 @@ public class RoseController {
 
     @PostMapping("/image/upload")
     public ResponseEntity<Map<String, Object>> upload(@RequestParam("file") MultipartFile file) {
-        log.info("[POST][/api/v1/roses/image/upload] - 장미 이미지 업로드 요청: {}", file.getOriginalFilename());
+        log.info("[POST][/api/roses/image/upload] - 장미 이미지 업로드 요청: {}", file.getOriginalFilename());
         try {
             String url = roseImageService.uploadImage(file);
             return ResponseEntity.ok(Map.of("uploaded", true, "url", url));
@@ -54,10 +56,39 @@ public class RoseController {
         }
     }
 
+    @GetMapping("/list")
+    public ResponseEntity<List<RoseResponse>> getMyRoses(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        log.info("[GET][/api/roses/list] - 내 장미 목록 조회 요청 시작");
+        
+        if (userDetails == null) {
+            log.error("인증된 사용자 정보가 없습니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(List.of());
+        }
+        log.info("사용자 인증 확인: userId={}", userDetails.getUserNo());
+        
+        try {
+            List<RoseResponse> responses = roseService.getUserRoseResponses(userDetails.getUserNo());
+            log.info("내 장미 목록 조회 응답: {} 개", responses.size());
+            return ResponseEntity.ok(responses != null ? responses : List.of());
+        } catch (Exception e) {
+            log.error("내 장미 목록 조회 실패: {}", e.getMessage(), e);
+            return ResponseEntity.ok(List.of());
+        }
+    }
+
     public record RoseRequest(
         Long userId,
         Long wikiId,
         String nickname,
+        LocalDate acquiredDate,
+        String locationNote,
+        String imageUrl
+    ) {}
+
+    public record RoseResponse(
+        Long id,
+        String nickname,
+        String varietyName,
         LocalDate acquiredDate,
         String locationNote,
         String imageUrl
