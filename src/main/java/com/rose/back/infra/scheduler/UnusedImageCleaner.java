@@ -1,6 +1,6 @@
 package com.rose.back.infra.scheduler;
 
-// import com.rose.back.domain.diary.repository.DiaryRepository;
+import com.rose.back.domain.diary.repository.DiaryRepository;
 import com.rose.back.domain.rose.repository.RoseRepository;
 import com.rose.back.domain.wiki.repository.WikiRepository;
 import com.rose.back.domain.board.repository.ContentImageRepository;
@@ -25,7 +25,7 @@ public class UnusedImageCleaner {
     private final ContentImageRepository imageRepository;
     private final RoseRepository roseRepository;
     private final WikiRepository wikiRepository;
-    // private final DiaryRepository diaryRepository;
+    private final DiaryRepository diaryRepository;
     private final S3Uploader s3Uploader;
 
     @Scheduled(cron = "0 0 * * * *")
@@ -40,7 +40,7 @@ public class UnusedImageCleaner {
                     case BOARD -> imageRepository.existsByFileUrl(temp.getFileUrl());
                     case ROSE -> roseRepository.existsByImageUrl(temp.getFileUrl());
                     case WIKI -> wikiRepository.existsByImageUrl(temp.getFileUrl());
-                    case DIARY -> wikiRepository.existsByImageUrl(temp.getFileUrl());
+                    case DIARY -> diaryRepository.existsByImageUrl(temp.getFileUrl());
                 };
 
                 if (!inUse) {
