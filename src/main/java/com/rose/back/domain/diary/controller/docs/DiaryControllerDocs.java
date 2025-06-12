@@ -16,6 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 
 @Tag(name = "Diary", description = "다이어리 관련 API")
@@ -61,4 +62,21 @@ public interface DiaryControllerDocs {
             content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
                 schema = @Schema(type = "string", format = "binary"))) MultipartFile file
     );
+
+    @Operation(summary = "내 성장기록 조회", description = "내 모든 장미의 성장 기록을 시간 역순으로 조회합니다.")
+    @CommonErrorResponses
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "성장 기록 조회 성공"),
+        @ApiResponse(responseCode = "409", description = "성장 기록 조회 실패",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(name = "InternalError", value = """
+                    {
+                      "status": 409,
+                      "error": "CONFLICT",
+                      "message": "성장기록 조회 실패",
+                      "path": "/api/diaries/timeline"
+                    }
+                """)))
+    })
+    ResponseEntity<List<Object>> getMyTimeline();
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.rose.back.domain.diary.controller.DiaryController.DiaryResponse;
 import com.rose.back.domain.diary.entity.DiaryEntity;
 import com.rose.back.domain.diary.repository.DiaryRepository;
 import com.rose.back.domain.rose.entity.RoseEntity;
@@ -43,5 +44,12 @@ public class DiaryService {
             diaryImageService.saveAndBindImage(imageUrl, diary);
         }
         tempRepository.findByFileUrl(imageUrl).ifPresent(tempRepository::delete);
+    }
+
+    public List<DiaryResponse> getUserTimeline(Long userId) {
+        return diaryRepository.findAllByRoseEntity_UserIdOrderByRecordedAtDesc(userId)
+            .stream()
+            .map(d -> new DiaryResponse(d.getId(), d.getNote(), d.getImageUrl(), d.getRecordedAt()))
+            .toList();
     }
 }

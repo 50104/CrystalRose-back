@@ -7,7 +7,6 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,8 +14,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.rose.back.domain.auth.oauth2.CustomUserDetails;
-import com.rose.back.domain.diary.entity.DiaryEntity;
 import com.rose.back.domain.diary.service.DiaryImageService;
 import com.rose.back.domain.diary.service.DiaryService;
 
@@ -59,5 +58,26 @@ public class DiaryController {
         }
     }
 
+    // 전체 성장기록
+    @GetMapping("/list")
+    public ResponseEntity<?> getMyTimeline(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        log.info("[GET][/api/diaries/list] - 내 성장기록 조회 요청 (userId: {})", userDetails.getUserNo());
+        try {
+            List<DiaryResponse> timeline = diaryService.getUserTimeline(userDetails.getUserNo());
+            return ResponseEntity.ok(timeline);
+        } catch (Exception e) {
+            log.error("내 성장기록 조회 실패: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(Map.of("error", "성장기록 조회 실패"));
+        }
+    }
+
     public record DiaryRequest(Long roseId, String note, String imageUrl, LocalDateTime recordedAt) {}
+
+    public record DiaryResponse(
+        Long id,
+        String note,
+        String imageUrl,
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+        LocalDateTime recordedAt
+    ) {}
 }
