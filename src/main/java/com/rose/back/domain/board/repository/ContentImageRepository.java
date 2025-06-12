@@ -1,7 +1,6 @@
 package com.rose.back.domain.board.repository;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -15,6 +14,4 @@ public interface ContentImageRepository extends JpaRepository<ContentImageEntity
     boolean existsByFileUrl(String fileUrl);
 
     List<ContentImageEntity> findByContent(ContentEntity content);
-
-    Optional<ContentImageEntity> findByFileUrl(String fileUrl);
 }

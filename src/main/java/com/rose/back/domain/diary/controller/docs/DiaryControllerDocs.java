@@ -79,4 +79,21 @@ public interface DiaryControllerDocs {
                 """)))
     })
     ResponseEntity<List<Object>> getMyTimeline();
+
+    @Operation(summary = "장미별 성장기록 조회", description = "장미 1개의 성장 기록만 시간 순으로 조회합니다.")
+    @CommonErrorResponses
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "성장기록 조회 성공"),
+        @ApiResponse(responseCode = "409", description = "성장기록 조회 실패",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(name = "InternalError", value = """
+                    {
+                      "status": 409,
+                      "error": "CONFLICT",
+                      "message": "성장기록 조회 실패",
+                      "path": "/api/diaries/timeline/{roseId}"
+                    }
+                """)))
+    })
+    ResponseEntity<List<Object>> getRoseTimeline(Long roseId);
 }

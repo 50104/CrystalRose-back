@@ -52,4 +52,11 @@ public class DiaryService {
             .map(d -> new DiaryResponse(d.getId(), d.getNote(), d.getImageUrl(), d.getRecordedAt()))
             .toList();
     }
+
+    public List<DiaryResponse> getRoseTimeline(Long roseId) {
+        return diaryRepository.findAllByRoseEntity_IdOrderByRecordedAtAsc(roseId)
+            .stream()
+            .map(d -> new DiaryResponse(d.getId(), d.getNote(), d.getImageUrl(), d.getRecordedAt()))
+            .toList();
+    }
 }

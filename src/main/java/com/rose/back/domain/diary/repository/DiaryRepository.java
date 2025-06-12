@@ -11,4 +11,6 @@ public interface DiaryRepository extends JpaRepository<DiaryEntity, Long> {
     boolean existsByImageUrl(String imageUrl);
 
     List<DiaryEntity> findAllByRoseEntity_UserIdOrderByRecordedAtDesc(Long userId); // 전체 타임라인 (유저 기준)
+
+    List<DiaryEntity> findAllByRoseEntity_IdOrderByRecordedAtAsc(Long userRoseId); // 장미 타임라인 (장미 기준)
 }

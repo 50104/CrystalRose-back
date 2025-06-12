@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -68,6 +69,19 @@ public class DiaryController {
         } catch (Exception e) {
             log.error("내 성장기록 조회 실패: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().body(Map.of("error", "성장기록 조회 실패"));
+        }
+    }
+
+    // 장미별 성장기록
+    @GetMapping("/{roseId}/timeline")
+    public ResponseEntity<?> getRoseTimeline(@PathVariable Long roseId) {
+        log.info("[GET][/api/diaries/{}/timeline] - 장미별 성장기록 조회 요청", roseId);
+        try {
+            List<DiaryResponse> diaryList = diaryService.getRoseTimeline(roseId);
+            return ResponseEntity.ok(diaryList);
+        } catch (Exception e) {
+            log.error("장미별 성장기록 조회 실패: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(Map.of("error", "장미 성장기록 조회 실패"));
         }
     }
 
