@@ -38,6 +38,12 @@ public class CareLogController {
         return ResponseEntity.ok(careLogService.getAllCareDates());
     }
 
+    // 관리 기록 전체 조회 (FullCalendar용)
+    @GetMapping("/carelogs/list")
+    public ResponseEntity<List<RoseCareLogDto>> getCareLogs() {
+        return ResponseEntity.ok(careLogService.getAllLogs());
+    }
+
     public record CareLogRequest(
         Long id,
         @JsonFormat(pattern = "yyyy-MM-dd") LocalDate careDate,
@@ -47,5 +53,17 @@ public class CareLogController {
         String compost,
         String fungicide,
         String note
+    ) {}
+
+    public record RoseCareLogDto(
+        Long id,
+        String fertilizer,
+        String pesticide,
+        String adjuvant,
+        String compost,
+        String fungicide,
+        String note,
+        @JsonFormat(pattern = "yyyy-MM-dd")
+        LocalDate careDate
     ) {}
 }

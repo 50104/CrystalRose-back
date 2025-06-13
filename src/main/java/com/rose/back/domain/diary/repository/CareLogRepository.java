@@ -12,4 +12,6 @@ public interface CareLogRepository extends JpaRepository<CareLogEntity, Long> {
 
     @Query("SELECT DISTINCT c.careDate FROM CareLogEntity c ORDER BY c.careDate")
     List<LocalDate> findDistinctCareDates();
+
+    List<CareLogEntity> findAllByOrderByCareDateDesc();
 }

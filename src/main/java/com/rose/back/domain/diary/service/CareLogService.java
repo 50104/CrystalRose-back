@@ -34,4 +34,19 @@ public class CareLogService {
             .map(LocalDate::toString)
             .toList();
     }
+
+    public List<CareLogController.RoseCareLogDto> getAllLogs() {
+        return careLogRepository.findAllByOrderByCareDateDesc().stream()
+            .map(log -> new CareLogController.RoseCareLogDto(
+                log.getId(),
+                log.getFertilizer(),
+                log.getPesticide(),
+                log.getAdjuvant(),
+                log.getCompost(),
+                log.getFungicide(),
+                log.getNote(),
+                log.getCareDate()
+            ))
+            .toList();
+    }
 }
