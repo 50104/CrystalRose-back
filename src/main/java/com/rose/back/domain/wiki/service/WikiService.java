@@ -29,7 +29,6 @@ public class WikiService {
                 .name(dto.getName())
                 .category(dto.getCategory())
                 .cultivarCode(dto.getCultivarCode())
-                .description(dto.getDescription())
                 .flowerSize(dto.getFlowerSize())
                 .petalCount(dto.getPetalCount())
                 .fragrance(dto.getFragrance())
@@ -38,16 +37,22 @@ public class WikiService {
                 .usageType(dto.getUsageType())
                 .recommendedPosition(dto.getRecommendedPosition())
                 .imageUrl(dto.getImageUrl())
+                .continuousBlooming(dto.getContinuousBlooming())
+                .multiBlooming(dto.getMultiBlooming())
+                .growthPower(dto.getGrowthPower())
+                .coldResistance(dto.getColdResistance())
                 .status(WikiEntity.Status.PENDING)
                 .build();
+
             roseWikiRepository.save(wiki);
             wikiImageService.saveAndBindImage(dto.getImageUrl(), wiki);
+
         } catch (Exception e) {
             log.error("도감 등록 중 예외 발생: {}", e.getMessage(), e);
             throw new RuntimeException("도감 등록 실패", e);
         }
     }
-  
+
     public List<WikiResponse> getApprovedWikiList() {
         List<WikiEntity> approvedWikis = roseWikiRepository.findAllByStatus(WikiEntity.Status.APPROVED);
         return approvedWikis.stream()

@@ -1,20 +1,8 @@
 package com.rose.back.domain.wiki.entity;
 
 import com.rose.back.global.entity.BaseTimeEntity;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Getter
 @Setter
@@ -24,7 +12,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Table(name = "rose_wiki")
 public class WikiEntity extends BaseTimeEntity {
-  
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -36,8 +24,6 @@ public class WikiEntity extends BaseTimeEntity {
     @Column(name = "cultivar_code")
     private String cultivarCode; // 품종코드
 
-    private String description; // 품종 설명
-
     @Column(name = "flower_size")
     private String flowerSize; // 꽃 크기
 
@@ -48,7 +34,10 @@ public class WikiEntity extends BaseTimeEntity {
     private String fragrance; // 향기
 
     @Column(name = "disease_resistance")
-    private String diseaseResistance; // 병해 저항성(내병성)
+    private String diseaseResistance; // 내병성
+
+    @Column(name = "cold_resistance")
+    private String coldResistance; // 내한성
 
     @Column(name = "growth_type")
     private String growthType; // 생장형태
@@ -61,6 +50,15 @@ public class WikiEntity extends BaseTimeEntity {
 
     @Column(name = "image_url")
     private String imageUrl; // 대표 이미지
+
+    @Column(name = "continuous_blooming")
+    private String continuousBlooming; // 연속개화성
+
+    @Column(name = "multi_blooming")
+    private String multiBlooming; // 다화성
+
+    @Column(name = "growth_power")
+    private String growthPower; // 수세
 
     @Enumerated(EnumType.STRING)
     private Status status;

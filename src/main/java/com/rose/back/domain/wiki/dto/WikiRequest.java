@@ -1,10 +1,6 @@
 package com.rose.back.domain.wiki.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 @Getter
 @Setter
@@ -16,7 +12,6 @@ public class WikiRequest {
     private String name;
     private String category;
     private String cultivarCode;
-    private String description;
     private String flowerSize;
     private String petalCount;
     private String fragrance;
@@ -25,4 +20,8 @@ public class WikiRequest {
     private String usageType;
     private String recommendedPosition;
     private String imageUrl;
+    private String continuousBlooming;
+    private String multiBlooming;
+    private String growthPower;
+    private String coldResistance;
 }
