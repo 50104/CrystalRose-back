@@ -6,6 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.rose.back.domain.auth.oauth2.CustomUserDetails;
+import com.rose.back.domain.diary.entity.DiaryEntity;
+import com.rose.back.domain.diary.repository.DiaryRepository;
+import com.rose.back.domain.diary.service.DiaryImageService;
 import com.rose.back.domain.rose.controller.RoseController;
 import com.rose.back.domain.rose.entity.RoseEntity;
 import com.rose.back.domain.rose.repository.RoseRepository;
@@ -23,6 +26,8 @@ public class RoseService {
     private final RoseRepository userRoseRepository;
     private final WikiRepository roseWikiRepository;
     private final RoseImageService roseImageService;
+    private final DiaryRepository diaryRepository;
+    private final DiaryImageService diaryImageService;
 
     @Transactional
     public void registerUserRose(CustomUserDetails userDetails, RoseController.RoseRequest request) {
@@ -40,10 +45,35 @@ public class RoseService {
             .locationNote(request.locationNote())
             .imageUrl(request.imageUrl())
             .build();
-        userRoseRepository.save(userRose);
+        userRose = userRoseRepository.save(userRose);
 
         roseImageService.saveImageEntityAndDeleteTemp(request.imageUrl(), null, userRose);
+        createInitialDiary(userRose, request); // 첫 기록 등록
+
         log.info("내 장미 등록 완료: roseId={}", userRose.getId());
+    }
+
+    private void createInitialDiary(RoseEntity rose, RoseController.RoseRequest request) {
+        log.info("첫 번째 성장기록 생성 시작: roseId={}", rose.getId());
+        
+        java.time.LocalDateTime recordedAt = request.acquiredDate() != null  // 등록 시점 시간 기록 (or 입양일)
+            ? request.acquiredDate().atStartOfDay() 
+            : java.time.LocalDateTime.now();
+
+        DiaryEntity initialDiary = DiaryEntity.builder()
+            .roseEntity(rose)
+            .note(String.format("%s 첫 기록", rose.getNickname()))
+            .imageUrl(request.imageUrl())
+            .recordedAt(recordedAt)
+            .build();
+
+        initialDiary = diaryRepository.save(initialDiary);
+
+        if (request.imageUrl() != null && !request.imageUrl().isEmpty()) {
+            diaryImageService.saveAndBindImage(request.imageUrl(), initialDiary);
+        }
+
+        log.info("첫 번째 성장기록 생성 완료: diaryId={}", initialDiary.getId());
     }
 
     @Transactional(readOnly = true)
@@ -54,7 +84,6 @@ public class RoseService {
             log.warn("사용자 ID가 null입니다.");
             return List.of();
         }
-        
         try {
             List<RoseEntity> roses = userRoseRepository.findByUserIdOrderByAcquiredDateDesc(userId);
             log.info("조회된 장미 개수: {}", roses != null ? roses.size() : 0);
