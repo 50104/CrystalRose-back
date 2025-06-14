@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import com.rose.back.common.util.CertificationNumber;
@@ -90,45 +91,56 @@ public class AuthServiceImpl implements AuthService {
 
     // 이메일 인증
     @Override
+    @Transactional
     public ResponseEntity<? super EmailSendResponse> emailCertification(EmailSendRequest dto) {
-        try {
-            String userId = dto.getUserId();
-            String userEmail = dto.getUserEmail();
-            // 번호 생성
-            String certificationNumber = CertificationNumber.getCertificationNumber(); // 임의의 4자리수 받아오기
-            // 메일 전송
-            boolean isSuccessed = emailService.sendCertificationMail(userEmail, certificationNumber);
-            if (!isSuccessed) return EmailSendResponse.mailSendFail();
-            certificationRepository.deleteByUserEmail(userEmail);
-            // 전송 결과 저장
-            CertificationEntity certificationEntity = new CertificationEntity(null, userId, userEmail, certificationNumber);
-            certificationRepository.save(certificationEntity);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return CommonResponse.databaseError();
-        }
+        String userId = dto.getUserId();
+        String userEmail = dto.getUserEmail();
+        String code = CertificationNumber.getCertificationNumber();
+
+        // 이메일 전송 성공 여부 확인
+        boolean success = emailService.sendCertificationMail(userEmail, code);
+        if (!success) return EmailSendResponse.mailSendFail();
+
+        certificationRepository.deleteByUserIdAndUserEmail(userId, userEmail);
+
+        certificationRepository.save(
+            CertificationEntity.builder()
+                .userId(userId)
+                .userEmail(userEmail)
+                .certificationNumber(code)
+                .build()
+        );
+
         return EmailSendResponse.success();
     }
 
+
     // 인증 확인
     @Override
+    @Transactional
     public ResponseEntity<? super EmailVerifyResponse> checkCertification(EmailVerifyRequest dto) {
         try {
             String userId = dto.getUserId();
             String userEmail = dto.getUserEmail();
             String certificationNumber = dto.getCertificationNumber();
 
-            CertificationEntity certificationEntity = certificationRepository.findByUserId(userId); // user_id로 찾아옴
-            if (certificationEntity == null) return EmailVerifyResponse.certificationFail(); // 없으면 실패
+            // 인증번호 엔티티 조회
+            Optional<CertificationEntity> optionalEntity = certificationRepository.findByUserIdAndUserEmail(userId, userEmail);
+            if (optionalEntity.isEmpty()) return EmailVerifyResponse.certificationFail();
 
-            boolean isMatched = certificationEntity.getUserEmail().equals(userEmail) && certificationEntity.getCertificationNumber().equals(certificationNumber); // 이메일과 인증번호가 일치하는지 확인
-            if (!isMatched) return EmailVerifyResponse.certificationFail(); // 일치하지않으면 실패
-            certificationRepository.deleteByUserEmail(userEmail);
+            CertificationEntity certificationEntity = optionalEntity.get();
+
+            // 이메일 인증번호 일치 여부 확인
+            boolean isMatched = certificationEntity.getCertificationNumber().equals(certificationNumber);
+            if (!isMatched) return EmailVerifyResponse.certificationFail();
+
+            certificationRepository.deleteByUserIdAndUserEmail(userId, userEmail);
+
+            return EmailVerifyResponse.success();
         } catch (Exception e) {
             e.printStackTrace();
             return CommonResponse.databaseError();
         }
-        return EmailVerifyResponse.success();
     }
 
     // 회원가입

@@ -1,18 +1,17 @@
 package com.rose.back.domain.user.repository;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.rose.back.domain.user.entity.CertificationEntity;
 
-import jakarta.transaction.Transactional;
-
 
 @Repository
 public interface CertificationRepository extends JpaRepository<CertificationEntity, Long> {
-    
-    CertificationEntity findByUserId(String userId);
 
-    @Transactional
-    void deleteByUserEmail(String userEmail);
+    Optional<CertificationEntity> findByUserIdAndUserEmail(String userId, String userEmail);
+
+    void deleteByUserIdAndUserEmail(String userId, String userEmail);
 }
