@@ -75,4 +75,9 @@ public class RedisConfig {
   public StringRedisTemplate jwtRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
     return new StringRedisTemplate(redisConnectionFactory);
   }
+
+  @Bean(name = "emailRedisTemplate")
+  public StringRedisTemplate emailRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
+    return new StringRedisTemplate(redisConnectionFactory);
+  }
 }

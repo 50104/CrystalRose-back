@@ -1,5 +1,7 @@
 package com.rose.back.domain.auth.service.impl;
 
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,10 +23,8 @@ import com.rose.back.domain.user.dto.response.EmailVerifyResponse;
 import com.rose.back.domain.user.dto.response.EmailSendResponse;
 import com.rose.back.domain.user.dto.response.IdCheckResponse;
 import com.rose.back.domain.user.dto.response.CommonResponse;
-import com.rose.back.domain.user.entity.CertificationEntity;
 import com.rose.back.domain.user.entity.UserEntity;
 import com.rose.back.domain.user.entity.UserEntity.UserStatus;
-import com.rose.back.domain.user.repository.CertificationRepository;
 import com.rose.back.domain.user.repository.UserRepository;
 import com.rose.back.global.service.EmailService;
 
@@ -33,30 +33,40 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
-import lombok.RequiredArgsConstructor;
-
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @Service
-@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
     
     private final UserRepository userRepository;
-    private final CertificationRepository certificationRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final AuthRepository authRepository;
     private final JwtTokenProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
     private final AccessTokenBlacklistService accessTokenBlacklistService;
-    // 위는 final을 붙여서 직접 의존성을 주입하지않고 @Service외부를 통해 주입하고있는데 어떤걸 주입할지 직접 선택함@Autowired
+    
+    @Qualifier("emailRedisTemplate")
+    private final StringRedisTemplate redisTemplate;
+
+    public AuthServiceImpl(UserRepository userRepository, EmailService emailService, PasswordEncoder passwordEncoder, AuthRepository authRepository, JwtTokenProvider jwtProvider, RefreshTokenService refreshTokenService, AccessTokenBlacklistService accessTokenBlacklistService, @Qualifier("emailRedisTemplate") StringRedisTemplate redisTemplate) {
+        this.userRepository = userRepository;
+        this.emailService = emailService;
+        this.passwordEncoder = passwordEncoder;
+        this.authRepository = authRepository;
+        this.jwtProvider = jwtProvider;
+        this.refreshTokenService = refreshTokenService;
+        this.accessTokenBlacklistService = accessTokenBlacklistService;
+        this.redisTemplate = redisTemplate;
+    }
 
     // 아이디 중복 확인
     @Override
@@ -90,51 +100,44 @@ public class AuthServiceImpl implements AuthService {
     }
 
     // 이메일 인증
-    @Override
     @Transactional
+    @Override
     public ResponseEntity<? super EmailSendResponse> emailCertification(EmailSendRequest dto) {
-        String userId = dto.getUserId();
-        String userEmail = dto.getUserEmail();
-        String code = CertificationNumber.getCertificationNumber();
+        try {
+            String userId = dto.getUserId();
+            String userEmail = dto.getUserEmail();
+            String code = CertificationNumber.getCertificationNumber();
 
-        // 이메일 전송 성공 여부 확인
-        boolean success = emailService.sendCertificationMail(userEmail, code);
-        if (!success) return EmailSendResponse.mailSendFail();
+            boolean isSent = emailService.sendCertificationMail(userEmail, code);
+            if (!isSent) return EmailSendResponse.mailSendFail();
 
-        certificationRepository.deleteByUserIdAndUserEmail(userId, userEmail);
+            String key = "cert:" + userId + ":" + userEmail; // Redis key 설정
+            redisTemplate.opsForValue().set(key, code, Duration.ofMinutes(5)); // 인증번호 + TTL 5분
 
-        certificationRepository.save(
-            CertificationEntity.builder()
-                .userId(userId)
-                .userEmail(userEmail)
-                .certificationNumber(code)
-                .build()
-        );
-
-        return EmailSendResponse.success();
+            return EmailSendResponse.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return CommonResponse.databaseError();
+        }
     }
 
-
     // 인증 확인
-    @Override
     @Transactional
+    @Override
     public ResponseEntity<? super EmailVerifyResponse> checkCertification(EmailVerifyRequest dto) {
         try {
             String userId = dto.getUserId();
             String userEmail = dto.getUserEmail();
-            String certificationNumber = dto.getCertificationNumber();
+            String inputCode = dto.getCertificationNumber();
 
-            // 인증번호 엔티티 조회
-            Optional<CertificationEntity> optionalEntity = certificationRepository.findByUserIdAndUserEmail(userId, userEmail);
-            if (optionalEntity.isEmpty()) return EmailVerifyResponse.certificationFail();
+            String key = "cert:" + userId + ":" + userEmail;
+            String savedCode = redisTemplate.opsForValue().get(key);
 
-            CertificationEntity certificationEntity = optionalEntity.get();
+            if (savedCode == null || !savedCode.equals(inputCode)) {
+                return EmailVerifyResponse.certificationFail();
+            }
 
-            // 이메일 인증번호 일치 여부 확인
-            boolean isMatched = certificationEntity.getCertificationNumber().equals(certificationNumber);
-            if (!isMatched) return EmailVerifyResponse.certificationFail();
-
-            certificationRepository.deleteByUserIdAndUserEmail(userId, userEmail);
+            redisTemplate.delete(key); // 인증 후 삭제
 
             return EmailVerifyResponse.success();
         } catch (Exception e) {
