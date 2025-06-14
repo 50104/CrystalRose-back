@@ -27,19 +27,29 @@ public class ReportController {
     private final ReportService reportService;
 
     @PostMapping
-    public ResponseEntity<Void> report(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                      @RequestBody ReportRequestDto dto) {
+    public ResponseEntity<Void> report(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody ReportRequestDto dto) {
         log.info("[POST][/api/reports] - 신고 요청: {}", dto);
-        reportService.reportPost(userDetails.getUserNo(), dto.postId(), dto.reason());
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        try {
+            reportService.reportPost(userDetails.getUserNo(), dto.postId(), dto.reason());
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        } catch (Exception e) {
+            log.error("신고 요청 실패: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/check")
     public ResponseEntity<Map<String, Boolean>> checkReport(@RequestParam Long postId, @AuthenticationPrincipal CustomUserDetails userDetails) {
         log.info("[GET][/api/reports/check] - 신고 여부 확인 요청: postId={}, userId={}", postId, userDetails.getUserNo());
-        Long reporterId = userDetails.getUserNo();
-        boolean alreadyReported = reportService.isAlreadyReported(reporterId, postId);
-        return ResponseEntity.ok(Map.of("alreadyReported", alreadyReported));
+        try {
+            Long reporterId = userDetails.getUserNo();
+            boolean alreadyReported = reportService.isAlreadyReported(reporterId, postId);
+            return ResponseEntity.ok(Map.of("alreadyReported", alreadyReported));
+        } catch (Exception e) {
+            log.error("신고 여부 확인 실패: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("alreadyReported", false));
+        }
     }
 
     public record ReportRequestDto(Long postId, String reason) {}

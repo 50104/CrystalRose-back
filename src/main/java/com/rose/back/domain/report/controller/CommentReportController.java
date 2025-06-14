@@ -24,10 +24,14 @@ public class CommentReportController {
 
     @PostMapping
     public ResponseEntity<Void> reportComment(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody CommentReportRequestDto dto) {
-      
         log.info("[POST][/api/comment-reports] - 댓글 신고 요청: {}", dto);
-        commentReportService.reportComment(userDetails.getUserNo(), dto.commentId(), dto.reason());
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        try {
+            commentReportService.reportComment(userDetails.getUserNo(), dto.commentId(), dto.reason());
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        } catch (Exception e) {
+            log.error("댓글 신고 요청 실패: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     public record CommentReportRequestDto(Long commentId, String reason) {}
