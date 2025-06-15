@@ -3,6 +3,7 @@ package com.rose.back.domain.wiki.controller.docs;
 import com.rose.back.domain.wiki.dto.WikiRequest;
 import com.rose.back.domain.wiki.dto.WikiResponse;
 import com.rose.back.global.exception.CommonErrorResponses;
+import com.rose.back.global.handler.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -28,7 +29,7 @@ public interface WikiControllerDocs {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "도감 등록 요청 성공 (승인 대기 상태로 저장됨)"),
             @ApiResponse(responseCode = "409", description = "도감 등록 요청 실패",
-                    content = @Content(schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(name = "Conflict", value = """
                                     {
                                       "status": 409,
@@ -46,7 +47,7 @@ public interface WikiControllerDocs {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "이미지 업로드 성공"),
             @ApiResponse(responseCode = "409", description = "이미지 업로드 실패",
-                    content = @Content(schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(name = "Conflict", value = """
                                     {
                                       "status": 409,
@@ -71,7 +72,7 @@ public interface WikiControllerDocs {
                             array = @ArraySchema(schema = @Schema(implementation = WikiResponse.class)))
             ),
             @ApiResponse(responseCode = "409", description = "승인된 도감 목록 조회 실패",
-                    content = @Content(schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(name = "Conflict", value = """
                                     {
                                       "status": 409,

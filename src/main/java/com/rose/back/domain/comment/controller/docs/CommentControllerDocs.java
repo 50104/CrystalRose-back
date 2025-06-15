@@ -3,6 +3,7 @@ package com.rose.back.domain.comment.controller.docs;
 import com.rose.back.domain.comment.dto.CommentRequestDto;
 import com.rose.back.domain.comment.dto.CommentResponseDto;
 import com.rose.back.global.exception.CommonErrorResponses;
+import com.rose.back.global.handler.ErrorResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -28,7 +29,7 @@ public interface CommentControllerDocs {
             responseCode = "409",
             description = "댓글 목록 조회 실패",
             content = @Content(
-                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(
                     name = "Conflict",
                     value = """
@@ -53,7 +54,7 @@ public interface CommentControllerDocs {
             responseCode = "409",
             description = "댓글 등록 실패",
             content = @Content(
-                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(
                     name = "Conflict",
                     value = """
@@ -78,7 +79,7 @@ public interface CommentControllerDocs {
             responseCode = "409",
             description = "댓글 삭제 실패",
             content = @Content(
-                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(
                     name = "Conflict",
                     value = """

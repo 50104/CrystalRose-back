@@ -2,12 +2,11 @@ package com.rose.back.domain.user.controller.docs;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-import java.util.List;
-
 import org.springframework.http.ResponseEntity;
 
 import com.rose.back.domain.user.dto.AdminResponse;
 import com.rose.back.global.exception.CommonErrorResponses;
+import com.rose.back.global.handler.ErrorResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -29,7 +28,7 @@ public interface AdminControllerDocs {
                 array = @ArraySchema(schema = @Schema(implementation = AdminResponse.class)))
         ),
         @ApiResponse(responseCode = "409", description = "승인 대기 도감 목록 조회 실패",
-            content = @Content(schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(name = "Conflict", value = """
                     {
                       "status": 409,
@@ -46,7 +45,7 @@ public interface AdminControllerDocs {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "도감 승인 성공"),
         @ApiResponse(responseCode = "409", description = "도감 승인 실패",
-            content = @Content(schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(name = "Conflict", value = """
                     {
                       "status": 409,
@@ -63,7 +62,7 @@ public interface AdminControllerDocs {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "도감 거절 성공"),
         @ApiResponse(responseCode = "409", description = "도감 거절 실패",
-            content = @Content(schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(name = "Conflict", value = """
                     {
                       "status": 409,
@@ -83,7 +82,7 @@ public interface AdminControllerDocs {
                 array = @ArraySchema(schema = @Schema(implementation = AdminResponse.class)))
         ),
         @ApiResponse(responseCode = "409", description = "신고 내역 조회 실패",
-            content = @Content(schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(name = "Conflict", value = """
                     {
                       "status": 409,

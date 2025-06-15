@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import com.rose.back.domain.user.dto.UserInfoDto;
 import com.rose.back.domain.user.dto.request.PwdValidationRequest;
 import com.rose.back.global.exception.CommonErrorResponses;
-import com.rose.back.global.exception.ErrorResponse;
 import com.rose.back.global.exception.ImageUploadErrorResponses;
+import com.rose.back.global.handler.ErrorResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

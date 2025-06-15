@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.rose.back.domain.board.dto.ContentRequestDto;
 import com.rose.back.global.exception.CommonErrorResponses;
 import com.rose.back.global.exception.ImageUploadErrorResponses;
+import com.rose.back.global.handler.ErrorResponse;
 
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -31,7 +32,7 @@ public interface ContentControllerDocs {
             responseCode = "409",
             description = "게시글 작성 실패",
             content = @Content(
-                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(
                     name = "Conflict",
                     value = """
@@ -56,7 +57,7 @@ public interface ContentControllerDocs {
             responseCode = "409",
             description = "게시글 수정 페이지 불러오기 실패",
             content = @Content(
-                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(
                     name = "Conflict",
                     value = """
@@ -82,7 +83,7 @@ public interface ContentControllerDocs {
             responseCode = "409",
             description = "게시글 저장 실패",
             content = @Content(
-                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(
                     name = "Conflict",
                     value = """
@@ -111,7 +112,7 @@ public interface ContentControllerDocs {
             responseCode = "409",
             description = "게시글 수정 실패",
             content = @Content(
-                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(
                     name = "Conflict",
                     value = """
@@ -136,7 +137,7 @@ public interface ContentControllerDocs {
             responseCode = "409",
             description = "게시글 리스트 조회 실패",
             content = @Content(
-                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(
                     name = "Conflict",
                     value = """
@@ -161,7 +162,7 @@ public interface ContentControllerDocs {
             responseCode = "409",
             description = "게시글 조회 실패",
             content = @Content(
-                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(
                     name = "Conflict",
                     value = """
@@ -186,7 +187,7 @@ public interface ContentControllerDocs {
             responseCode = "409",
             description = "게시글 삭제 실패",
             content = @Content(
-                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(
                     name = "Conflict",
                     value = """
@@ -212,7 +213,7 @@ public interface ContentControllerDocs {
             responseCode = "409",
             description = "이미지 업로드 실패",
             content = @Content(
-                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(
                     name = "Conflict",
                     value = """

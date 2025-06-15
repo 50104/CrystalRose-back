@@ -8,6 +8,7 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import com.rose.back.domain.chat.dto.ChatMessageReqDto;
 import com.rose.back.global.exception.CommonErrorResponses;
+import com.rose.back.global.handler.ErrorResponse;
 
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -24,7 +25,7 @@ public interface StompControllerDocs {
             responseCode = "409",
             description = "메시지 전송 실패(비즈니스 로직 충돌)",
             content = @Content(
-                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(
                     name = "Conflict",
                     value = """

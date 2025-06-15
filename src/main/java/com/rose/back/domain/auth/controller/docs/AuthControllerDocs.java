@@ -28,8 +28,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
-import com.rose.back.global.exception.ErrorResponse;
+
 import com.rose.back.global.exception.JwtReissueErrorResponses;
+import com.rose.back.global.handler.ErrorResponse;
 
 @Tag(name = "Auth", description = "Auth 관련 API입니다.")
 public interface AuthControllerDocs {

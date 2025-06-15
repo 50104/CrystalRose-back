@@ -1,6 +1,7 @@
 package com.rose.back.domain.report.controller.docs;
 
 import com.rose.back.global.exception.CommonErrorResponses;
+import com.rose.back.global.handler.ErrorResponse;
 import com.rose.back.domain.report.dto.UserSummaryDto;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,7 +36,7 @@ public interface UserBlockControllerDocs {
             responseCode = "409",
             description = "이미 차단한 사용자입니다.",
             content = @Content(
-                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(
                     name = "Conflict",
                     value = """
@@ -72,7 +73,7 @@ public interface UserBlockControllerDocs {
             responseCode = "409",
             description = "사용자 정보가 유효하지 않음",
             content = @Content(
-                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(
                     name = "Conflict",
                     value = """
@@ -99,7 +100,7 @@ public interface UserBlockControllerDocs {
             responseCode = "409",
             description = "해당 사용자를 차단하지 않았거나 존재하지 않는 사용자입니다.",
             content = @Content(
-                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(
                     name = "Conflict",
                     value = """

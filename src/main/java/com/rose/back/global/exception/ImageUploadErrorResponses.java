@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+import com.rose.back.global.handler.ErrorResponse;
+
 @ApiResponses(value = {
     @ApiResponse(
         responseCode = "413",

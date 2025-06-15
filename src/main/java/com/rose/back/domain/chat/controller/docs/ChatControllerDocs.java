@@ -11,6 +11,7 @@ import com.rose.back.domain.chat.dto.ChatMessageReqDto;
 import com.rose.back.domain.chat.dto.ChatRoomListResDto;
 import com.rose.back.domain.chat.dto.MyChatListResDto;
 import com.rose.back.global.exception.CommonErrorResponses;
+import com.rose.back.global.handler.ErrorResponse;
 
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -29,7 +30,7 @@ public interface ChatControllerDocs {
             responseCode = "409",
             description = "채팅방 생성 실패",
             content = @Content(
-                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(
                     name = "Conflict",
                     value = """
@@ -54,7 +55,7 @@ public interface ChatControllerDocs {
             responseCode = "409",
             description = "채팅방 목록 조회 실패",
             content = @Content(
-                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(
                     name = "Conflict",
                     value = """
@@ -79,7 +80,7 @@ public interface ChatControllerDocs {
             responseCode = "409",
             description = "채팅방 참여 실패",
             content = @Content(
-                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(
                     name = "Conflict",
                     value = """
@@ -104,7 +105,7 @@ public interface ChatControllerDocs {
             responseCode = "409",
             description = "이전 메시지 조회 실패",
             content = @Content(
-                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(
                     name = "Conflict",
                     value = """
@@ -129,7 +130,7 @@ public interface ChatControllerDocs {
             responseCode = "409",
             description = "메시지 읽음 처리 실패",
             content = @Content(
-                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(
                     name = "Conflict",
                     value = """
@@ -154,7 +155,7 @@ public interface ChatControllerDocs {
             responseCode = "409",
             description = "내 채팅방 목록 조회 실패",
             content = @Content(
-                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(
                     name = "Conflict",
                     value = """
@@ -179,7 +180,7 @@ public interface ChatControllerDocs {
             responseCode = "409",
             description = "채팅방 나가기 실패",
             content = @Content(
-                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(
                     name = "Conflict",
                     value = """
@@ -204,7 +205,7 @@ public interface ChatControllerDocs {
             responseCode = "409",
             description = "개인 채팅방 개설/조회 실패",
             content = @Content(
-                schema = @Schema(implementation = com.rose.back.global.exception.ErrorResponse.class),
+                schema = @Schema(implementation = ErrorResponse.class),
                 examples = @ExampleObject(
                     name = "Conflict",
                     value = """

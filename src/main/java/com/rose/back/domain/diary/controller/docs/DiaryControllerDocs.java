@@ -1,7 +1,7 @@
 package com.rose.back.domain.diary.controller.docs;
 
 import com.rose.back.global.exception.CommonErrorResponses;
-import com.rose.back.global.exception.ErrorResponse;
+import com.rose.back.global.handler.ErrorResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
