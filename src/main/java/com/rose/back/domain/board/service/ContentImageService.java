@@ -1,5 +1,6 @@
 package com.rose.back.domain.board.service;
 
+import com.rose.back.common.util.ImageValidator;
 import com.rose.back.domain.board.entity.ContentEntity;
 import com.rose.back.domain.board.entity.ContentImageEntity;
 import com.rose.back.domain.board.repository.ContentRepository;
@@ -39,6 +40,7 @@ public class ContentImageService {
     private String imgDir;
 
     public String saveImageS3(MultipartFile file) throws IOException {
+        ImageValidator.validate(file);
         String fileUrl = s3Uploader.uploadFile("boards", file);
 
         imageTempRepository.save(ImageTempEntity.builder()
@@ -53,6 +55,7 @@ public class ContentImageService {
     @Transactional
     public void saveImagesForBoard(Long boardNo, List<MultipartFile> files) throws IOException {
         for (MultipartFile file : files) {
+            ImageValidator.validate(file);
             String fileUrl = s3Uploader.uploadFile("boards", file);
             saveImageEntity(boardNo, file, fileUrl);
         }

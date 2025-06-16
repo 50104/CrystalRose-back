@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.rose.back.common.util.ImageValidator;
 import com.rose.back.domain.user.dto.UserInfoDto;
 import com.rose.back.domain.user.dto.request.MemberSearchCondition;
 import com.rose.back.domain.user.entity.UserEntity;
@@ -96,9 +97,8 @@ public class UserServiceImpl implements UserService {
         String beforeUrl = user.getUserProfileImg();
 
         try { // 이미지 새로 업로드
-            if (dto.getUserProfileFile() != null && !dto.getUserProfileFile().isEmpty()
-                    && !Boolean.parseBoolean(dto.getIsDelete())) {
-
+            if (dto.getUserProfileFile() != null && !dto.getUserProfileFile().isEmpty() && !Boolean.parseBoolean(dto.getIsDelete())) {
+                ImageValidator.validate(dto.getUserProfileFile());
                 String uploadedUrl = s3Uploader.uploadProfile(dto.getUserProfileFile(), dto.getUserName());
                 user.setUserProfileImg(uploadedUrl);
 

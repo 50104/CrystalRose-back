@@ -6,6 +6,7 @@ import java.util.Date;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.rose.back.common.util.ImageValidator;
 import com.rose.back.domain.wiki.entity.WikiEntity;
 import com.rose.back.domain.wiki.entity.WikiImageEntity;
 import com.rose.back.domain.wiki.repository.WikiImageRepository;
@@ -25,6 +26,7 @@ public class WikiImageService {
     private final WikiImageRepository wikiImageRepository;
 
     public String uploadImage(MultipartFile file) throws IOException {
+        ImageValidator.validate(file);
         String url = s3Uploader.uploadFile("wikis", file);
         tempRepository.save(ImageTempEntity.builder()
             .fileUrl(url)

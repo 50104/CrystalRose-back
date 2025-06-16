@@ -1,5 +1,6 @@
 package com.rose.back.domain.diary.service;
 
+import com.rose.back.common.util.ImageValidator;
 import com.rose.back.domain.diary.entity.DiaryEntity;
 import com.rose.back.domain.diary.entity.DiaryImageEntity;
 import com.rose.back.domain.diary.repository.DiaryImageRepository;
@@ -27,6 +28,7 @@ public class DiaryImageService {
     private final DiaryImageRepository diaryImageRepository;
 
     public String uploadImage(MultipartFile file) throws IOException {
+        ImageValidator.validate(file);
         String url = s3Uploader.uploadFile("diaries", file);
         tempRepository.save(ImageTempEntity.builder()
                 .fileUrl(url)

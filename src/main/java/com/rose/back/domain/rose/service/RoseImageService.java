@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.rose.back.common.util.ImageValidator;
 import com.rose.back.domain.rose.entity.RoseEntity;
 import com.rose.back.domain.rose.entity.RoseImageEntity;
 import com.rose.back.domain.rose.repository.RoseImageRepository;
@@ -27,6 +28,7 @@ public class RoseImageService {
     private final RoseImageRepository roseImageRepository;
 
     public String uploadImage(MultipartFile file) throws IOException {
+        ImageValidator.validate(file);
         String url = s3Uploader.uploadFile("roses", file);
 
         tempRepository.save(ImageTempEntity.builder()
