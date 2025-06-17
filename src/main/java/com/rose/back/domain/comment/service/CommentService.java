@@ -36,6 +36,7 @@ public class CommentService {
                         return CommentResponseDto.builder()
                                 .id(comment.getId())
                                 .userId(comment.getWriter().getUserId())
+                                .userNick(comment.getWriter().getUserNick())
                                 .createdDate(comment.getCreatedDate().toString())
                                 .parentId(comment.getParent() != null ? comment.getParent().getId() : null)
                                 .parentNickname(comment.getParent() != null ? comment.getParent().getWriter().getUserId() : null)

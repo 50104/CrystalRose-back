@@ -12,6 +12,7 @@ public class CommentResponseDto {
     private Long id;
     private String content;
     private String userId;
+    private String userNick;
     private String userStatus; 
     private String createdDate;
     private Long parentId;
@@ -25,6 +26,7 @@ public class CommentResponseDto {
                 .id(entity.getId())
                 .content(entity.getContent())
                 .userId(writer.getUserId())
+                .userNick(writer.getUserNick())
                 .userStatus(writer.getUserStatus().name())
                 .createdDate(entity.getCreatedDate() != null ? entity.getCreatedDate().toString() : "")
                 .parentId(entity.getParent() != null ? entity.getParent().getId() : null)
