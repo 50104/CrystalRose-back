@@ -26,6 +26,7 @@ import com.rose.back.domain.user.dto.response.CommonResponse;
 import com.rose.back.domain.user.entity.UserEntity;
 import com.rose.back.domain.user.entity.UserEntity.UserStatus;
 import com.rose.back.domain.user.repository.UserRepository;
+import com.rose.back.global.exception.MissingAccessTokenException;
 import com.rose.back.global.service.EmailService;
 
 import io.jsonwebtoken.ExpiredJwtException;
@@ -332,6 +333,6 @@ public class AuthServiceImpl implements AuthService {
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
-        return null;
+        throw new MissingAccessTokenException();
     }
 }

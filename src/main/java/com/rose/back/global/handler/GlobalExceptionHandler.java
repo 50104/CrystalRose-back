@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
 
+import com.rose.back.global.exception.MissingAccessTokenException;
+
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
@@ -83,5 +85,19 @@ public class GlobalExceptionHandler {
 
         log.warn("JSON parse error @ {}: {}", req.getRequestURI(), ex.getMessage());
         return ResponseEntity.badRequest().body(err);
+    }
+
+    @ExceptionHandler(MissingAccessTokenException.class)
+    public ResponseEntity<ErrorResponse> handleMissingAccessToken(MissingAccessTokenException ex, HttpServletRequest request) {
+        ErrorResponse error = ErrorResponse.builder()
+            .timestamp(LocalDateTime.now())
+            .status(HttpStatus.UNAUTHORIZED.value())
+            .code(HttpStatus.UNAUTHORIZED.name())
+            .message(ex.getMessage())
+            .path(request.getRequestURI())
+            .build();
+            
+        log.warn("Missing access token @ {}: {}", request.getRequestURI(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 }

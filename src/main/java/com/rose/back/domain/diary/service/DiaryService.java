@@ -2,11 +2,11 @@ package com.rose.back.domain.diary.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.rose.back.domain.diary.controller.DiaryController.DiaryRequest;
 import com.rose.back.domain.diary.controller.DiaryController.DiaryResponse;
 import com.rose.back.domain.diary.entity.DiaryEntity;
 import com.rose.back.domain.diary.repository.DiaryRepository;
@@ -45,6 +45,25 @@ public class DiaryService {
             diaryImageService.saveAndBindImage(imageUrl, diary);
         }
         tempRepository.findByFileUrl(imageUrl).ifPresent(tempRepository::delete);
+    }
+
+    @Transactional
+    public void registerDiary(Long userId, DiaryRequest request) {
+        RoseEntity rose = roseService.getUserRose(userId, request.roseId());
+
+        DiaryEntity diary = diaryRepository.save(
+            DiaryEntity.builder()
+                .roseEntity(rose)
+                .note(request.note())
+                .imageUrl(request.imageUrl())
+                .recordedAt(request.recordedAt())
+                .build()
+        );
+        
+        if (request.imageUrl() != null && !request.imageUrl().isEmpty()) {
+            diaryImageService.saveAndBindImage(request.imageUrl(), diary);
+            tempRepository.findByFileUrl(request.imageUrl()).ifPresent(tempRepository::delete);
+        }
     }
 
     public List<DiaryResponse> getUserTimeline(Long userId) {

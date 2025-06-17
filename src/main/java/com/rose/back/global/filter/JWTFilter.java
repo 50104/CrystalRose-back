@@ -13,6 +13,8 @@ import com.rose.back.domain.auth.jwt.JwtTokenProvider;
 import com.rose.back.domain.auth.oauth2.CustomUserDetails;
 import com.rose.back.domain.auth.service.AccessTokenBlacklistService;
 import com.rose.back.domain.user.dto.UserInfoDto;
+import com.rose.back.global.exception.MissingAccessTokenException;
+
 import io.jsonwebtoken.ExpiredJwtException;
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
@@ -103,6 +105,6 @@ public class JWTFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
-        return null;
+        throw new MissingAccessTokenException();
     }
 }

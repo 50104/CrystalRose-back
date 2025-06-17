@@ -1,18 +1,15 @@
 package com.rose.back.domain.report.controller;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import com.rose.back.common.dto.MessageResponse;
 import com.rose.back.domain.auth.oauth2.CustomUserDetails;
 import com.rose.back.domain.report.service.CommentReportService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -23,15 +20,13 @@ public class CommentReportController {
     private final CommentReportService commentReportService;
 
     @PostMapping
-    public ResponseEntity<Void> reportComment(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody CommentReportRequestDto dto) {
+    public ResponseEntity<MessageResponse> reportComment(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody CommentReportRequestDto dto) {
+
         log.info("[POST][/api/comment-reports] - 댓글 신고 요청: {}", dto);
-        try {
-            commentReportService.reportComment(userDetails.getUserNo(), dto.commentId(), dto.reason());
-            return ResponseEntity.status(HttpStatus.CREATED).build();
-        } catch (Exception e) {
-            log.error("댓글 신고 요청 실패: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        commentReportService.reportComment(userDetails.getUserNo(), dto.commentId(), dto.reason());
+        return ResponseEntity.status(201).body(new MessageResponse("댓글이 신고되었습니다."));
     }
 
     public record CommentReportRequestDto(Long commentId, String reason) {}

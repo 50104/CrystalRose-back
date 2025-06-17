@@ -12,15 +12,15 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class ContentRequestDto{
-    @NotBlank(message = "[NotBlank] 게시물 제목") 
+    @NotBlank(message = "게시물 제목은 필수입니다") 
     @Size(max = 200, message = "게시물 최대 길이 초과 (50자)") 
     private String boardTitle;
 
-    @NotBlank(message = "[NotBlank] 게시물 내용") 
+    @NotBlank(message = "게시물 내용은 필수입니다") 
     @Size(message = "게시물 내용 최대 길이 초과 (3000자)") 
     private String boardContent;
 
-    @NotBlank(message = "[NotBlank] 사용자 ID ") 
+    @NotBlank(message = "사용자 ID는 필수입니다") 
     private String userId;
 
     private List<MultipartFile> images;

@@ -1,27 +1,20 @@
 package com.rose.back.domain.rose.controller;
 
-import java.io.IOException;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
+import com.rose.back.common.dto.MessageResponse;
 import com.rose.back.domain.auth.oauth2.CustomUserDetails;
 import com.rose.back.domain.rose.service.RoseImageService;
 import com.rose.back.domain.rose.service.RoseService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -33,47 +26,35 @@ public class RoseController {
     private final RoseImageService roseImageService;
 
     @PostMapping("/mine")
-    public ResponseEntity<?> registerRose(@RequestBody RoseRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<MessageResponse> registerRose(@RequestBody RoseRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
         log.info("[POST][/api/roses/mine] - 내 장미 등록 요청");
-        try {
-            roseService.registerUserRose(userDetails, request);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            log.error("내 장미 등록 실패: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        roseService.registerUserRose(userDetails, request);
+        return ResponseEntity.ok(new MessageResponse("장미가 등록되었습니다."));
     }
 
     @PostMapping("/image/upload")
-    public ResponseEntity<Map<String, Object>> upload(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<ImageUploadResponse> upload(@RequestParam("file") MultipartFile file) {
         log.info("[POST][/api/roses/image/upload] - 장미 이미지 업로드 요청: {}", file.getOriginalFilename());
         try {
             String url = roseImageService.uploadImage(file);
-            return ResponseEntity.ok(Map.of("uploaded", true, "url", url));
-        } catch (IOException e) {
+            return ResponseEntity.ok(new ImageUploadResponse(true, url, null));
+        } catch (Exception e) {
             log.error("장미 이미지 업로드 실패", e);
-            return ResponseEntity.internalServerError().body(Map.of("uploaded", false, "error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(new ImageUploadResponse(false, null, e.getMessage()));
         }
     }
 
     @GetMapping("/list")
     public ResponseEntity<List<RoseResponse>> getMyRoses(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        log.info("[GET][/api/roses/list] - 내 장미 목록 조회 요청 시작");
-        
+        log.info("[GET][/api/roses/list] - 내 장미 목록 조회 요청");
         if (userDetails == null) {
             log.error("인증된 사용자 정보가 없습니다.");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(List.of());
+            return ResponseEntity.status(401).build();
         }
-        log.info("사용자 인증 확인: userId={}", userDetails.getUserNo());
-        
-        try {
-            List<RoseResponse> responses = roseService.getUserRoseResponses(userDetails.getUserNo());
-            log.info("내 장미 목록 조회 응답: {} 개", responses.size());
-            return ResponseEntity.ok(responses != null ? responses : List.of());
-        } catch (Exception e) {
-            log.error("내 장미 목록 조회 실패: {}", e.getMessage(), e);
-            return ResponseEntity.ok(List.of());
-        }
+
+        List<RoseResponse> responses = roseService.getUserRoseResponses(userDetails.getUserNo());
+        log.info("내 장미 목록 조회 완료: {} 개", responses.size());
+        return ResponseEntity.ok(responses);
     }
 
     public record RoseRequest(
@@ -93,4 +74,6 @@ public class RoseController {
         String locationNote,
         String imageUrl
     ) {}
+
+    public record ImageUploadResponse(boolean uploaded, String url, String error) {}
 }

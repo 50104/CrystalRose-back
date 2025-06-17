@@ -1,5 +1,6 @@
 package com.rose.back.domain.comment.controller.docs;
 
+import com.rose.back.common.dto.MessageResponse;
 import com.rose.back.domain.comment.dto.CommentRequestDto;
 import com.rose.back.domain.comment.dto.CommentResponseDto;
 import com.rose.back.global.exception.CommonErrorResponses;
@@ -69,7 +70,7 @@ public interface CommentControllerDocs {
             )
         )
     })
-    ResponseEntity<Void> addComment(@PathVariable("boardNo") Long boardNo, @RequestBody CommentRequestDto dto);
+    ResponseEntity<MessageResponse> addComment(@PathVariable("boardNo") Long boardNo, @RequestBody CommentRequestDto dto);
 
     @Operation(summary = "댓글 삭제", description = "특정 댓글을 삭제합니다.")
     @CommonErrorResponses
@@ -94,5 +95,30 @@ public interface CommentControllerDocs {
             )
         )
     })
-    ResponseEntity<Void> deleteComment(@PathVariable("commentId") Long commentId);
+    ResponseEntity<MessageResponse> deleteComment(@PathVariable("commentId") Long commentId);
+
+    @Operation(summary = "댓글 수정", description = "특정 댓글을 수정합니다.")
+    @CommonErrorResponses
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "댓글 수정 성공"),
+        @ApiResponse(
+            responseCode = "409",
+            description = "댓글 수정 실패",
+            content = @Content(
+                schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(
+                    name = "Conflict",
+                    value = """
+                    {
+                      "status": 409,
+                      "error": "CONFLICT",
+                      "message": "댓글 수정에 실패했습니다.",
+                      "path": "/board/comments/{commentId}"
+                    }
+                    """
+                )
+            )
+        )
+    })
+    ResponseEntity<MessageResponse> updateComment(@PathVariable("commentId") Long commentId, @RequestBody CommentRequestDto dto);
 }

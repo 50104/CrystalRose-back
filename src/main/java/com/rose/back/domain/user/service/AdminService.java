@@ -68,29 +68,31 @@ public class AdminService {
         log.info("조회된 댓글 신고 수: {}", reports.size());
 
         return reports.stream()
-        .map(report -> {  
-            try {
-                return new CommentReportResponseDto(
-                    report.getId(),
-                    Optional.ofNullable(report.getReporter())
-                        .map(UserEntity::getUserNick)
-                        .orElse("탈퇴한 유저"),
-                    Optional.ofNullable(report.getTargetComment())
-                        .flatMap(comment -> Optional.ofNullable(comment.getWriter())
-                            .map(UserEntity::getUserNick))
-                        .orElse("알 수 없음"),
-                    Optional.ofNullable(report.getTargetComment())
-                        .map(CommentEntity::getContent)
-                        .orElse("댓글이 삭제됨"),
-                    report.getReason(),
-                    report.getReportedAt()
-                );
-            } catch (Exception e) {
-                log.error("Report 변환 중 예외 발생: reportId={}", report.getId(), e);
-                return null; // 예외 발생시 null 반환
-            }
-        })
-        .filter(Objects::nonNull)  // null 제거
-        .toList();
+            .map(report -> toResponseSafe(report))
+            .flatMap(Optional::stream)
+            .toList();
+    }
+
+    private Optional<CommentReportResponseDto> toResponseSafe(CommentReport report) {
+        try {
+            return Optional.of(new CommentReportResponseDto(
+                report.getId(),
+                Optional.ofNullable(report.getReporter())
+                    .map(UserEntity::getUserNick)
+                    .orElse("탈퇴한 유저"),
+                Optional.ofNullable(report.getTargetComment())
+                    .flatMap(comment -> Optional.ofNullable(comment.getWriter())
+                        .map(UserEntity::getUserNick))
+                    .orElse("알 수 없음"),
+                Optional.ofNullable(report.getTargetComment())
+                    .map(CommentEntity::getContent)
+                    .orElse("댓글이 삭제됨"),
+                report.getReason(),
+                report.getReportedAt()
+            ));
+        } catch (Exception e) {
+            log.error("Report 변환 중 예외 발생: reportId={}, message={}", report.getId(), e.getMessage(), e);
+            return Optional.empty();
+        }
     }
 }

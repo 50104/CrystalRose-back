@@ -10,7 +10,6 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 import com.rose.back.domain.user.dto.UserInfoDto;
 import com.rose.back.domain.user.dto.request.EmailVerifyRequest;

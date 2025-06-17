@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,9 +68,12 @@ public class ContentService {
 
 
     @Transactional
-    public void deleteOneContent(Long boardNo) {
+    public void deleteOneContent(Long boardNo, String username) {
         ContentEntity content = contentRepository.findByBoardNo(boardNo)
                 .orElseThrow(() -> new NoSuchElementException("게시글이 존재하지 않습니다: " + boardNo));
+        if (!content.getWriter().getUserId().equals(username)) {
+            throw new AccessDeniedException("작성자만 삭제할 수 있습니다.");
+        }
         log.info("게시글 삭제 요청: boardNo = {}", boardNo);
 
         List<ContentImageEntity> imageList = contentImageRepository.findByContent(content); // 해당 게시글의 이미지 목록 조회
@@ -86,7 +90,9 @@ public class ContentService {
     public void updateOneContent(ContentRequestDto req, Long boardNo) {
         ContentEntity content = contentRepository.findByBoardNo(boardNo)
             .orElseThrow(() -> new NoSuchElementException("게시글이 존재하지 않습니다: " + boardNo));
-
+        if (!content.getWriter().getUserId().equals(req.getUserId())) {
+            throw new AccessDeniedException("작성자만 수정할 수 있습니다.");
+        }
         content.setBoardTitle(req.getBoardTitle());
         content.setBoardContent(req.getBoardContent());
 

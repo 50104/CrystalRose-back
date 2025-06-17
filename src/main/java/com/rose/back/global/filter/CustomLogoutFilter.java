@@ -15,6 +15,7 @@ import org.springframework.web.filter.GenericFilterBean;
 import com.rose.back.domain.auth.jwt.JwtTokenProvider;
 import com.rose.back.domain.auth.service.AccessTokenBlacklistService;
 import com.rose.back.domain.auth.service.RefreshTokenService;
+import com.rose.back.global.exception.MissingAccessTokenException;
 
 import java.io.IOException;
 
@@ -102,6 +103,6 @@ public class CustomLogoutFilter extends GenericFilterBean {
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
-        return null;
+        throw new MissingAccessTokenException();
     }
 }
