@@ -2,6 +2,7 @@ package com.rose.back.domain.chat.controller;
 
 import com.rose.back.common.dto.MessageResponse;
 import com.rose.back.domain.chat.dto.ChatMessageReqDto;
+import com.rose.back.domain.chat.dto.ChatRoomInfoDto;
 import com.rose.back.domain.chat.dto.ChatRoomListResDto;
 import com.rose.back.domain.chat.dto.MyChatListResDto;
 import com.rose.back.domain.chat.service.ChatService;
@@ -82,6 +83,13 @@ public class ChatController {
         log.info("[POST][room/private/create] 개인 채팅방 생성 또는 조회 요청 - 대상 ID: {}", otherMemberId);
         Long roomId = chatService.getOrCreatePrivateRoom(otherMemberId);
         return ResponseEntity.ok(new RoomIdResponse(roomId));
+    }
+
+    // 채팅방 이름
+    @GetMapping("/room/{roomId}/info")
+    public ResponseEntity<ChatRoomInfoDto> getChatRoomInfo(@PathVariable Long roomId) {
+        log.info("[GET][room/{}/info] 채팅방 정보 조회 요청", roomId);
+        return ResponseEntity.ok(chatService.getChatRoomInfo(roomId));
     }
 
     public record RoomIdResponse(Long roomId) {}

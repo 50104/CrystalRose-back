@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rose.back.domain.chat.dto.ChatMessageReqDto;
+import com.rose.back.domain.chat.dto.ChatRoomInfoDto;
 import com.rose.back.domain.chat.dto.ChatRoomListResDto;
 import com.rose.back.domain.chat.dto.MyChatListResDto;
 import com.rose.back.domain.chat.entity.ChatMessage;
@@ -291,5 +292,30 @@ public class ChatService {
       addParticipantToRoom(newRoom, otherUser);
 
       return newRoom.getId();
+  }
+
+  // 채팅방 이름 변경
+  public ChatRoomInfoDto getChatRoomInfo(Long roomId) {
+    ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+        .orElseThrow(() -> new EntityNotFoundException("채팅방이 존재하지 않습니다"));
+
+    List<ChatParticipant> participants = chatParticipantRepository.findByChatRoom(chatRoom);
+
+    List<ChatRoomInfoDto.ParticipantDto> participantDtos = participants.stream()
+        .map(p -> {
+            UserEntity user = p.getUserEntity();
+            return ChatRoomInfoDto.ParticipantDto.builder()
+                .userId(user.getUserId())
+                .userNick(user.getUserNick())
+                .userProfileImg(user.getUserProfileImg())
+                .build();
+        }).collect(Collectors.toList());
+
+    return ChatRoomInfoDto.builder()
+        .roomId(chatRoom.getId())
+        .roomName(chatRoom.getRoomName())
+        .isGroupChat(chatRoom.getIsGroupChat())
+        .participants(participantDtos)
+        .build();
   }
 }
