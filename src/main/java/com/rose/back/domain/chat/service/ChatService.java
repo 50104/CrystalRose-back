@@ -169,6 +169,7 @@ public class ChatService {
           .message(m.getContent())
           .senderId(m.getUserEntity().getUserId())
           .senderNick(m.getUserEntity().getUserNick())
+          .senderProfileImg(m.getUserEntity().getUserProfileImg())
           .createdDate(m.getCreatedDate())
           .build()
     ).collect(Collectors.toList());

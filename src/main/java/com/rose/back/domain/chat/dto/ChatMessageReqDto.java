@@ -17,6 +17,7 @@ public class ChatMessageReqDto {
   private String message;
   private String senderId;
   private String senderNick;
+  private String senderProfileImg;
   private Long roomId;
   private String type;
   private LocalDateTime createdDate;
