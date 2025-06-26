@@ -36,4 +36,12 @@ public class CommentReportService {
         report.setReason(reason);
         commentReportRepository.save(report);
     }
+
+    public boolean isAlreadyReported(Long userId, Long commentId) {
+        UserEntity reporter = userRepository.findById(userId)
+            .orElseThrow(() -> new EntityNotFoundException("사용자 없음"));
+        CommentEntity comment = commentRepository.findById(commentId)
+            .orElseThrow(() -> new EntityNotFoundException("댓글 없음"));
+        return commentReportRepository.existsByReporterAndTargetComment(reporter, comment);
+    }
 }
