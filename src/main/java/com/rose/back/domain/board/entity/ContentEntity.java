@@ -1,6 +1,7 @@
 package com.rose.back.domain.board.entity;
 
 import com.rose.back.domain.user.entity.UserEntity;
+import com.rose.back.global.entity.BaseTimeEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,12 +12,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "board_content")
-public class ContentEntity {
+public class ContentEntity extends BaseTimeEntity {
 
     @Id
     @Column(length = 50, name = "board_no")

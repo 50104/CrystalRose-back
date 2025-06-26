@@ -5,9 +5,10 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -45,6 +46,12 @@ public class CareLogController {
         return ResponseEntity.ok(careLogService.getAllLogs(userDetails.getUserNo()));
     }
 
+    @PutMapping("/carelogs/{id}")
+    public ResponseEntity<Void> update(@PathVariable Long id, @RequestBody CareLogRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        careLogService.update(id, request, userDetails.getUserNo());
+        return ResponseEntity.ok().build();
+    }
+
     public record CareLogRequest(
         Long id,
         @JsonFormat(pattern = "yyyy-MM-dd") LocalDate careDate,
@@ -64,7 +71,6 @@ public class CareLogController {
         String compost,
         String fungicide,
         String note,
-        @JsonFormat(pattern = "yyyy-MM-dd")
-        LocalDate careDate
+        @JsonFormat(pattern = "yyyy-MM-dd") LocalDate careDate
     ) {}
 }

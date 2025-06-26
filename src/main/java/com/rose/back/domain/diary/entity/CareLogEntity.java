@@ -1,7 +1,6 @@
 package com.rose.back.domain.diary.entity;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import com.rose.back.domain.user.entity.UserEntity;
 import com.rose.back.global.entity.BaseTimeEntity;
@@ -13,9 +12,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -23,6 +22,7 @@ import lombok.Setter;
 @Entity
 @Setter
 @Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "rose_care_log")
@@ -45,11 +45,4 @@ public class CareLogEntity extends BaseTimeEntity {
     private String fungicide;   // 살균제
 
     private String note;
-
-    private LocalDateTime createdAt;
-
-    @PrePersist
-    public void prePersist() {
-        this.createdAt = LocalDateTime.now();
-    }
 }

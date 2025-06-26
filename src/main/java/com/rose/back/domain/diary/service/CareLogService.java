@@ -19,18 +19,21 @@ public class CareLogService {
     private final CareLogRepository careLogRepository;
 
     public void save(CareLogController.CareLogRequest request, Long userNo) {
-        CareLogEntity entity = new CareLogEntity();
-        UserEntity user = new UserEntity();
-        user.setUserNo(userNo);
+        UserEntity user = UserEntity.builder()
+            .userNo(userNo)
+            .build();
 
-        entity.setUserNo(user); 
-        entity.setCareDate(request.careDate());
-        entity.setFertilizer(request.fertilizer());
-        entity.setPesticide(request.pesticide());
-        entity.setAdjuvant(request.adjuvant());
-        entity.setCompost(request.compost());
-        entity.setFungicide(request.fungicide());
-        entity.setNote(request.note());
+        CareLogEntity entity = CareLogEntity.builder()
+            .userNo(user)
+            .careDate(request.careDate())
+            .fertilizer(request.fertilizer())
+            .pesticide(request.pesticide())
+            .adjuvant(request.adjuvant())
+            .compost(request.compost())
+            .fungicide(request.fungicide())
+            .note(request.note())
+            .build();
+            
         careLogRepository.save(entity);
     }
 
@@ -53,5 +56,27 @@ public class CareLogService {
                 log.getCareDate()
             ))
             .toList();
+    }
+
+    public void update(Long id, CareLogController.CareLogRequest request, Long userNo) {
+        CareLogEntity existingEntity = careLogRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("관리 기록을 찾을 수 없습니다."));
+        
+        if (!existingEntity.getUserNo().getUserNo().equals(userNo)) {
+            throw new RuntimeException("수정 권한이 없습니다.");
+        }
+        
+        CareLogEntity updatedEntity = CareLogEntity.builder()
+            .id(existingEntity.getId())
+            .userNo(existingEntity.getUserNo())
+            .careDate(request.careDate())
+            .fertilizer(request.fertilizer())
+            .pesticide(request.pesticide())
+            .adjuvant(request.adjuvant())
+            .compost(request.compost())
+            .fungicide(request.fungicide())
+            .note(request.note())
+            .build();
+        careLogRepository.save(updatedEntity);
     }
 }
