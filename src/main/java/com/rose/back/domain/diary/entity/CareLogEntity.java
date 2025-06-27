@@ -43,6 +43,7 @@ public class CareLogEntity extends BaseTimeEntity {
     private String adjuvant;    // 보조제
     private String compost;     // 비료
     private String fungicide;   // 살균제
+    private String watering;    // 관수
 
     private String note;
 }

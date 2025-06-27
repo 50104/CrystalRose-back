@@ -60,6 +60,7 @@ public class CareLogController {
         String adjuvant,
         String compost,
         String fungicide,
+        String watering,
         String note
     ) {}
 
@@ -70,6 +71,7 @@ public class CareLogController {
         String adjuvant,
         String compost,
         String fungicide,
+        String watering,
         String note,
         @JsonFormat(pattern = "yyyy-MM-dd") LocalDate careDate
     ) {}

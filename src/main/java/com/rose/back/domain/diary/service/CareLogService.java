@@ -31,6 +31,7 @@ public class CareLogService {
             .adjuvant(request.adjuvant())
             .compost(request.compost())
             .fungicide(request.fungicide())
+            .watering(request.watering())
             .note(request.note())
             .build();
             
@@ -53,6 +54,7 @@ public class CareLogService {
                 log.getCompost(),
                 log.getFungicide(),
                 log.getNote(),
+                log.getWatering(),
                 log.getCareDate()
             ))
             .toList();
@@ -75,6 +77,7 @@ public class CareLogService {
             .adjuvant(request.adjuvant())
             .compost(request.compost())
             .fungicide(request.fungicide())
+            .watering(request.watering())
             .note(request.note())
             .build();
         careLogRepository.save(updatedEntity);
