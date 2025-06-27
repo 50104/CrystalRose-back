@@ -1,5 +1,8 @@
-FROM openjdk:17-jdk
+# Dockerfile
+FROM eclipse-temurin:17-jdk-alpine
 
-COPY build/libs/*SNAPSHOT.jar app.jar
+ARG JAR_FILE=build/libs/*.jar
+COPY ${JAR_FILE} app.jar
 
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+EXPOSE 8080
+ENTRYPOINT ["java", "--enable-preview" ,"-jar", "app.jar"]

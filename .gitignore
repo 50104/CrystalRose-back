@@ -47,4 +47,6 @@ gradle/.DS_Store
 src/.DS_Store
 src/main/.DS_Store
 
+.env
+
 **/com/rose/back/domain/test/*.java

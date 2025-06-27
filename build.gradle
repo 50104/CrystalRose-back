@@ -69,6 +69,9 @@ dependencies {
 
   // HTML 태그 파싱
   implementation 'org.jsoup:jsoup:1.17.2'
+
+  // health check
+  implementation 'org.springframework.boot:spring-boot-starter-actuator'
 }
 
 // log4j2 사용을 위해 Logback 제거
