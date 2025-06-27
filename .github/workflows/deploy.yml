@@ -29,11 +29,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Gradle 권한 설정
-        run: chmod +x ./gradlew
-
       - name: Build JAR
-        run: ./gradlew bootJar
+        run: |
+          chmod +x ./gradlew
+          ./gradlew bootJar
 
       - name: Docker Build & Push
         run: |
@@ -46,19 +45,20 @@ jobs:
           echo "${{ secrets.EC2_PRIVATE_KEY_BASE64 }}" | base64 -d > private_key.pem
           chmod 600 private_key.pem
 
-      - name: Verify SSH Key Format
+      - name: Deploy via SSH
+        env:
+          APPLICATION_YML: ${{ secrets.APPLICATION_YML }}
+          APPLICATION_OAUTH2_YML: ${{ secrets.APPLICATION_OAUTH2_YML }}
+          SPRING_JWT_SECRET: ${{ secrets.SPRING_JWT_SECRET }}
+          CLOUD_AWS_CREDENTIALS_ACCESS_KEY: ${{ secrets.CLOUD_AWS_CREDENTIALS_ACCESS_KEY }}
+          CLOUD_AWS_CREDENTIALS_SECRET_KEY: ${{ secrets.CLOUD_AWS_CREDENTIALS_SECRET_KEY }}
+          CLOUD_AWS_REGION_STATIC: ${{ secrets.CLOUD_AWS_REGION_STATIC }}
+          CLOUD_AWS_S3_BUCKET: ${{ secrets.CLOUD_AWS_S3_BUCKET }}
         run: |
-          file private_key.pem
-          head -n 5 private_key.pem
-
-      - name: SSH Deploy to EC2
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: private_key.pem
-          script: |
+          ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'EOF'
             cd /home/ubuntu
+
+            echo "[ENV] 환경 파일 설정"
             rm -f .env
             touch .env
             echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
@@ -68,5 +68,8 @@ jobs:
             echo "CLOUD_AWS_CREDENTIALS_SECRET_KEY=${{ secrets.CLOUD_AWS_CREDENTIALS_SECRET_KEY }}" >> .env
             echo "CLOUD_AWS_REGION_STATIC=${{ secrets.CLOUD_AWS_REGION_STATIC }}" >> .env
             echo "CLOUD_AWS_S3_BUCKET=${{ secrets.CLOUD_AWS_S3_BUCKET }}" >> .env
+
+            echo "[DEPLOY] 배포 스크립트 실행"
             chmod +x ./deploy.sh
             ./deploy.sh
+          EOF
