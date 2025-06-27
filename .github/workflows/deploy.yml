@@ -56,7 +56,7 @@ jobs:
           CLOUD_AWS_S3_BUCKET: ${{ secrets.CLOUD_AWS_S3_BUCKET }}
         run: |
           ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'EOF'
-            cd /home/ubuntu
+            cd /home/ubuntu/CrystalRose-back
 
             echo "[ENV] 환경 파일 설정"
             rm -f .env
