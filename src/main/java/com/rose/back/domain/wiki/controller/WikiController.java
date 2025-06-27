@@ -45,6 +45,13 @@ public class WikiController {
         }
     }
 
+    @PutMapping("/modify/{id}")
+    public ResponseEntity<MessageResponse> updateWiki(@PathVariable Long id, @RequestBody @Valid WikiRequest dto) {
+        log.info("[PUT][/api/v1/wiki/{}] - 도감 수정 요청: {}", id, dto);
+        wikiService.updateWiki(id, dto);
+        return ResponseEntity.ok(new MessageResponse("도감이 수정되었습니다."));
+    }
+
     @GetMapping("/list")
     public ResponseEntity<List<WikiResponse>> getWikiList() {
         log.info("[GET][/api/v1/wiki/list] - 도감 목록 조회 요청");
