@@ -29,6 +29,9 @@ public class ContentEntity extends BaseTimeEntity {
     @Column(length = 100, name = "board_title")
     private String boardTitle;
 
+    @Column(length = 30, name = "board_tag")
+    private String boardTag;
+
     @Column(columnDefinition = "LONGTEXT", name = "board_content")
     private String boardContent;
 

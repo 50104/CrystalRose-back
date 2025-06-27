@@ -43,6 +43,7 @@ public class ContentService {
         ContentEntity content = new ContentEntity();
         content.setBoardTitle(req.getBoardTitle());
         content.setBoardContent(req.getBoardContent());
+        content.setBoardTag(req.getBoardTag());
         UserEntity user = userRepository.findByUserId(req.getUserId());
         if (user == null) {
             throw new IllegalArgumentException("해당 유저를 찾을 수 없습니다.");
@@ -95,6 +96,7 @@ public class ContentService {
         }
         content.setBoardTitle(req.getBoardTitle());
         content.setBoardContent(req.getBoardContent());
+        content.setBoardTag(req.getBoardTag());
 
         UserEntity user = userRepository.findByUserId(req.getUserId());
         if (user == null) {

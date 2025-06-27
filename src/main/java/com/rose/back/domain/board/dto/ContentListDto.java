@@ -8,6 +8,7 @@ public record ContentListDto(
     Long boardNo,
     String boardTitle,
     String writerNick,
+    String boardTag,
     String writerStatus
 ) {
     public static ContentListDto from(ContentEntity entity) {
@@ -23,6 +24,7 @@ public record ContentListDto(
         return new ContentListDto(
             entity.getBoardNo(),
             entity.getBoardTitle(),
+            entity.getBoardTag(),
             writerNick,
             writerStatus
         );

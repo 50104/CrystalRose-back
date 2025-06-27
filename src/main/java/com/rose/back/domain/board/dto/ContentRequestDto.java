@@ -23,5 +23,8 @@ public class ContentRequestDto{
     @NotBlank(message = "사용자 ID는 필수입니다") 
     private String userId;
 
+    @NotBlank(message = "말머리는 필수입니다")
+    private String boardTag;
+
     private List<MultipartFile> images;
 }
