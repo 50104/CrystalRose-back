@@ -24,7 +24,9 @@ else
 fi
 
 echo "새 컨테이너(${AFTER_COLOR}) 실행"
-sudo docker-compose -p $AFTER_COLOR -f /home/ubuntu/$COMPOSE_FILE --env-file /home/ubuntu/.env up -d
+sudo docker-compose -p $AFTER_COLOR \
+  -f /home/ubuntu/CrystalRose-back/$COMPOSE_FILE \
+  --env-file /home/ubuntu/.env up -d
 
 echo "Health 체크 중"
 for i in {1..10}
@@ -43,11 +45,15 @@ if [[ "$HEALTH" != *'"status":"UP"'* ]]; then
   echo "헬스체크 실패 - 롤백 수행"
 
   echo "실패한 컨테이너 ${AFTER_COLOR} 정리"
-  sudo docker-compose -p $AFTER_COLOR -f /home/ubuntu/$COMPOSE_FILE --env-file /home/ubuntu/.env down
+  sudo docker-compose -p $AFTER_COLOR \
+    -f /home/ubuntu/CrystalRose-back/$COMPOSE_FILE \
+    --env-file /home/ubuntu/.env down
 
   echo "이전 컨테이너 ${BEFORE_COLOR} 재실행"
   ROLLBACK_COMPOSE="docker-compose.${BEFORE_COLOR}.yml"
-  sudo docker-compose -p $BEFORE_COLOR -f /home/ubuntu/$ROLLBACK_COMPOSE --env-file /home/ubuntu/.env up -d
+  sudo docker-compose -p $BEFORE_COLOR \
+    -f /home/ubuntu/CrystalRose-back/$ROLLBACK_COMPOSE \
+    --env-file /home/ubuntu/.env up -d
 
   echo "Nginx 포트 복구 (${AFTER_PORT} → ${BEFORE_PORT})"
   sudo sed -i "s/${AFTER_PORT}/${BEFORE_PORT}/" /etc/nginx/sites-available/dodorose
@@ -67,6 +73,8 @@ sudo sed -i "s/${BEFORE_PORT}/${AFTER_PORT}/" /etc/nginx/sites-available/dodoros
 sudo nginx -s reload
 
 echo "이전 컨테이너(${BEFORE_COLOR}) 종료"
-sudo docker-compose -p $BEFORE_COLOR -f /home/ubuntu/docker-compose.${BEFORE_COLOR}.yml --env-file /home/ubuntu/.env down
+sudo docker-compose -p $BEFORE_COLOR \
+  -f /home/ubuntu/CrystalRose-back/docker-compose.${BEFORE_COLOR}.yml \
+  --env-file /home/ubuntu/.env down
 
 echo "배포 완료: ${AFTER_COLOR} 컨테이너 실행 중 (port: ${AFTER_PORT})"

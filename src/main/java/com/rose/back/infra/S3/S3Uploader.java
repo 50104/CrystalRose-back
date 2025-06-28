@@ -35,7 +35,7 @@ public class S3Uploader {
         String uuid = UUID.randomUUID().toString().substring(0, 8);
         String timeStamp = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
 
-        String key = String.format("%s/%s/%s%s", folderName, timeStamp, uuid, extension);
+        String key = String.format("uploads/%s/%s/%s%s", folderName, timeStamp, uuid, extension);
 
         try (InputStream inputStream = file.getInputStream()) {
             ObjectMetadata metadata = new ObjectMetadata();
