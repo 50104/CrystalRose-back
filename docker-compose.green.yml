@@ -1,22 +1,18 @@
 version: '3.8'
 
 services:
-  redis-server:
-    image: redis:7
-    container_name: redis-server
-    command: redis-server --port 6379
-    hostname: redis
-    ports:
-      - "6379:6379"
-
   api-green:
     image: ratsche/dodorose:latest
     container_name: app-green
     environment:
       - LANG=ko_KR.UTF-8
       - HTTP_PORT=8080
-      - SPRING_REDIS_HOST=redis 
+      - SPRING_REDIS_HOST=redis-server
     ports:
       - "4001:8080"
-    depends_on:
-      - redis-server
+    networks:
+      - backend
+
+networks:
+  backend:
+    external: true
