@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional
 public class WikiService {
 
-    private final WikiRepository roseWikiRepository;
+    private final WikiRepository wikiRepository;
     private final WikiImageService wikiImageService;
 
     public void registerWiki(WikiRequest dto) {
@@ -42,10 +42,13 @@ public class WikiService {
                 .growthPower(dto.getGrowthPower())
                 .coldResistance(dto.getColdResistance())
                 .status(WikiEntity.Status.PENDING)
+                .modificationStatus(WikiEntity.ModificationStatus.NONE)
                 .build();
 
-            roseWikiRepository.save(wiki);
+            wikiRepository.save(wiki);
             wikiImageService.saveAndBindImage(dto.getImageUrl(), wiki);
+
+            log.info("도감 등록 완료 - 승인 대기 중: {}", dto.getName());
 
         } catch (Exception e) {
             log.error("도감 등록 중 예외 발생: {}", e.getMessage(), e);
@@ -54,7 +57,7 @@ public class WikiService {
     }
 
     public void updateWiki(Long id, WikiRequest dto) {
-        WikiEntity existing = roseWikiRepository.findById(id)
+        WikiEntity existing = wikiRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("수정할 도감 정보를 찾을 수 없습니다. ID: " + id));
 
         WikiEntity updated = WikiEntity.builder()
@@ -75,23 +78,24 @@ public class WikiService {
             .growthPower(dto.getGrowthPower())
             .coldResistance(dto.getColdResistance())
             .status(existing.getStatus())
+            .modificationStatus(WikiEntity.ModificationStatus.PENDING)
             .build();
 
-        roseWikiRepository.save(updated);
+        wikiRepository.save(updated);
         wikiImageService.saveAndBindImage(dto.getImageUrl(), updated);
 
-        log.info("도감 ID {} 수정 완료 (빌더 기반)", id);
+        log.info("도감 ID {} 수정 완료 - 수정 검증 대기 중", id);
     }
 
     public List<WikiResponse> getApprovedWikiList() {
-        List<WikiEntity> approvedWikis = roseWikiRepository.findAllByStatus(WikiEntity.Status.APPROVED);
+        List<WikiEntity> approvedWikis = wikiRepository.findAllByStatus(WikiEntity.Status.APPROVED);
         return approvedWikis.stream()
             .map(WikiResponse::from)
             .toList();
     }
 
     public WikiResponse getApprovedWikiDetail(Long id) {
-        Optional<WikiEntity> wikiOptional = roseWikiRepository.findByIdAndStatus(id, WikiEntity.Status.APPROVED);
+        Optional<WikiEntity> wikiOptional = wikiRepository.findByIdAndStatus(id, WikiEntity.Status.APPROVED);
         
         if (wikiOptional.isPresent()) {
             WikiEntity wikiEntity = wikiOptional.get();

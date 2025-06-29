@@ -23,6 +23,8 @@ public class WikiResponse {
     private String multiBlooming;
     private String growthPower;
     private String coldResistance;
+    private String status; // 도감 전체 상태
+    private String modificationStatus; // 수정 상태
 
     public static WikiResponse from(WikiEntity wiki) {
         return WikiResponse.builder()
@@ -42,6 +44,8 @@ public class WikiResponse {
             .multiBlooming(wiki.getMultiBlooming())
             .growthPower(wiki.getGrowthPower())
             .coldResistance(wiki.getColdResistance())
+            .status(wiki.getStatus() != null ? wiki.getStatus().name() : null)
+            .modificationStatus(wiki.getModificationStatus() != null ? wiki.getModificationStatus().name() : null)
             .build();
     }
 }

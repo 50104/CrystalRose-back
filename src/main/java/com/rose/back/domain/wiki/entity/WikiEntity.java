@@ -63,7 +63,15 @@ public class WikiEntity extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "modification_status")
+    private ModificationStatus modificationStatus;
+
     public enum Status {
         PENDING, APPROVED, REJECTED
+    }
+
+    public enum ModificationStatus {
+        NONE, PENDING, APPROVED, REJECTED
     }
 }

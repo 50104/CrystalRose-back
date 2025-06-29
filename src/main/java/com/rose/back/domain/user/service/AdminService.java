@@ -48,6 +48,26 @@ public class AdminService {
         wiki.setStatus(WikiEntity.Status.REJECTED);
     }
 
+    // 수정 승인 관련 메서드들
+    public List<AdminResponse> getPendingModificationList() {
+        return wikiRepository.findAllByModificationStatus(WikiEntity.ModificationStatus.PENDING)
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public void approveModification(Long id) {
+        WikiEntity wiki = getWikiOrThrow(id);
+        wiki.setModificationStatus(WikiEntity.ModificationStatus.APPROVED);
+        log.info("도감 ID {} 수정 승인 완료", id);
+    }
+
+    public void rejectModification(Long id) {
+        WikiEntity wiki = getWikiOrThrow(id);
+        wiki.setModificationStatus(WikiEntity.ModificationStatus.REJECTED);
+        log.info("도감 ID {} 수정 거부 완료", id);
+    }
+
     private WikiEntity getWikiOrThrow(Long id) {
         return wikiRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("도감을 찾을 수 없습니다. ID = " + id));
