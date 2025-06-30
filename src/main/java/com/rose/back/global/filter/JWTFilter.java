@@ -44,7 +44,8 @@ public class JWTFilter extends OncePerRequestFilter {
         // 토큰 검사 제외 경로
         if (requestUri.matches("^\\/login(?:\\/.*)?$") ||
             requestUri.matches("^\\/oauth2(?:\\/.*)?$") ||
-            requestUri.matches("^\\/reissue$")) {
+            requestUri.matches("^\\/reissue$") ||
+            requestUri.matches("^\\/actuator\\/health$")) {
             filterChain.doFilter(request, response);
             return;
         }

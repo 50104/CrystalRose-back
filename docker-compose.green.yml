@@ -4,14 +4,20 @@ services:
   api-green:
     image: ratsche/dodorose:latest
     container_name: app-green
+    env_file:
+      - .env
     environment:
       - LANG=ko_KR.UTF-8
       - HTTP_PORT=8080
-      - SPRING_REDIS_HOST=redis-server
+      - SPRING_DATA_REDIS_HOST=redis-server
+      - SPRING_PROFILES_ACTIVE=oauth2
     ports:
-      - "4001:8080"
+      - "4001:4000"
     networks:
       - backend
+    build:
+      context: .
+      dockerfile: Dockerfile
 
 networks:
   backend:

@@ -13,7 +13,6 @@ import com.rose.back.infra.S3.ImageTempEntity.DomainType;
 
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,9 +34,6 @@ public class ContentImageService {
     private final ImageTempRepository imageTempRepository;
     private final ContentRepository contentRepository;
     private final ImageUrlExtractor imageUrlExtractor;
-
-    @Value("${img.upload-dir}")
-    private String imgDir;
 
     public String saveImageS3(MultipartFile file) throws IOException {
         ImageValidator.validate(file);

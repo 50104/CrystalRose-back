@@ -9,7 +9,13 @@ services:
       - "6379:6379"
     networks:
       - backend
+    restart: always
+    volumes:
+      - redis-data:/data
+
+volumes:
+  redis-data:
 
 networks:
   backend:
-    driver: bridge
+    external: true
