@@ -8,7 +8,10 @@ import org.springframework.stereotype.Service;
 import com.rose.back.domain.wiki.dto.WikiRequest;
 import com.rose.back.domain.wiki.dto.WikiResponse;
 import com.rose.back.domain.wiki.entity.WikiEntity;
+import com.rose.back.domain.wiki.entity.WikiModificationRequest;
 import com.rose.back.domain.wiki.repository.WikiRepository;
+import com.rose.back.domain.wiki.repository.WikiModificationRequestRepository;
+import com.rose.back.domain.user.entity.UserEntity;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +25,7 @@ public class WikiService {
 
     private final WikiRepository wikiRepository;
     private final WikiImageService wikiImageService;
+    private final WikiModificationRequestRepository wikiModificationRequestRepository;
 
     public void registerWiki(WikiRequest dto) {
         try {
@@ -85,6 +89,49 @@ public class WikiService {
         wikiImageService.saveAndBindImage(dto.getImageUrl(), updated);
 
         log.info("도감 ID {} 수정 완료 - 수정 검증 대기 중", id);
+    }
+
+    public void submitModificationRequest(Long wikiId, WikiRequest dto, UserEntity requester) {
+        log.info("도감 수정 요청 처리 시작 - wikiId: {}, requester: {}", wikiId, requester.getUserId());
+        
+        WikiEntity originalWiki = wikiRepository.findById(wikiId)
+            .orElseThrow(() -> new RuntimeException("수정할 도감 정보를 찾을 수 없습니다. ID: " + wikiId));
+        
+        log.info("원본 도감 조회 완료 - 도감명: {}", originalWiki.getName());
+
+        WikiModificationRequest request = WikiModificationRequest.builder()
+            .originalWiki(originalWiki)
+            .requester(requester)
+            .name(dto.getName())
+            .category(dto.getCategory())
+            .cultivarCode(dto.getCultivarCode())
+            .flowerSize(dto.getFlowerSize())
+            .petalCount(dto.getPetalCount())
+            .fragrance(dto.getFragrance())
+            .diseaseResistance(dto.getDiseaseResistance())
+            .growthType(dto.getGrowthType())
+            .usageType(dto.getUsageType())
+            .recommendedPosition(dto.getRecommendedPosition())
+            .continuousBlooming(dto.getContinuousBlooming())
+            .multiBlooming(dto.getMultiBlooming())
+            .growthPower(dto.getGrowthPower())
+            .coldResistance(dto.getColdResistance())
+            .imageUrl(dto.getImageUrl())
+            .description(dto.getDescription()) // 수정 사유
+            .status(WikiModificationRequest.ModificationStatus.PENDING)
+            .build();
+        
+        log.info("수정 요청 객체 생성 완료 - 수정 사유: {}", dto.getDescription());
+
+        try {
+            WikiModificationRequest savedRequest = wikiModificationRequestRepository.save(request);
+            log.info("수정 요청 저장 완료 - ID: {}, 상태: {}", savedRequest.getId(), savedRequest.getStatus());
+        } catch (Exception e) {
+            log.error("수정 요청 저장 실패 - 오류: {}", e.getMessage(), e);
+            throw new RuntimeException("수정 요청 저장에 실패했습니다.", e);
+        }
+
+        log.info("도감 ID {} 수정 요청 제출 완료 - 관리자 승인 대기 중. 요청자: {}", wikiId, requester.getUserNick());
     }
 
     public List<WikiResponse> getApprovedWikiList() {

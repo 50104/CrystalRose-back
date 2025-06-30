@@ -5,12 +5,15 @@ import com.rose.back.domain.wiki.dto.WikiRequest;
 import com.rose.back.domain.wiki.dto.WikiResponse;
 import com.rose.back.domain.wiki.service.WikiImageService;
 import com.rose.back.domain.wiki.service.WikiService;
+import com.rose.back.domain.user.entity.UserEntity;
+import com.rose.back.domain.auth.repository.AuthRepository;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,6 +28,7 @@ public class WikiController {
 
     private final WikiService wikiService;
     private final WikiImageService wikiImageService;
+    private final AuthRepository authRepository;
 
     @PostMapping("/register")
     public ResponseEntity<MessageResponse> registerWiki(@RequestBody @Valid WikiRequest dto) {
@@ -46,10 +50,30 @@ public class WikiController {
     }
 
     @PutMapping("/modify/{id}")
-    public ResponseEntity<MessageResponse> updateWiki(@PathVariable Long id, @RequestBody @Valid WikiRequest dto) {
-        log.info("[PUT][/api/v1/wiki/{}] - 도감 수정 요청: {}", id, dto);
-        wikiService.updateWiki(id, dto);
-        return ResponseEntity.ok(new MessageResponse("도감이 수정되었습니다."));
+    public ResponseEntity<MessageResponse> submitModificationRequest(@PathVariable Long id, @RequestBody @Valid WikiRequest dto) {
+        log.info("[PUT][/api/v1/wiki/modify/{}] - 도감 수정 요청 시작", id);
+        log.info("요청 데이터 - name: {}, category: {}, description: {}", dto.getName(), dto.getCategory(), dto.getDescription());
+        
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        log.info("인증된 사용자 ID: {}", userId);
+        
+        UserEntity requester = authRepository.findByUserId(userId);
+        
+        if (requester == null) {
+            log.warn("인증되지 않은 사용자의 수정 요청: userId={}", userId);
+            return ResponseEntity.badRequest().body(new MessageResponse("인증된 사용자가 아닙니다."));
+        }
+        
+        log.info("요청자 정보 - userNo: {}, userNick: {}", requester.getUserNo(), requester.getUserNick());
+        
+        try {
+            wikiService.submitModificationRequest(id, dto, requester);
+            log.info("수정 요청 처리 완료");
+            return ResponseEntity.ok(new MessageResponse("도감 수정 요청이 제출되었습니다. 관리자 승인 후 반영됩니다."));
+        } catch (Exception e) {
+            log.error("수정 요청 처리 중 오류 발생: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(new MessageResponse("수정 요청 처리 중 오류가 발생했습니다."));
+        }
     }
 
     @GetMapping("/list")
