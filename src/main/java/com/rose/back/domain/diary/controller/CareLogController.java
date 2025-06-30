@@ -1,6 +1,5 @@
 package com.rose.back.domain.diary.controller;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -13,8 +12,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.rose.back.domain.auth.oauth2.CustomUserDetails;
+import com.rose.back.domain.diary.controller.docs.CareLogControllerDocs;
+import com.rose.back.domain.diary.dto.CareLogRequest;
+import com.rose.back.domain.diary.dto.RoseCareLogDto;
 import com.rose.back.domain.diary.service.CareLogService;
 
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/api/diaries")
 @RequiredArgsConstructor
-public class CareLogController {
+public class CareLogController implements CareLogControllerDocs {
 
     private final CareLogService careLogService;
 
@@ -51,28 +52,4 @@ public class CareLogController {
         careLogService.update(id, request, userDetails.getUserNo());
         return ResponseEntity.ok().build();
     }
-
-    public record CareLogRequest(
-        Long id,
-        @JsonFormat(pattern = "yyyy-MM-dd") LocalDate careDate,
-        String fertilizer,
-        String pesticide,
-        String adjuvant,
-        String compost,
-        String fungicide,
-        String watering,
-        String note
-    ) {}
-
-    public record RoseCareLogDto(
-        Long id,
-        String fertilizer,
-        String pesticide,
-        String adjuvant,
-        String compost,
-        String fungicide,
-        String watering,
-        String note,
-        @JsonFormat(pattern = "yyyy-MM-dd") LocalDate careDate
-    ) {}
 }

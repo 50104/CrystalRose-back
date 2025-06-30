@@ -1,5 +1,8 @@
 package com.rose.back.domain.diary.controller.docs;
 
+import com.rose.back.domain.auth.oauth2.CustomUserDetails;
+import com.rose.back.domain.diary.dto.CareLogRequest;
+import com.rose.back.domain.diary.dto.RoseCareLogDto;
 import com.rose.back.global.exception.CommonErrorResponses;
 import com.rose.back.global.handler.ErrorResponse;
 
@@ -12,6 +15,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
@@ -33,7 +39,7 @@ public interface CareLogControllerDocs {
                     }
                 """)))
     })
-    ResponseEntity<Void> create(Object request, Object userDetails);
+    ResponseEntity<Void> create(@RequestBody CareLogRequest request, @AuthenticationPrincipal CustomUserDetails userDetails);
 
     @Operation(summary = "관리 날짜 목록 조회", description = "사용자의 모든 관리 날짜 목록을 조회합니다. (타임라인용)")
     @CommonErrorResponses
@@ -50,7 +56,7 @@ public interface CareLogControllerDocs {
                     }
                 """)))
     })
-    ResponseEntity<List<String>> getCareDates(Object userDetails);
+    ResponseEntity<List<String>> getCareDates(@AuthenticationPrincipal CustomUserDetails userDetails);
 
     @Operation(summary = "전체 관리 기록 조회", description = "사용자의 모든 관리 기록을 조회합니다. (FullCalendar용)")
     @CommonErrorResponses
@@ -67,7 +73,7 @@ public interface CareLogControllerDocs {
                     }
                 """)))
     })
-    ResponseEntity<List<Object>> getCareLogs(Object userDetails);
+    ResponseEntity<List<RoseCareLogDto>> getCareLogs(@AuthenticationPrincipal CustomUserDetails userDetails);
 
     @Operation(summary = "관리 기록 수정", description = "기존 관리 기록을 수정합니다.")
     @CommonErrorResponses
@@ -94,5 +100,5 @@ public interface CareLogControllerDocs {
                     }
                 """)))
     })
-    ResponseEntity<Void> update(Long id, Object request, Object userDetails);
+    ResponseEntity<Void> update(@PathVariable Long id, @RequestBody CareLogRequest request, @AuthenticationPrincipal CustomUserDetails userDetails);
 }

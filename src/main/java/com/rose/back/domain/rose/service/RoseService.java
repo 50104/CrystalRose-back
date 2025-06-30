@@ -9,7 +9,8 @@ import com.rose.back.domain.auth.oauth2.CustomUserDetails;
 import com.rose.back.domain.diary.entity.DiaryEntity;
 import com.rose.back.domain.diary.repository.DiaryRepository;
 import com.rose.back.domain.diary.service.DiaryImageService;
-import com.rose.back.domain.rose.controller.RoseController;
+import com.rose.back.domain.rose.dto.RoseRequest;
+import com.rose.back.domain.rose.dto.RoseResponse;
 import com.rose.back.domain.rose.entity.RoseEntity;
 import com.rose.back.domain.rose.repository.RoseRepository;
 import com.rose.back.domain.wiki.entity.WikiEntity;
@@ -30,7 +31,7 @@ public class RoseService {
     private final DiaryImageService diaryImageService;
 
     @Transactional
-    public void registerUserRose(CustomUserDetails userDetails, RoseController.RoseRequest request) {
+    public void registerUserRose(CustomUserDetails userDetails, RoseRequest request) {
         log.info("내 장미 등록 시작: userId={}, wikiId={}", userDetails.getUserNo(), request.wikiId());
         
         Long userId = userDetails.getUserNo();
@@ -53,7 +54,7 @@ public class RoseService {
         log.info("내 장미 등록 완료: roseId={}", userRose.getId());
     }
 
-    private void createInitialDiary(RoseEntity rose, RoseController.RoseRequest request) {
+    private void createInitialDiary(RoseEntity rose, RoseRequest request) {
         log.info("첫 번째 성장기록 생성 시작: roseId={}", rose.getId());
         
         java.time.LocalDateTime recordedAt = request.acquiredDate() != null  // 등록 시점 시간 기록 (or 입양일)
@@ -77,7 +78,7 @@ public class RoseService {
     }
 
     @Transactional(readOnly = true)
-    public List<RoseController.RoseResponse> getUserRoseResponses(Long userId) {
+    public List<RoseResponse> getUserRoseResponses(Long userId) {
         log.info("사용자 장미 목록 조회 시작: userId={}", userId);
         
         if (userId == null) {
@@ -92,10 +93,10 @@ public class RoseService {
                 log.info("등록된 장미가 없습니다.");
                 return List.of();
             }
-            List<RoseController.RoseResponse> response = roses.stream()
+            List<RoseResponse> response = roses.stream()
                 .map(rose -> {
                     log.debug("장미 처리 중: id={}, nickname={}", rose.getId(), rose.getNickname());
-                    return new RoseController.RoseResponse(
+                    return new RoseResponse(
                         rose.getId(),
                         rose.getNickname(),
                         rose.getWikiEntity() != null ? rose.getWikiEntity().getName() : "알 수 없음",

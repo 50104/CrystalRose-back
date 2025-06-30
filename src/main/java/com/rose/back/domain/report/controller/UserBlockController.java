@@ -2,6 +2,8 @@ package com.rose.back.domain.report.controller;
 
 import com.rose.back.common.dto.MessageResponse;
 import com.rose.back.domain.auth.oauth2.CustomUserDetails;
+import com.rose.back.domain.report.controller.docs.UserBlockControllerDocs;
+import com.rose.back.domain.report.dto.BlockRequestDto;
 import com.rose.back.domain.report.dto.UserSummaryDto;
 import com.rose.back.domain.report.service.UserBlockService;
 
@@ -18,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/blocks")
 @RequiredArgsConstructor
-public class UserBlockController {
+public class UserBlockController implements UserBlockControllerDocs {
 
     private final UserBlockService userBlockService;
 
@@ -43,6 +45,4 @@ public class UserBlockController {
         userBlockService.unblockUser(userDetails.getUserNo(), blockedUserId);
         return ResponseEntity.ok(new MessageResponse("차단이 해제되었습니다."));
     }
-
-    public record BlockRequestDto(Long blockedUserId) {}
 }

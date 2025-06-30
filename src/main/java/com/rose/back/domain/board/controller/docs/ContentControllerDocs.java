@@ -5,10 +5,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.security.core.Authentication;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.rose.back.common.dto.MessageResponse;
+import com.rose.back.domain.board.controller.ContentController;
 import com.rose.back.domain.board.dto.ContentRequestDto;
 import com.rose.back.global.exception.CommonErrorResponses;
 import com.rose.back.global.exception.ImageUploadErrorResponses;
@@ -17,9 +20,10 @@ import com.rose.back.global.handler.ErrorResponse;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import jakarta.validation.Valid;
 
+import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 @Tag(name = "Content", description = "게시글 및 게시판 관련 API입니다.")
 public interface ContentControllerDocs {
@@ -47,7 +51,7 @@ public interface ContentControllerDocs {
             )
         )
     })
-    ResponseEntity<String> editorPage();
+    ResponseEntity<MessageResponse> editorPage();
 
     @Operation(summary = "게시글 수정 페이지", description = "특정 게시글의 수정 페이지 데이터를 반환합니다.")
     @CommonErrorResponses
@@ -72,7 +76,7 @@ public interface ContentControllerDocs {
             )
         )
     })
-    ResponseEntity<Map<String, Object>> updatePage(@PathVariable("boardNo") Long boardNo);
+    ResponseEntity<ContentController.ContentResponse> updatePage(@PathVariable("boardNo") Long boardNo);
 
     @Operation(summary = "게시글 저장", description = "게시글을 저장합니다.")
     @CommonErrorResponses
@@ -98,10 +102,11 @@ public interface ContentControllerDocs {
             )
         )
     })
-    ResponseEntity<Map<String, Object>> saveContent(
-        @ModelAttribute @Validated ContentRequestDto req,
+    ResponseEntity<?> saveContent(
+        @Valid @ModelAttribute ContentRequestDto req, 
+        BindingResult bindingResult,
         @RequestParam(value = "files", required = false) List<MultipartFile> files
-    );
+    ) throws IOException;
 
     @Operation(summary = "게시글 수정", description = "특정 게시글을 수정합니다.")
     @CommonErrorResponses
@@ -127,7 +132,7 @@ public interface ContentControllerDocs {
             )
         )
     })
-    ResponseEntity<Map<String, Object>> updateLogic(@ModelAttribute ContentRequestDto req, @PathVariable("boardNo") Long boardNo);
+    ResponseEntity<ContentController.BoardNoResponse> updateLogic(@ModelAttribute ContentRequestDto req, @PathVariable("boardNo") Long boardNo);
 
     @Operation(summary = "게시글 리스트", description = "게시글 리스트를 조회합니다.")
     @CommonErrorResponses
@@ -152,7 +157,7 @@ public interface ContentControllerDocs {
             )
         )
     })
-    ResponseEntity<Map<String, Object>> listPage();
+    ResponseEntity<?> listPage(@RequestParam(name = "page", defaultValue = "1") int page);
 
     @Operation(summary = "게시글 상세 조회", description = "특정 게시글의 상세 정보를 조회합니다.")
     @CommonErrorResponses
@@ -177,7 +182,7 @@ public interface ContentControllerDocs {
             )
         )
     })
-    ResponseEntity<Map<String, Object>> contentPage(@PathVariable("boardNo") Long boardNo);
+    ResponseEntity<ContentController.ContentResponse> contentPage(@PathVariable("boardNo") Long boardNo);
 
     @Operation(summary = "게시글 삭제", description = "특정 게시글을 삭제합니다.")
     @CommonErrorResponses
@@ -202,7 +207,7 @@ public interface ContentControllerDocs {
             )
         )
     })
-    ResponseEntity<Map<String, String>> deleteC(@PathVariable("boardNo") Long boardNo);
+    ResponseEntity<MessageResponse> deleteContent(@PathVariable("boardNo") Long boardNo, Authentication authentication);
 
     @Operation(summary = "이미지 업로드", description = "이미지를 업로드하고 S3 URL을 반환합니다.")
     @CommonErrorResponses
@@ -228,5 +233,5 @@ public interface ContentControllerDocs {
             )
         )
     })
-    ResponseEntity<Map<String, Object>> imageUpload(@RequestParam("file") MultipartFile file) throws Exception;
+    ResponseEntity<ContentController.ImageUploadResponse> imageUpload(@RequestParam("file") MultipartFile file) throws IOException;
 }

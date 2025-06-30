@@ -2,6 +2,10 @@ package com.rose.back.domain.rose.controller;
 
 import com.rose.back.common.dto.MessageResponse;
 import com.rose.back.domain.auth.oauth2.CustomUserDetails;
+import com.rose.back.domain.rose.controller.docs.RoseControllerDocs;
+import com.rose.back.domain.rose.dto.ImageUploadResponse;
+import com.rose.back.domain.rose.dto.RoseRequest;
+import com.rose.back.domain.rose.dto.RoseResponse;
 import com.rose.back.domain.rose.service.RoseImageService;
 import com.rose.back.domain.rose.service.RoseService;
 
@@ -13,14 +17,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
 @RestController
 @RequestMapping("/api/roses")
 @RequiredArgsConstructor
-public class RoseController {
+public class RoseController implements RoseControllerDocs {
 
     private final RoseService roseService;
     private final RoseImageService roseImageService;
@@ -56,24 +59,4 @@ public class RoseController {
         log.info("내 장미 목록 조회 완료: {} 개", responses.size());
         return ResponseEntity.ok(responses);
     }
-
-    public record RoseRequest(
-        Long userId,
-        Long wikiId,
-        String nickname,
-        LocalDate acquiredDate,
-        String locationNote,
-        String imageUrl
-    ) {}
-
-    public record RoseResponse(
-        Long id,
-        String nickname,
-        String varietyName,
-        LocalDate acquiredDate,
-        String locationNote,
-        String imageUrl
-    ) {}
-
-    public record ImageUploadResponse(boolean uploaded, String url, String error) {}
 }

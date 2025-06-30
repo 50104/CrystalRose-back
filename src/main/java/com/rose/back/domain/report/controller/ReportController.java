@@ -1,6 +1,8 @@
 package com.rose.back.domain.report.controller;
 
 import com.rose.back.domain.auth.oauth2.CustomUserDetails;
+import com.rose.back.domain.report.controller.docs.ReportControllerDocs;
+import com.rose.back.domain.report.dto.ReportRequestDto;
 import com.rose.back.domain.report.service.ReportService;
 
 import lombok.RequiredArgsConstructor;
@@ -16,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/reports")
 @RequiredArgsConstructor
-public class ReportController {
+public class ReportController implements ReportControllerDocs {
 
     private final ReportService reportService;
 
@@ -36,6 +38,4 @@ public class ReportController {
         boolean alreadyReported = reportService.isAlreadyReported(userDetails.getUserNo(), postId);
         return ResponseEntity.ok(Map.of("alreadyReported", alreadyReported));
     }
-
-    public record ReportRequestDto(Long postId, String reason) {}
 }

@@ -1,6 +1,5 @@
 package com.rose.back.domain.diary.controller;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -8,9 +7,12 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.rose.back.common.dto.MessageResponse;
 import com.rose.back.domain.auth.oauth2.CustomUserDetails;
+import com.rose.back.domain.diary.controller.docs.DiaryControllerDocs;
+import com.rose.back.domain.diary.dto.DiaryRequest;
+import com.rose.back.domain.diary.dto.DiaryResponse;
+import com.rose.back.domain.diary.dto.ImageUploadResponse;
 import com.rose.back.domain.diary.service.DiaryImageService;
 import com.rose.back.domain.diary.service.DiaryService;
 
@@ -21,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/api/diaries")
 @RequiredArgsConstructor
-public class DiaryController {
+public class DiaryController implements DiaryControllerDocs {
 
     private final DiaryService diaryService;
     private final DiaryImageService diaryImageService;
@@ -62,24 +64,4 @@ public class DiaryController {
         List<DiaryResponse> diaryList = diaryService.getRoseTimeline(roseId);
         return ResponseEntity.ok(diaryList);
     }
-
-    // 요청 DTO
-    public record DiaryRequest(
-        Long roseId,
-        String note,
-        String imageUrl,
-        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-        LocalDateTime recordedAt
-    ) {}
-
-    // 응답 DTO
-    public record DiaryResponse(
-        Long id,
-        String note,
-        String imageUrl,
-        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-        LocalDateTime recordedAt
-    ) {}
-
-    public record ImageUploadResponse(boolean uploaded, String url, String error) {}
 }

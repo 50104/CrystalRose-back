@@ -2,6 +2,8 @@ package com.rose.back.domain.report.controller;
 
 import com.rose.back.common.dto.MessageResponse;
 import com.rose.back.domain.auth.oauth2.CustomUserDetails;
+import com.rose.back.domain.report.controller.docs.CommentReportControllerDocs;
+import com.rose.back.domain.report.dto.CommentReportRequestDto;
 import com.rose.back.domain.report.service.CommentReportService;
 
 import lombok.RequiredArgsConstructor;
@@ -17,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/comment-reports")
 @RequiredArgsConstructor
-public class CommentReportController {
+public class CommentReportController implements CommentReportControllerDocs {
 
     private final CommentReportService commentReportService;
 
@@ -40,6 +42,4 @@ public class CommentReportController {
         boolean alreadyReported = commentReportService.isAlreadyReported(userDetails.getUserNo(), commentId);
         return ResponseEntity.ok(Map.of("alreadyReported", alreadyReported));
     }
-
-    public record CommentReportRequestDto(Long commentId, String reason) {}
 }

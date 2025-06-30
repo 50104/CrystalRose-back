@@ -6,8 +6,8 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.rose.back.domain.diary.controller.DiaryController.DiaryRequest;
-import com.rose.back.domain.diary.controller.DiaryController.DiaryResponse;
+import com.rose.back.domain.diary.dto.DiaryRequest;
+import com.rose.back.domain.diary.dto.DiaryResponse;
 import com.rose.back.domain.diary.entity.DiaryEntity;
 import com.rose.back.domain.diary.repository.DiaryRepository;
 import com.rose.back.domain.rose.entity.RoseEntity;

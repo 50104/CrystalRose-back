@@ -1,6 +1,7 @@
 package com.rose.back.domain.chat.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rose.back.domain.chat.controller.docs.StompControllerDocs;
 import com.rose.back.domain.chat.dto.ChatMessageReqDto;
 import com.rose.back.domain.chat.service.ChatService;
 import com.rose.back.domain.chat.service.RedisPubSubService;
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Controller;
 
 @Slf4j
 @Controller
-public class StompController {
+public class StompController implements StompControllerDocs {
 
     private final ChatService chatService;
     private final RedisPubSubService pubSubService;

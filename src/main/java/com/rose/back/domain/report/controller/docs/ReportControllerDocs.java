@@ -1,22 +1,22 @@
 package com.rose.back.domain.report.controller.docs;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import com.rose.back.domain.report.controller.ReportController.ReportRequestDto;
+import com.rose.back.domain.auth.oauth2.CustomUserDetails;
+import com.rose.back.domain.report.dto.ReportRequestDto;
 import com.rose.back.global.exception.CommonErrorResponses;
 import com.rose.back.global.handler.ErrorResponse;
 
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 
 import java.util.Map;
@@ -53,11 +53,9 @@ public interface ReportControllerDocs {
             )
         )
     })
-    ResponseEntity<Void> report(
-            @Parameter(hidden = true) @AuthenticationPrincipal Object userDetails,
-            @RequestBody(description = "신고 정보", required = true,
-                        content = @Content(schema = @Schema(implementation = ReportRequestDtoSchema.class)))
-            ReportRequestDto dto 
+    ResponseEntity<Map<String, String>> report(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody ReportRequestDto dto
     );
 
     @Operation(summary = "신고 여부 확인", description = "사용자가 게시글을 이미 신고했는지 확인합니다.")
@@ -85,8 +83,7 @@ public interface ReportControllerDocs {
         )
     })
     ResponseEntity<Map<String, Boolean>> checkReport(
-            @Parameter(name = "postId", description = "확인할 게시글 ID", required = true, in = ParameterIn.QUERY, example = "1")
-            Long postId,
-            @Parameter(hidden = true) @AuthenticationPrincipal Object userDetails
+            @RequestParam Long postId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     );
 }

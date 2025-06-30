@@ -1,22 +1,24 @@
 package com.rose.back.domain.report.controller.docs;
 
+import com.rose.back.common.dto.MessageResponse;
+import com.rose.back.domain.auth.oauth2.CustomUserDetails;
+import com.rose.back.domain.report.dto.BlockRequestDto;
+import com.rose.back.domain.report.dto.UserSummaryDto;
 import com.rose.back.global.exception.CommonErrorResponses;
 import com.rose.back.global.handler.ErrorResponse;
-import com.rose.back.domain.report.dto.UserSummaryDto;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
@@ -51,13 +53,9 @@ public interface UserBlockControllerDocs {
             )
         )
     })
-    ResponseEntity<Void> block(
-        @Parameter(hidden = true) @AuthenticationPrincipal Object userDetails,
-        @RequestBody(
-            description = "차단 정보",
-            required = true,
-            content = @Content(schema = @Schema(implementation = BlockRequestDtoSchema.class))
-        ) BlockRequestDtoSchema dto
+    ResponseEntity<MessageResponse> block(
+        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @RequestBody BlockRequestDto dto
     );
 
     @Operation(summary = "차단 목록 조회", description = "내가 차단한 사용자 목록을 반환합니다.")
@@ -89,7 +87,7 @@ public interface UserBlockControllerDocs {
         )
     })
     ResponseEntity<List<UserSummaryDto>> getBlockedUsers(
-        @Parameter(hidden = true) @AuthenticationPrincipal Object userDetails
+        @AuthenticationPrincipal CustomUserDetails userDetails
     );
 
     @Operation(summary = "사용자 차단 해제", description = "차단한 사용자를 해제합니다.")
@@ -115,14 +113,8 @@ public interface UserBlockControllerDocs {
             )
         )
     })
-    ResponseEntity<Void> unblock(
-        @Parameter(
-            name = "blockedUserId",
-            description = "차단 해제할 사용자 ID",
-            required = true,
-            in = ParameterIn.PATH,
-            example = "42"
-        ) Long blockedUserId,
-        @Parameter(hidden = true) @AuthenticationPrincipal Object userDetails
+    ResponseEntity<MessageResponse> unblock(
+        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @PathVariable Long blockedUserId
     );
 }

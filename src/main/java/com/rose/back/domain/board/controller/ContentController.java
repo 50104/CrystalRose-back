@@ -2,6 +2,7 @@ package com.rose.back.domain.board.controller;
 
 import com.rose.back.common.dto.MessageResponse;
 import com.rose.back.common.util.PageUtil;
+import com.rose.back.domain.board.controller.docs.ContentControllerDocs;
 import com.rose.back.domain.board.dto.ContentListDto;
 import com.rose.back.domain.board.dto.ContentRequestDto;
 import com.rose.back.domain.board.dto.ContentWithWriterDto;
@@ -23,7 +24,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/board")
 @RequiredArgsConstructor
-public class ContentController {
+public class ContentController implements ContentControllerDocs {
 
     private final ContentImageService contentImageService;
     private final ContentService contentService;

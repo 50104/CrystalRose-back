@@ -8,8 +8,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.rose.back.domain.chat.dto.ChatMessageReqDto;
+import com.rose.back.domain.chat.dto.ChatRoomInfoDto;
 import com.rose.back.domain.chat.dto.ChatRoomListResDto;
 import com.rose.back.domain.chat.dto.MyChatListResDto;
+import com.rose.back.domain.chat.dto.RoomIdResponse;
 import com.rose.back.global.exception.CommonErrorResponses;
 import com.rose.back.global.handler.ErrorResponse;
 
@@ -17,6 +19,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Tag(name = "Chat", description = "채팅방 및 메시지 관련 API입니다.")
@@ -120,7 +123,7 @@ public interface ChatControllerDocs {
             )
         )
     })
-    ResponseEntity<List<ChatMessageReqDto>> getChatHistory(@PathVariable("roomId") Long roomId);
+    ResponseEntity<List<ChatMessageReqDto>> getChatHistory(@PathVariable("roomId") Long roomId, @RequestParam(required = false) LocalDateTime cursor);
 
     @Operation(summary = "채팅 메시지 읽음 처리", description = "특정 채팅방의 메시지를 읽음 처리합니다.")
     @CommonErrorResponses
@@ -220,5 +223,30 @@ public interface ChatControllerDocs {
             )
         )
     })
-    ResponseEntity<Long> getOrCreatePrivateRoom(@RequestParam("otherMemberId") Long otherMemberId);
+    ResponseEntity<RoomIdResponse> getOrCreatePrivateRoom(@RequestParam("otherMemberId") Long otherMemberId);
+
+    @Operation(summary = "채팅방 정보 조회", description = "특정 채팅방의 정보를 조회합니다.")
+    @CommonErrorResponses
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "채팅방 정보 조회 성공"),
+        @ApiResponse(
+            responseCode = "409",
+            description = "채팅방 정보 조회 실패",
+            content = @Content(
+                schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(
+                    name = "Conflict",
+                    value = """
+                    {
+                      "status": 409,
+                      "error": "CONFLICT",
+                      "message": "채팅방 정보 조회에 실패했습니다.",
+                      "path": "/api/v1/chat/room/{roomId}/info"
+                    }
+                    """
+                )
+            )
+        )
+    })
+    ResponseEntity<ChatRoomInfoDto> getChatRoomInfo(@PathVariable Long roomId);
 }

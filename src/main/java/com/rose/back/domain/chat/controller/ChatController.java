@@ -1,10 +1,12 @@
 package com.rose.back.domain.chat.controller;
 
 import com.rose.back.common.dto.MessageResponse;
+import com.rose.back.domain.chat.controller.docs.ChatControllerDocs;
 import com.rose.back.domain.chat.dto.ChatMessageReqDto;
 import com.rose.back.domain.chat.dto.ChatRoomInfoDto;
 import com.rose.back.domain.chat.dto.ChatRoomListResDto;
 import com.rose.back.domain.chat.dto.MyChatListResDto;
+import com.rose.back.domain.chat.dto.RoomIdResponse;
 import com.rose.back.domain.chat.service.ChatService;
 
 import lombok.RequiredArgsConstructor;
@@ -19,7 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/chat")
 @Slf4j
-public class ChatController {
+public class ChatController implements ChatControllerDocs {
 
     private final ChatService chatService;
 
@@ -91,6 +93,4 @@ public class ChatController {
         log.info("[GET][room/{}/info] 채팅방 정보 조회 요청", roomId);
         return ResponseEntity.ok(chatService.getChatRoomInfo(roomId));
     }
-
-    public record RoomIdResponse(Long roomId) {}
 }
