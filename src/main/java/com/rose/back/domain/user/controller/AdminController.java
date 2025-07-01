@@ -8,6 +8,7 @@ import com.rose.back.domain.user.controller.docs.AdminControllerDocs;
 import com.rose.back.domain.user.dto.AdminResponse;
 import com.rose.back.domain.user.service.AdminService;
 import com.rose.back.domain.wiki.dto.WikiModificationRequestDto;
+import com.rose.back.domain.wiki.dto.WikiModificationComparisonDto;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -86,5 +87,20 @@ public class AdminController implements AdminControllerDocs {
         log.info("[PATCH][/api/v1/admin/wiki/modifications/{}/reject] - 도감 수정 요청 거부", id);
         adminService.rejectModificationRequest(id);
         return ResponseEntity.ok(new MessageResponse("도감 수정 요청이 거부되었습니다."));
+    }
+
+    @GetMapping("/wiki/{requestId}/original")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<WikiModificationComparisonDto> getModificationComparison(@PathVariable Long requestId) {
+        log.info("도감 수정 요청 변경 사항 비교 조회 - 요청 ID: {}", requestId);
+        
+        try {
+            WikiModificationComparisonDto comparison = adminService.getModificationComparison(requestId);
+            log.info("변경 사항 비교 조회 완료 - 변경된 필드 수: {}", comparison.getChangedFields().size());
+            return ResponseEntity.ok(comparison);
+        } catch (Exception e) {
+            log.error("변경 사항 비교 조회 실패 - 요청 ID: {}, 오류: {}", requestId, e.getMessage(), e);
+            throw e;
+        }
     }
 }

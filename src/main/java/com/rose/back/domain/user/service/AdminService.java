@@ -17,6 +17,7 @@ import com.rose.back.domain.wiki.entity.WikiModificationRequest;
 import com.rose.back.domain.wiki.repository.WikiRepository;
 import com.rose.back.domain.wiki.repository.WikiModificationRequestRepository;
 import com.rose.back.domain.wiki.dto.WikiModificationRequestDto;
+import com.rose.back.domain.wiki.dto.WikiModificationComparisonDto;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -63,7 +64,7 @@ public class AdminService {
 
     // 도감 수정 요청 관련 메서드들
     public List<WikiModificationRequestDto> getPendingModificationRequests() {
-        return wikiModificationRequestRepository.findAllByStatus(WikiModificationRequest.ModificationStatus.PENDING)
+        return wikiModificationRequestRepository.findAll()
                 .stream()
                 .map(this::toModificationRequestDto)
                 .collect(Collectors.toList());
@@ -76,19 +77,132 @@ public class AdminService {
         WikiEntity originalWiki = request.getOriginalWiki();
         updateWikiFromRequest(originalWiki, request);
         
-        // 요청 상태 승인으로 변경
-        request.setStatus(WikiModificationRequest.ModificationStatus.APPROVED);
-        request.setProcessedDate(java.time.LocalDateTime.now());
+        // 수정 완료 시 상태 변경(NONE)
+        originalWiki.setModificationStatus(WikiEntity.ModificationStatus.NONE);
         
-        log.info("도감 수정 요청 ID {} 승인 완료 - 원본 도감 ID {}", requestId, originalWiki.getId());
+        wikiModificationRequestRepository.delete(request);
+        log.info("도감 수정 요청 ID {} 승인 완료 - 원본 도감 ID {} 업데이트 및 요청 삭제", requestId, originalWiki.getId());
     }
 
     public void rejectModificationRequest(Long requestId) {
         WikiModificationRequest request = getModificationRequestOrThrow(requestId);
-        request.setStatus(WikiModificationRequest.ModificationStatus.REJECTED);
-        request.setProcessedDate(java.time.LocalDateTime.now());
         
-        log.info("도감 수정 요청 ID {} 거부 완료", requestId);
+        // 거절 완료 시 상태 변경(NONE)
+        WikiEntity originalWiki = request.getOriginalWiki();
+        originalWiki.setModificationStatus(WikiEntity.ModificationStatus.NONE);
+        
+        wikiModificationRequestRepository.delete(request);
+        log.info("도감 수정 요청 ID {} 거부 완료 및 삭제", requestId);
+    }
+
+    // 도감 수정 요청 비교
+    public WikiModificationComparisonDto getModificationComparison(Long requestId) {
+        WikiModificationRequest request = getModificationRequestOrThrow(requestId);
+        WikiEntity originalWiki = request.getOriginalWiki();
+        
+        // 원본 데이터
+        WikiModificationComparisonDto.WikiDataDto originalData = WikiModificationComparisonDto.WikiDataDto.builder()
+                .name(originalWiki.getName())
+                .category(originalWiki.getCategory())
+                .cultivarCode(originalWiki.getCultivarCode())
+                .flowerSize(originalWiki.getFlowerSize())
+                .petalCount(originalWiki.getPetalCount())
+                .fragrance(originalWiki.getFragrance())
+                .diseaseResistance(originalWiki.getDiseaseResistance())
+                .growthType(originalWiki.getGrowthType())
+                .usageType(originalWiki.getUsageType())
+                .recommendedPosition(originalWiki.getRecommendedPosition())
+                .continuousBlooming(originalWiki.getContinuousBlooming())
+                .multiBlooming(originalWiki.getMultiBlooming())
+                .growthPower(originalWiki.getGrowthPower())
+                .coldResistance(originalWiki.getColdResistance())
+                .imageUrl(originalWiki.getImageUrl())
+                .build();
+        
+        // 수정된 데이터
+        WikiModificationComparisonDto.WikiDataDto modifiedData = WikiModificationComparisonDto.WikiDataDto.builder()
+                .name(request.getName())
+                .category(request.getCategory())
+                .cultivarCode(request.getCultivarCode())
+                .flowerSize(request.getFlowerSize())
+                .petalCount(request.getPetalCount())
+                .fragrance(request.getFragrance())
+                .diseaseResistance(request.getDiseaseResistance())
+                .growthType(request.getGrowthType())
+                .usageType(request.getUsageType())
+                .recommendedPosition(request.getRecommendedPosition())
+                .continuousBlooming(request.getContinuousBlooming())
+                .multiBlooming(request.getMultiBlooming())
+                .growthPower(request.getGrowthPower())
+                .coldResistance(request.getColdResistance())
+                .imageUrl(request.getImageUrl())
+                .build();
+        
+        // 변경된 필드 찾기
+        List<String> changedFields = findChangedFields(originalData, modifiedData);
+        
+        return WikiModificationComparisonDto.builder()
+                .requestId(request.getId())
+                .originalWikiId(originalWiki.getId())
+                .requesterNick(request.getRequester().getUserNick())
+                .description(request.getDescription())
+                .createdDate(request.getCreatedDate())
+                .originalData(originalData)
+                .modifiedData(modifiedData)
+                .changedFields(changedFields)
+                .build();
+    }
+    
+    private List<String> findChangedFields(WikiModificationComparisonDto.WikiDataDto original, WikiModificationComparisonDto.WikiDataDto modified) {
+        List<String> changedFields = new java.util.ArrayList<>();
+        
+        if (!java.util.Objects.equals(original.getName(), modified.getName())) {
+            changedFields.add("name");
+        }
+        if (!java.util.Objects.equals(original.getCategory(), modified.getCategory())) {
+            changedFields.add("category");
+        }
+        if (!java.util.Objects.equals(original.getCultivarCode(), modified.getCultivarCode())) {
+            changedFields.add("cultivarCode");
+        }
+        if (!java.util.Objects.equals(original.getFlowerSize(), modified.getFlowerSize())) {
+            changedFields.add("flowerSize");
+        }
+        if (!java.util.Objects.equals(original.getPetalCount(), modified.getPetalCount())) {
+            changedFields.add("petalCount");
+        }
+        if (!java.util.Objects.equals(original.getFragrance(), modified.getFragrance())) {
+            changedFields.add("fragrance");
+        }
+        if (!java.util.Objects.equals(original.getDiseaseResistance(), modified.getDiseaseResistance())) {
+            changedFields.add("diseaseResistance");
+        }
+        if (!java.util.Objects.equals(original.getGrowthType(), modified.getGrowthType())) {
+            changedFields.add("growthType");
+        }
+        if (!java.util.Objects.equals(original.getUsageType(), modified.getUsageType())) {
+            changedFields.add("usageType");
+        }
+        if (!java.util.Objects.equals(original.getRecommendedPosition(), modified.getRecommendedPosition())) {
+            changedFields.add("recommendedPosition");
+        }
+        if (!java.util.Objects.equals(original.getContinuousBlooming(), modified.getContinuousBlooming())) {
+            changedFields.add("continuousBlooming");
+        }
+        if (!java.util.Objects.equals(original.getMultiBlooming(), modified.getMultiBlooming())) {
+            changedFields.add("multiBlooming");
+        }
+        if (!java.util.Objects.equals(original.getGrowthPower(), modified.getGrowthPower())) {
+            changedFields.add("growthPower");
+        }
+        if (!java.util.Objects.equals(original.getColdResistance(), modified.getColdResistance())) {
+            changedFields.add("coldResistance");
+        }
+        if (!java.util.Objects.equals(original.getImageUrl(), modified.getImageUrl())) {
+            changedFields.add("imageUrl");
+        }
+        
+        return changedFields;
     }
 
     private WikiEntity getWikiOrThrow(Long id) {
@@ -176,9 +290,7 @@ public class AdminService {
                 .coldResistance(request.getColdResistance())
                 .imageUrl(request.getImageUrl())
                 .description(request.getDescription())
-                .status(request.getStatus().name())
                 .createdDate(request.getCreatedDate())
-                .processedDate(request.getProcessedDate())
                 .build();
     }
 }

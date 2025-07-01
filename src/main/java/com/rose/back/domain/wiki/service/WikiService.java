@@ -97,6 +97,11 @@ public class WikiService {
         WikiEntity originalWiki = wikiRepository.findById(wikiId)
             .orElseThrow(() -> new RuntimeException("수정할 도감 정보를 찾을 수 없습니다. ID: " + wikiId));
         
+        // 이미 수정 요청이 진행 중인지 확인
+        if (originalWiki.getModificationStatus() == WikiEntity.ModificationStatus.PENDING) {
+            throw new RuntimeException("이미 수정 요청이 진행 중인 도감입니다. ID: " + wikiId);
+        }
+        
         log.info("원본 도감 조회 완료 - 도감명: {}", originalWiki.getName());
 
         WikiModificationRequest request = WikiModificationRequest.builder()
@@ -118,14 +123,18 @@ public class WikiService {
             .coldResistance(dto.getColdResistance())
             .imageUrl(dto.getImageUrl())
             .description(dto.getDescription()) // 수정 사유
-            .status(WikiModificationRequest.ModificationStatus.PENDING)
             .build();
         
         log.info("수정 요청 객체 생성 완료 - 수정 사유: {}", dto.getDescription());
 
         try {
             WikiModificationRequest savedRequest = wikiModificationRequestRepository.save(request);
-            log.info("수정 요청 저장 완료 - ID: {}, 상태: {}", savedRequest.getId(), savedRequest.getStatus());
+            
+            // 원본 도감 수정 상태 변경(PENDING)
+            originalWiki.setModificationStatus(WikiEntity.ModificationStatus.PENDING);
+            wikiRepository.save(originalWiki);
+            
+            log.info("수정 요청 저장 완료 - ID: {}", savedRequest.getId());
         } catch (Exception e) {
             log.error("수정 요청 저장 실패 - 오류: {}", e.getMessage(), e);
             throw new RuntimeException("수정 요청 저장에 실패했습니다.", e);

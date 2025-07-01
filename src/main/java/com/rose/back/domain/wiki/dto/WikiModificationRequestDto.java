@@ -31,7 +31,5 @@ public class WikiModificationRequestDto {
     private String coldResistance;
     private String imageUrl;
     private String description; // 수정 사유
-    private String status;
     private LocalDateTime createdDate;
-    private LocalDateTime processedDate;
 }
