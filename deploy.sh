@@ -4,10 +4,9 @@ trap 'echo "[ERROR] 배포 중 에러 발생 - 라인 번호: $LINENO"; exit 1' 
 
 echo "Blue-Green 배포 시작"
 
-IS_GREEN=$(docker ps -q -f "name=app-green")
-IS_BLUE=$(docker ps -q -f "name=app-blue")
+CURRENT_PORT=$(grep -oP '127.0.0.1:\K[0-9]+' /etc/nginx/sites-available/dodorose)
 
-if [ -z "$IS_BLUE" ]; then
+if [[ "$CURRENT_PORT" == "4001" ]]; then
   AFTER_COLOR="blue"
   BEFORE_COLOR="green"
   AFTER_PORT=4000
