@@ -72,6 +72,17 @@ public class DiaryService {
             .map(d -> new DiaryResponse(d.getId(), d.getNote(), d.getImageUrl(), d.getRecordedAt()))
             .toList();
     }
+    
+    // 날짜 범위로 다이어리 조회
+    public List<DiaryResponse> getUserTimelineByDateRange(Long userId, String startDate, String endDate) {
+        LocalDateTime start = LocalDateTime.parse(startDate + "T00:00:00");
+        LocalDateTime end = LocalDateTime.parse(endDate + "T23:59:59");
+        
+        return diaryRepository.findAllByRoseEntity_UserIdAndRecordedAtBetweenOrderByRecordedAtDesc(userId, start, end)
+            .stream()
+            .map(d -> new DiaryResponse(d.getId(), d.getNote(), d.getImageUrl(), d.getRecordedAt()))
+            .toList();
+    }
 
     public List<DiaryResponse> getRoseTimeline(Long roseId) {
         return diaryRepository.findAllByRoseEntity_IdOrderByRecordedAtAsc(roseId)

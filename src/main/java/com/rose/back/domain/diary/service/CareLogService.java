@@ -44,9 +44,13 @@ public class CareLogService {
             .map(LocalDate::toString)
             .toList();
     }
-
-    public List<RoseCareLogDto> getAllLogs(Long userNo) {
-        return careLogRepository.findByUserNo_UserNoOrderByCareDateDesc(userNo).stream()
+    
+    // 날짜 범위로 케어 로그 조회 (통합 API용)
+    public List<RoseCareLogDto> getAllLogsByDateRange(Long userNo, String startDate, String endDate) {
+        LocalDate start = LocalDate.parse(startDate);
+        LocalDate end = LocalDate.parse(endDate);
+        
+        return careLogRepository.findByUserNo_UserNoAndCareDateBetweenOrderByCareDateDesc(userNo, start, end).stream()
             .map(log -> new RoseCareLogDto(
                 log.getId(),
                 log.getFertilizer(),

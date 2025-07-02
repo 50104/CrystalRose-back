@@ -2,7 +2,6 @@ package com.rose.back.domain.diary.controller.docs;
 
 import com.rose.back.domain.auth.oauth2.CustomUserDetails;
 import com.rose.back.domain.diary.dto.CareLogRequest;
-import com.rose.back.domain.diary.dto.RoseCareLogDto;
 import com.rose.back.global.exception.CommonErrorResponses;
 import com.rose.back.global.handler.ErrorResponse;
 
@@ -57,23 +56,6 @@ public interface CareLogControllerDocs {
                 """)))
     })
     ResponseEntity<List<String>> getCareDates(@AuthenticationPrincipal CustomUserDetails userDetails);
-
-    @Operation(summary = "전체 관리 기록 조회", description = "사용자의 모든 관리 기록을 조회합니다. (FullCalendar용)")
-    @CommonErrorResponses
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "관리 기록 조회 성공"),
-        @ApiResponse(responseCode = "409", description = "관리 기록 조회 실패",
-            content = @Content(schema = @Schema(implementation = ErrorResponse.class),
-                examples = @ExampleObject(name = "InternalError", value = """
-                    {
-                      "status": 409,
-                      "error": "CONFLICT",
-                      "message": "관리 기록 조회 실패",
-                      "path": "/api/diaries/carelogs/list"
-                    }
-                """)))
-    })
-    ResponseEntity<List<RoseCareLogDto>> getCareLogs(@AuthenticationPrincipal CustomUserDetails userDetails);
 
     @Operation(summary = "관리 기록 수정", description = "기존 관리 기록을 수정합니다.")
     @CommonErrorResponses

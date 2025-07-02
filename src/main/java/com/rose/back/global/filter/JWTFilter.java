@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,13 +32,13 @@ public class JWTFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
+    protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
         String uri = request.getRequestURI();
         return uri.matches("^/connect(/.*)?$");
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         String uri = request.getRequestURI();
 
         if (uri.startsWith("/login") ||
@@ -45,11 +46,10 @@ public class JWTFilter extends OncePerRequestFilter {
             uri.startsWith("/reissue") ||
             uri.startsWith("/actuator/health") ||
             uri.startsWith("/connect") ||
-            uri.startsWith("/api/v1/auth/id-check") ||  
-            uri.startsWith("/api/v1/auth/email") ||    
-            uri.equals("/api/v1/auth/join") ||        
-            uri.equals("/api/v1/auth/find") ||    
-            uri.equals("/api/v1/auth/reset")       
+            uri.startsWith("/api/v1/auth/") ||
+            uri.equals("/") ||
+            uri.startsWith("/static/") ||
+            uri.startsWith("/upload/")
         ) {
             log.info("토큰 검사 제외: {}", uri);
             filterChain.doFilter(request, response);
@@ -59,6 +59,25 @@ public class JWTFilter extends OncePerRequestFilter {
         log.info("토큰 검사 대상 URI: {}", uri);
 
         String bearerToken = request.getHeader("Authorization");
+        
+        // 캘린더 API는 토큰이 있으면 인증 처리, 없으면 비인증으로 통과
+        if (uri.startsWith("/api/calendar/data")) {
+            if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
+                log.info("캘린더 API - 비인증 사용자 요청: {}", uri);
+                filterChain.doFilter(request, response);
+                return;
+            }
+        } else {
+            // 다른 API들은 토큰 필수
+            if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
+                log.warn("Authorization 헤더가 없거나 Bearer 형식이 아님: {}", bearerToken);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"code\": \"AT\", \"message\": \"Access token이 존재하지 않거나 Bearer 형식이 아닙니다.\"}");
+                return;
+            }
+        }
+        
         String accessToken = resolveToken(bearerToken);
 
         // 블랙리스트 확인

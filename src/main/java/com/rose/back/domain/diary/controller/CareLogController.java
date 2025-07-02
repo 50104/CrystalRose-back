@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.rose.back.domain.auth.oauth2.CustomUserDetails;
 import com.rose.back.domain.diary.controller.docs.CareLogControllerDocs;
 import com.rose.back.domain.diary.dto.CareLogRequest;
-import com.rose.back.domain.diary.dto.RoseCareLogDto;
 import com.rose.back.domain.diary.service.CareLogService;
 
 import lombok.RequiredArgsConstructor;
@@ -31,6 +30,7 @@ public class CareLogController implements CareLogControllerDocs {
 
     @PostMapping("/carelogs/register")
     public ResponseEntity<Void> create(@RequestBody CareLogRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        log.info("[POST][/api/diaries/carelogs/register] - 케어로그 등록 요청 (userNo: {})", userDetails.getUserNo());
         careLogService.save(request, userDetails.getUserNo());
         return ResponseEntity.ok().build();
     }
@@ -38,17 +38,13 @@ public class CareLogController implements CareLogControllerDocs {
     // 관리 날짜만 조회 (타임라인 점용)
     @GetMapping("/caredates/list")
     public ResponseEntity<List<String>> getCareDates(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        log.info("[GET][/api/diaries/caredates/list] - 케어 날짜 조회 요청 (userNo: {})", userDetails.getUserNo());
         return ResponseEntity.ok(careLogService.getCareDates(userDetails.getUserNo()));
-    }
-
-    // 관리 기록 전체 조회 (FullCalendar용)
-    @GetMapping("/carelogs/list")
-    public ResponseEntity<List<RoseCareLogDto>> getCareLogs(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        return ResponseEntity.ok(careLogService.getAllLogs(userDetails.getUserNo()));
     }
 
     @PutMapping("/carelogs/{id}")
     public ResponseEntity<Void> update(@PathVariable Long id, @RequestBody CareLogRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        log.info("[PUT][/api/diaries/carelogs/{}] - 케어로그 수정 요청 (userNo: {})", id, userDetails.getUserNo());
         careLogService.update(id, request, userDetails.getUserNo());
         return ResponseEntity.ok().build();
     }

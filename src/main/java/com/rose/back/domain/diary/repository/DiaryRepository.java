@@ -1,5 +1,6 @@
 package com.rose.back.domain.diary.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,6 +12,9 @@ public interface DiaryRepository extends JpaRepository<DiaryEntity, Long> {
     boolean existsByImageUrl(String imageUrl);
 
     List<DiaryEntity> findAllByRoseEntity_UserIdOrderByRecordedAtDesc(Long userId); // 전체 타임라인 (유저 기준)
+
+    // 날짜 범위로 다이어리 조회
+    List<DiaryEntity> findAllByRoseEntity_UserIdAndRecordedAtBetweenOrderByRecordedAtDesc(Long userId, LocalDateTime startDate, LocalDateTime endDate);
 
     List<DiaryEntity> findAllByRoseEntity_IdOrderByRecordedAtAsc(Long userRoseId); // 장미 타임라인 (장미 기준)
 }

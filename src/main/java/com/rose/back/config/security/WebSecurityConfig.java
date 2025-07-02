@@ -85,11 +85,13 @@ public class WebSecurityConfig {
             .authorizeHttpRequests(request -> request
                 // sockJS 사용 위한 /connect/**
                 .requestMatchers("/", "/login", "/join", "/connect/**", "/reissue", "/api/v1/auth/**", "/oauth2/**").permitAll() // 특정 URL 패턴에 대한 접근 권한 설정
+                .requestMatchers("/api/calendar/data").permitAll() // 캘린더 통합 데이터 API 허용
+                .requestMatchers("/static/**", "/images/**", "/upload/**").permitAll() // 정적 리소스 허용
                 .requestMatchers("/api/v1/user/**").hasRole("USER") // 특정 URL 패턴에 대한 접근 권한 설정 (USER 역할 필요)
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN") // 특정 URL 패턴에 대한 접근 권한 설정 (ADMIN 역할 필요)
                 .requestMatchers("/actuator/health").permitAll() // API 헬스 체크
                 .requestMatchers("/api/v1/auth/withdraw/**").authenticated()
-                .anyRequest().permitAll() // 모든 요청에 대해 인증이 필요함
+                .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
             )
             .oauth2Login(oauth2 -> oauth2
                 .authorizationEndpoint(endpoint -> endpoint.baseUri("/api/v1/auth/oauth2")) // OAuth2 인증 엔드포인트 설정

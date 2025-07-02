@@ -11,7 +11,8 @@ import com.rose.back.domain.diary.entity.CareLogEntity;
 
 public interface CareLogRepository extends JpaRepository<CareLogEntity, Long> {
 
-    List<CareLogEntity> findByUserNo_UserNoOrderByCareDateDesc(Long userNo);
+    // 날짜 범위로 케어 로그 조회 (통합 API용)
+    List<CareLogEntity> findByUserNo_UserNoAndCareDateBetweenOrderByCareDateDesc(Long userNo, LocalDate startDate, LocalDate endDate);
 
     @Query("SELECT DISTINCT c.careDate FROM CareLogEntity c WHERE c.userNo.userNo = :userNo")
     List<LocalDate> findDistinctCareDatesByUserNo(@Param("userNo") Long userNo);
