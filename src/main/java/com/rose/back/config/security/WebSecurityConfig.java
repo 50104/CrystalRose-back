@@ -34,6 +34,7 @@ import com.rose.back.global.filter.CustomLogoutFilter;
 import com.rose.back.global.filter.JWTFilter;
 import com.rose.back.global.filter.LoginFilter;
 import com.rose.back.global.handler.OAuth2SuccessHandler;
+import com.rose.back.global.handler.OAuth2FailureHandler;
 
 import lombok.RequiredArgsConstructor;
 import jakarta.servlet.ServletException;
@@ -51,6 +52,7 @@ public class WebSecurityConfig {
 
     private final DefaultOAuth2UserService oAuth2UserService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final OAuth2FailureHandler oAuth2FailureHandler;
     private final CustomOAuth2UserService oAuth2UserServiceImplement;
     private final CustomUserDetailsService customUserDetailsService;
     private final JwtTokenProvider jwtProvider;
@@ -95,6 +97,7 @@ public class WebSecurityConfig {
                 .userInfoEndpoint(endpoint -> endpoint.userService(oAuth2UserService) // OAuth2 사용자 정보 엔드포인트 설정
                 .userService(oAuth2UserServiceImplement)) // OAuth2UserService 설정
                 .successHandler(oAuth2SuccessHandler) // OAuth2 인증 성공 핸들러 설정
+                .failureHandler(oAuth2FailureHandler) // OAuth2 인증 실패 핸들러 설정
             )
             .exceptionHandling(exceptionHandling -> exceptionHandling
                 .authenticationEntryPoint(new FailedAuthenticationEntryPoint()) // 인증 실패 핸들러 설정
@@ -114,7 +117,11 @@ public class WebSecurityConfig {
     protected CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration corsConfiguration = new CorsConfiguration();
+        // 개발 환경
         corsConfiguration.addAllowedOrigin("http://localhost:3000"); // 허용된 오리진 설정 (리액트 서버)
+        corsConfiguration.addAllowedOrigin("http://localhost:4000"); // 백엔드 서버
+        corsConfiguration.addAllowedOrigin("https://dodorose.com"); // 도메인
+
         corsConfiguration.addAllowedMethod("*"); // 허용된 HTTP 메서드 설정
         corsConfiguration.addAllowedHeader("*"); // 허용된 헤더 설정
         corsConfiguration.setAllowCredentials(true); // 자격 증명 허용 설정

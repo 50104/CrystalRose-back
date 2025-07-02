@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
 
+import com.rose.back.domain.user.dto.response.CommonResponse;
 import com.rose.back.global.exception.MissingAccessTokenException;
 
 import java.time.LocalDateTime;
@@ -92,11 +93,11 @@ public class GlobalExceptionHandler {
         ErrorResponse error = ErrorResponse.builder()
             .timestamp(LocalDateTime.now())
             .status(HttpStatus.UNAUTHORIZED.value())
-            .code(HttpStatus.UNAUTHORIZED.name())
-            .message(ex.getMessage())
+            .code("UNAUTHORIZED")
+            .message("Access Token이 존재하지 않습니다.")
             .path(request.getRequestURI())
             .build();
-            
+
         log.warn("Missing access token @ {}: {}", request.getRequestURI(), ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }

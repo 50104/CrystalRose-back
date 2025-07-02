@@ -38,49 +38,52 @@ public class JWTFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String requestUri = request.getRequestURI(); // 재로그인, 무한로프 방지
-        log.info("Request URI: {}", requestUri);
+        String uri = request.getRequestURI();
 
-        // 토큰 검사 제외 경로
-        if (requestUri.matches("^\\/login(?:\\/.*)?$") ||
-            requestUri.matches("^\\/oauth2(?:\\/.*)?$") ||
-            requestUri.matches("^\\/reissue$") ||
-            requestUri.matches("^\\/actuator\\/health$")) {
+        if (uri.startsWith("/login") ||
+            uri.startsWith("/oauth2") ||
+            uri.startsWith("/reissue") ||
+            uri.startsWith("/actuator/health") ||
+            uri.startsWith("/connect") ||
+            uri.startsWith("/api/v1/auth/id-check") ||  
+            uri.startsWith("/api/v1/auth/email") ||    
+            uri.equals("/api/v1/auth/join") ||        
+            uri.equals("/api/v1/auth/find") ||    
+            uri.equals("/api/v1/auth/reset")       
+        ) {
+            log.info("토큰 검사 제외: {}", uri);
             filterChain.doFilter(request, response);
             return;
         }
+
+        log.info("토큰 검사 대상 URI: {}", uri);
 
         String bearerToken = request.getHeader("Authorization");
         String accessToken = resolveToken(bearerToken);
 
-        if (accessToken == null) {
-            log.info("Authorization 헤더에 토큰이 없습니다.");
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         // 블랙리스트 확인
         if (accessTokenBlacklistService.isBlacklisted(accessToken)) {
-            log.warn("Access토큰이 블랙리스트에 있습니다.");
+            log.warn("블랙리스트 토큰: {}", accessToken);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
-    
+
         // 토큰 만료 확인
         try {
             jwtProvider.validateExpiration(accessToken);
         } catch (ExpiredJwtException e) {
-            log.warn("Access토큰이 만료되었습니다: {}", e.getMessage());
+            log.warn("토큰 만료: {}", e.getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
         if (!"access".equals(jwtProvider.getCategory(accessToken))) {
-            log.warn("토큰 카테고리가 'access'가 아닙니다.");
+            log.warn("잘못된 토큰 카테고리");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
+        // 인증 정보 설정
         String userId = jwtProvider.getUserId(accessToken);
         String userRole = jwtProvider.getUserRole(accessToken);
         String userNick = jwtProvider.getUserNick(accessToken);
@@ -93,12 +96,10 @@ public class JWTFilter extends OncePerRequestFilter {
                 .userNick(userNick)
                 .build();
         CustomUserDetails customUserDetails = new CustomUserDetails(userDto);
-
-        // 인증 객체 생성
         Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
-        log.debug("인증 정보 설정 완료: userId={}, userRole={}, userNick={}", userId, userRole, userNick);
+        log.debug("인증 완료: {}", userId);
         filterChain.doFilter(request, response);
     }
 
