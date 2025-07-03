@@ -4,7 +4,7 @@ trap 'echo "[ERROR] 배포 중 에러 발생 - 라인 번호: $LINENO"; exit 1' 
 
 echo "Blue-Green 배포 시작"
 
-CURRENT_PORT=$(grep -oP '127.0.0.1:\K[0-9]+' /etc/nginx/sites-available/dodorose)
+CURRENT_PORT=$(grep -oP '127.0.0.1:\K[0-9]+' /etc/nginx/conf.d/service-url.inc)
 
 if [[ "$CURRENT_PORT" == "4001" ]]; then
   AFTER_COLOR="blue"
@@ -55,7 +55,7 @@ if [[ "$HEALTH" != *'"status":"UP"'* ]]; then
     --env-file /home/ubuntu/.env up -d
 
   echo "Nginx 포트 복구 (${AFTER_PORT} → ${BEFORE_PORT})"
-  sudo sed -i "s/${AFTER_PORT}/${BEFORE_PORT}/" /etc/nginx/sites-available/dodorose
+  sudo sed -i "s/${AFTER_PORT}/${BEFORE_PORT}/" /etc/nginx/conf.d/service-url.inc
 
   echo "Nginx 설정 테스트"
   sudo nginx -t || { echo "Nginx 설정 에러 - 롤백 중 중단"; exit 1; }
@@ -68,7 +68,7 @@ if [[ "$HEALTH" != *'"status":"UP"'* ]]; then
 fi
 
 echo "Nginx 포트 스위칭: ${BEFORE_PORT} → ${AFTER_PORT}"
-sudo sed -i "s/${BEFORE_PORT}/${AFTER_PORT}/" /etc/nginx/sites-available/dodorose
+sudo sed -i "s/${BEFORE_PORT}/${AFTER_PORT}/" /etc/nginx/conf.d/service-url.inc
 sudo nginx -s reload
 
 echo "이전 컨테이너(${BEFORE_COLOR}) 종료"

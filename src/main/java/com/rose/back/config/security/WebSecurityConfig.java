@@ -84,13 +84,15 @@ public class WebSecurityConfig {
             )
             .authorizeHttpRequests(request -> request
                 // sockJS 사용 위한 /connect/**
-                .requestMatchers("/", "/login", "/join", "/connect/**", "/reissue", "/api/v1/auth/**", "/oauth2/**").permitAll() // 특정 URL 패턴에 대한 접근 권한 설정
+                .requestMatchers("/", "/login", "/join", "/connect/**", "/reissue", "/oauth2/**").permitAll() // 특정 URL 패턴에 대한 접근 권한 설정
+                .requestMatchers("/api/v1/auth/sign-up", "/api/v1/auth/sign-in", "/api/v1/auth/id-check", "/api/v1/auth/email-certification", "/api/v1/auth/check-certification", "/api/v1/auth/password-reset").permitAll() // 일반 인증 API만 허용
                 .requestMatchers("/api/calendar/data").permitAll() // 캘린더 통합 데이터 API 허용
                 .requestMatchers("/static/**", "/images/**", "/upload/**").permitAll() // 정적 리소스 허용
                 .requestMatchers("/api/v1/user/**").hasRole("USER") // 특정 URL 패턴에 대한 접근 권한 설정 (USER 역할 필요)
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN") // 특정 URL 패턴에 대한 접근 권한 설정 (ADMIN 역할 필요)
                 .requestMatchers("/actuator/health").permitAll() // API 헬스 체크
                 .requestMatchers("/api/v1/auth/withdraw/**").authenticated()
+                .requestMatchers("/error").permitAll() // 에러 페이지 허용
                 .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
             )
             .oauth2Login(oauth2 -> oauth2
@@ -123,6 +125,7 @@ public class WebSecurityConfig {
         corsConfiguration.addAllowedOrigin("http://localhost:3000"); // 허용된 오리진 설정 (리액트 서버)
         corsConfiguration.addAllowedOrigin("http://localhost:4000"); // 백엔드 서버
         corsConfiguration.addAllowedOrigin("https://dodorose.com"); // 도메인
+        corsConfiguration.addAllowedOriginPattern("https://*.dodorose.com"); // 서브도메인 허용
 
         corsConfiguration.addAllowedMethod("*"); // 허용된 HTTP 메서드 설정
         corsConfiguration.addAllowedHeader("*"); // 허용된 헤더 설정
