@@ -80,7 +80,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         if (Boolean.TRUE.equals(request.getAttribute("withdrawalPending"))) {
             response.setHeader("withdrawal", "true");
         }
-        response.addCookie(createCookie("refresh", refresh));
+        response.addCookie(createCookie(request, "refresh", refresh));
 
         response.setStatus(HttpStatus.OK.value());
         log.info("Authentication successful for user: {}", userId);
@@ -106,13 +106,23 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         log.info("Authentication failed: {}", failed.getMessage());
     }
     
-    private Cookie createCookie(String key, String value) {
+    private Cookie createCookie(HttpServletRequest request, String key, String value) {
         Cookie cookie = new Cookie(key, value);
         cookie.setMaxAge(24*60*60);
         cookie.setHttpOnly(true);
-        cookie.setSecure(true);
+        
+        // 환경에 따른 쿠키 설정
+        String requestUrl = request.getRequestURL().toString();
+        boolean isHttps = requestUrl.startsWith("https://");
+        
+        if (isHttps) {
+            cookie.setSecure(true);
+            cookie.setAttribute("SameSite", "None");
+        } else {
+            cookie.setSecure(false);
+        }
+        
         cookie.setPath("/");
-        cookie.setAttribute("SameSite", "None");
         return cookie;
     }
 

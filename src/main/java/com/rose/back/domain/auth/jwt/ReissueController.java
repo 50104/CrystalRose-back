@@ -46,11 +46,9 @@ public class ReissueController implements ReissueControllerDocs{
                 }
             }
         } else {
-            log.info("No cookies");
             return new ResponseEntity<>("no cookies", HttpStatus.BAD_REQUEST);
         }
         if (refresh == null) {
-            log.info("refresh null");
             return new ResponseEntity<>("refresh null", HttpStatus.BAD_REQUEST);
         }
 
@@ -92,9 +90,19 @@ public class ReissueController implements ReissueControllerDocs{
         Cookie refreshCookie = new Cookie("refresh", newRefresh);
         refreshCookie.setMaxAge(24 * 60 * 60); // 1일
         refreshCookie.setHttpOnly(true);
-        refreshCookie.setSecure(true);
+        
+        // 환경에 따른 쿠키 설정
+        String requestUrl = request.getRequestURL().toString();
+        boolean isHttps = requestUrl.startsWith("https://");
+        
+        if (isHttps) {
+            refreshCookie.setSecure(true);
+            refreshCookie.setAttribute("SameSite", "None");
+        } else {
+            refreshCookie.setSecure(false);
+        }
+        
         refreshCookie.setPath("/");
-        refreshCookie.setAttribute("SameSite", "None");
         response.addCookie(refreshCookie);
 
         log.info("reissue success: {}", userId);

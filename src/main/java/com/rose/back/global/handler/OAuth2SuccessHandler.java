@@ -47,9 +47,19 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         Cookie cookie = new Cookie("refresh", refresh);
         cookie.setMaxAge(24 * 60 * 60);
         cookie.setHttpOnly(true);
-        cookie.setSecure(true);
+        
+        // 환경에 따른 쿠키 설정
+        String requestUrl = request.getRequestURL().toString();
+        boolean isHttps = requestUrl.startsWith("https://");
+        
+        if (isHttps) {
+            cookie.setSecure(true);
+            cookie.setAttribute("SameSite", "None");
+        } else {
+            cookie.setSecure(false);
+        }
+        
         cookie.setPath("/");
-        cookie.setAttribute("SameSite", "None");
         response.addCookie(cookie);
 
         // 동적 리다이렉트 URL 설정
