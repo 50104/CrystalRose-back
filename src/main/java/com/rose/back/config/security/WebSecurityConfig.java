@@ -82,6 +82,14 @@ public class WebSecurityConfig {
             .sessionManagement(sessionManagement -> 
                 sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 생성 정책 설정 (STATELESS: 세션을 사용하지 않음)
             )
+            .oauth2Login(oauth2 -> oauth2
+                .authorizationEndpoint(endpoint -> endpoint.baseUri("/api/v1/auth/oauth2")) // OAuth2 인증 엔드포인트 설정
+                .redirectionEndpoint(endpoint -> endpoint.baseUri("/oauth2/callback/*")) // OAuth2 리다이렉션 엔드포인트 설정
+                .userInfoEndpoint(endpoint -> endpoint.userService(oAuth2UserService) // OAuth2 사용자 정보 엔드포인트 설정
+                .userService(oAuth2UserServiceImplement)) // OAuth2UserService 설정
+                .successHandler(oAuth2SuccessHandler) // OAuth2 인증 성공 핸들러 설정
+                .failureHandler(oAuth2FailureHandler) // OAuth2 인증 실패 핸들러 설정
+            )
             .authorizeHttpRequests(request -> request
                 // sockJS 사용 위한 /connect/**
                 .requestMatchers("/", "/login", "/join", "/connect/**", "/reissue", "/oauth2/**").permitAll() // 특정 URL 패턴에 대한 접근 권한 설정
@@ -94,14 +102,6 @@ public class WebSecurityConfig {
                 .requestMatchers("/api/v1/auth/withdraw/**").authenticated()
                 .requestMatchers("/error").permitAll() // 에러 페이지 허용
                 .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
-            )
-            .oauth2Login(oauth2 -> oauth2
-                .authorizationEndpoint(endpoint -> endpoint.baseUri("/api/v1/auth/oauth2")) // OAuth2 인증 엔드포인트 설정
-                .redirectionEndpoint(endpoint -> endpoint.baseUri("/oauth2/callback/*")) // OAuth2 리다이렉션 엔드포인트 설정
-                .userInfoEndpoint(endpoint -> endpoint.userService(oAuth2UserService) // OAuth2 사용자 정보 엔드포인트 설정
-                .userService(oAuth2UserServiceImplement)) // OAuth2UserService 설정
-                .successHandler(oAuth2SuccessHandler) // OAuth2 인증 성공 핸들러 설정
-                .failureHandler(oAuth2FailureHandler) // OAuth2 인증 실패 핸들러 설정
             )
             .exceptionHandling(exceptionHandling -> exceptionHandling
                 .authenticationEntryPoint(new FailedAuthenticationEntryPoint()) // 인증 실패 핸들러 설정
