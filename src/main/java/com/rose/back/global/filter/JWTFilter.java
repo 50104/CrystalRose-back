@@ -47,12 +47,20 @@ public class JWTFilter extends OncePerRequestFilter {
             uri.startsWith("/actuator/health") ||
             uri.startsWith("/connect") ||
             uri.startsWith("/api/v1/auth/") ||
+            uri.startsWith("/api/v1/wiki/list") ||
+            uri.startsWith("/api/v1/wiki/detail/") ||
+            uri.startsWith("/api/calendar/data") ||
             uri.equals("/") ||
+            uri.equals("/join") ||
             uri.startsWith("/static/") ||
+            uri.startsWith("/images/") ||
             uri.startsWith("/upload/") ||
             uri.startsWith("/swagger-ui") ||
             uri.startsWith("/v3/api-docs") ||
-            uri.equals("/favicon.ico")
+            uri.startsWith("/swagger-resources") ||
+            uri.startsWith("/webjars") ||
+            uri.equals("/favicon.ico") ||
+            uri.equals("/error")
         ) {
             log.info("토큰 검사 제외: {}", uri);
             filterChain.doFilter(request, response);

@@ -83,9 +83,9 @@ public class WikiController {
         return ResponseEntity.ok(wikiList);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/detail/{id}")
     public ResponseEntity<WikiResponse> getWikiDetail(@PathVariable Long id) {
-        log.info("[GET][/api/v1/wiki/{}] - 도감 상세 정보 조회 요청", id);
+        log.info("[GET][/api/v1/wiki/detail/{}] - 도감 상세 정보 조회 요청", id);
         WikiResponse wikiDetail = wikiService.getApprovedWikiDetail(id);
         return ResponseEntity.ok(wikiDetail);
     }

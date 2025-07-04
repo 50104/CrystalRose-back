@@ -99,6 +99,8 @@ public class WebSecurityConfig {
                 .requestMatchers("/", "/login", "/join", "/connect/**", "/reissue", "/oauth2/**").permitAll() // 특정 URL 패턴에 대한 접근 권한 설정
                 .requestMatchers("/api/v1/auth/sign-up", "/api/v1/auth/sign-in", "/api/v1/auth/id-check", "/api/v1/auth/email-certification", "/api/v1/auth/check-certification", "/api/v1/auth/password-reset").permitAll() // 일반 인증 API만 허용
                 .requestMatchers("/api/calendar/data").permitAll() // 캘린더 통합 데이터 API 허용
+                .requestMatchers("/api/v1/wiki/list").permitAll() // 위키 목록 조회 API 허용
+                .requestMatchers("/api/v1/wiki/detail/**").permitAll() // 위키 상세 조회 API 허용 (숫자 ID만)
                 .requestMatchers("/static/**", "/images/**", "/upload/**").permitAll() // 정적 리소스 허용
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**", "/favicon.ico").permitAll() // Swagger UI 허용
                 .requestMatchers("/api/v1/user/**").hasRole("USER") // 특정 URL 패턴에 대한 접근 권한 설정 (USER 역할 필요)
