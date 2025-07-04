@@ -68,6 +68,17 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     }
     
     private String determineRedirectUrl(HttpServletRequest request) {
+        // 로컬 실행 확인
+        String requestUrl = request.getRequestURL().toString();
+        boolean isLocalBackend = requestUrl.contains("localhost:4000") || requestUrl.contains("127.0.0.1:4000");
+        
+        if (isLocalBackend) {
+            return "http://localhost:3000/getAccess";
+        }
+        if (frontendUrl.contains("localhost") || frontendUrl.contains("127.0.0.1")) {
+            return frontendUrl + "/getAccess";
+        }
+        
         String origin = request.getHeader("Origin");
         String referer = request.getHeader("Referer");
         

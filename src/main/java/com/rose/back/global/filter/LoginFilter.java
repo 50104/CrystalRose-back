@@ -21,6 +21,8 @@ import com.rose.back.domain.user.entity.UserEntity.UserStatus;
 import com.rose.back.domain.user.repository.UserRepository;
 
 import java.io.IOException;
+import java.util.stream.Collectors;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -30,12 +32,17 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public LoginFilter(AuthenticationManager authenticationManager, JwtTokenProvider jwtProvider, RefreshTokenService refreshTokenService, UserRepository userRepository) {
         this.userRepository = userRepository;
         this.authenticationManager = authenticationManager;
         this.jwtProvider = jwtProvider;
         this.refreshTokenService = refreshTokenService;
+        
+        this.setFilterProcessesUrl("/login");
+        this.setUsernameParameter("userId");
+        this.setPasswordParameter("userPwd");
     }
 
     // 로그인 요청
@@ -43,7 +50,29 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException { 
         String userId = obtainUsername(request);
         String userPwd = obtainPassword(request);
+        
         log.info("Attempting authentication for user: {}", userId);
+        log.info("Content-Type: {}", request.getContentType());
+        
+        if (userId == null && "application/json".equals(request.getContentType())) {
+            try {
+                String body = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+                log.info("Request body: {}", body);
+                
+                LoginRequest loginRequest = objectMapper.readValue(body, LoginRequest.class);
+                userId = loginRequest.getUserId();
+                userPwd = loginRequest.getUserPwd();
+                log.info("Parsed from JSON - userId: {}, userPwd: {}", userId, userPwd != null ? "***" : "null");
+            } catch (Exception e) {
+                log.error("Error parsing JSON request", e);
+                throw new AuthenticationException("Invalid JSON request") {};
+            }
+        }
+        
+        if (userId == null || userPwd == null) {
+            log.error("Username or password is null - userId: {}, userPwd: {}", userId, userPwd != null ? "***" : "null");
+            throw new AuthenticationException("Username and password are required") {};
+        }
         
         UserEntity user = userRepository.findByUserId(userId); // 탈퇴 예약된 계정인지 확인
         if (user != null) {
@@ -134,5 +163,28 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     protected String obtainUsername(HttpServletRequest request) {
         return request.getParameter("userId");
+    }
+}
+
+class LoginRequest {
+    private String userId;
+    private String userPwd;
+    
+    public LoginRequest() {}
+    
+    public String getUserId() {
+        return userId;
+    }
+    
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+    
+    public String getUserPwd() {
+        return userPwd;
+    }
+    
+    public void setUserPwd(String userPwd) {
+        this.userPwd = userPwd;
     }
 }
