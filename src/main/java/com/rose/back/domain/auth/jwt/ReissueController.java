@@ -9,18 +9,16 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.rose.back.domain.auth.service.RefreshTokenService;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Controller
-@ResponseBody
+@RestController
 public class ReissueController implements ReissueControllerDocs{
 
     private final JwtTokenProvider jwtProvider;
@@ -46,10 +44,10 @@ public class ReissueController implements ReissueControllerDocs{
                 }
             }
         } else {
-            return new ResponseEntity<>("no cookies", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Map.of("error", "no cookies"), HttpStatus.BAD_REQUEST);
         }
         if (refresh == null) {
-            return new ResponseEntity<>("refresh null", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Map.of("error", "refresh null"), HttpStatus.BAD_REQUEST);
         }
 
         // 토큰 만료 확인
@@ -57,7 +55,7 @@ public class ReissueController implements ReissueControllerDocs{
             jwtProvider.validateExpiration(refresh);
         } catch (ExpiredJwtException e) {
             log.info("refresh expired");
-            return new ResponseEntity<>("refresh expired", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Map.of("error", "refresh expired"), HttpStatus.BAD_REQUEST);
         }
 
         // 토큰 카테고리 확인
@@ -65,7 +63,7 @@ public class ReissueController implements ReissueControllerDocs{
 
         if (!"refresh".equals(category)) {
             log.info("Invalid refresh category");
-            return new ResponseEntity<>("invalid refresh category", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Map.of("error", "invalid refresh category"), HttpStatus.BAD_REQUEST);
         }
 
         // 사용자 정보 확인
@@ -77,7 +75,7 @@ public class ReissueController implements ReissueControllerDocs{
         // 레디스 존재여부 확인
         if (!refreshTokenService.isValid(userId, refresh)) {
             log.info("Invalid refresh redis");
-            return new ResponseEntity<>("invalid refresh redis", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Map.of("error", "invalid refresh redis"), HttpStatus.BAD_REQUEST);
         }
 
         String newAccess = jwtProvider.create("access", userId, userNick, userRole, 30 * 60 * 1000L, userNo);
