@@ -54,7 +54,7 @@ public interface CalendarControllerDocs {
                             {
                               "id": 1,
                               "note": "첫 번째 꽃이 피었습니다",
-                              "imageUrl": "https://dodorose.com/image.jpg",
+                              "imageUrl": "/image.jpg",
                               "recordedAt": "2025-07-01T10:30:00"
                             }
                           ]

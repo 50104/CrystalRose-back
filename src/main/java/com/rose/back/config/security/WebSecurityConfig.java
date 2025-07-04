@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -60,6 +61,9 @@ public class WebSecurityConfig {
     private final AccessTokenBlacklistService accessTokenBlacklistService;
     private final UserRepository userRepository;
 
+    @Value("${app.oauth2.redirect.frontend-url}")
+    private String frontendUrl;
+
     @Bean
     AuthenticationManager authenticationManager() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -96,6 +100,7 @@ public class WebSecurityConfig {
                 .requestMatchers("/api/v1/auth/sign-up", "/api/v1/auth/sign-in", "/api/v1/auth/id-check", "/api/v1/auth/email-certification", "/api/v1/auth/check-certification", "/api/v1/auth/password-reset").permitAll() // 일반 인증 API만 허용
                 .requestMatchers("/api/calendar/data").permitAll() // 캘린더 통합 데이터 API 허용
                 .requestMatchers("/static/**", "/images/**", "/upload/**").permitAll() // 정적 리소스 허용
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**", "/favicon.ico").permitAll() // Swagger UI 허용
                 .requestMatchers("/api/v1/user/**").hasRole("USER") // 특정 URL 패턴에 대한 접근 권한 설정 (USER 역할 필요)
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN") // 특정 URL 패턴에 대한 접근 권한 설정 (ADMIN 역할 필요)
                 .requestMatchers("/actuator/health").permitAll() // API 헬스 체크
@@ -124,8 +129,7 @@ public class WebSecurityConfig {
         // 개발 환경
         corsConfiguration.addAllowedOrigin("http://localhost:3000"); // 허용된 오리진 설정 (리액트 서버)
         corsConfiguration.addAllowedOrigin("http://localhost:4000"); // 백엔드 서버
-        corsConfiguration.addAllowedOrigin("https://dodorose.com"); // 도메인
-        corsConfiguration.addAllowedOriginPattern("https://*.dodorose.com"); // 서브도메인 허용
+        corsConfiguration.addAllowedOrigin(frontendUrl); // 프로덕션 환경에서의 프론트엔드 URL
 
         corsConfiguration.addAllowedMethod("*"); // 허용된 HTTP 메서드 설정
         corsConfiguration.addAllowedHeader("*"); // 허용된 헤더 설정

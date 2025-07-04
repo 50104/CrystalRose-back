@@ -49,7 +49,10 @@ public class JWTFilter extends OncePerRequestFilter {
             uri.startsWith("/api/v1/auth/") ||
             uri.equals("/") ||
             uri.startsWith("/static/") ||
-            uri.startsWith("/upload/")
+            uri.startsWith("/upload/") ||
+            uri.startsWith("/swagger-ui") ||
+            uri.startsWith("/v3/api-docs") ||
+            uri.equals("/favicon.ico")
         ) {
             log.info("토큰 검사 제외: {}", uri);
             filterChain.doFilter(request, response);

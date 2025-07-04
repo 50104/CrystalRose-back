@@ -22,7 +22,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/board")
+@RequestMapping("/api/v1/board")
 @RequiredArgsConstructor
 public class ContentController implements ContentControllerDocs {
 
