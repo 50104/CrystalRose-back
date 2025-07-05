@@ -49,7 +49,6 @@ public class JWTFilter extends OncePerRequestFilter {
             uri.startsWith("/api/v1/auth/") ||
             uri.startsWith("/api/v1/wiki/list") ||
             uri.startsWith("/api/v1/wiki/detail/") ||
-            uri.startsWith("/api/calendar/data") ||
             uri.equals("/") ||
             uri.equals("/join") ||
             uri.startsWith("/static/") ||
@@ -94,8 +93,13 @@ public class JWTFilter extends OncePerRequestFilter {
         // 블랙리스트 확인
         if (accessTokenBlacklistService.isBlacklisted(accessToken)) {
             log.warn("블랙리스트 토큰: {}", accessToken);
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
+            if (uri.startsWith("/api/calendar/data")) {
+                filterChain.doFilter(request, response);
+                return;
+            } else {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
         }
 
         // 토큰 만료 확인
@@ -103,14 +107,24 @@ public class JWTFilter extends OncePerRequestFilter {
             jwtProvider.validateExpiration(accessToken);
         } catch (ExpiredJwtException e) {
             log.warn("토큰 만료: {}", e.getMessage());
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
+            if (uri.startsWith("/api/calendar/data")) {
+                filterChain.doFilter(request, response);
+                return;
+            } else {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
         }
 
         if (!"access".equals(jwtProvider.getCategory(accessToken))) {
             log.warn("잘못된 토큰 카테고리");
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
+            if (uri.startsWith("/api/calendar/data")) {
+                filterChain.doFilter(request, response);
+                return;
+            } else {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
         }
 
         // 인증 정보 설정
