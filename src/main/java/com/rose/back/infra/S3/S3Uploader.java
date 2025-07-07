@@ -27,6 +27,9 @@ public class S3Uploader {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
+    @Value("${cloud.aws.cloudfront.domain}")
+    private String cloudFrontDomain;
+
     public String uploadFile(String folderName, MultipartFile file) throws IOException {
         String originalName = file.getOriginalFilename();
         log.info("S3Uploader 호출됨 - originalName: {}, folder: {}", originalName, folderName);
@@ -44,7 +47,7 @@ public class S3Uploader {
 
             amazonS3.putObject(bucket, key, inputStream, metadata);
             log.info("S3 업로드 성공: key={}", key);
-            return amazonS3.getUrl(bucket, key).toString();
+            return generateCloudFrontUrl(key);
         } catch (IOException e) {
             log.error("S3 업로드 실패: {}", e.getMessage());
             throw new IOException("S3 업로드 실패", e);
@@ -65,7 +68,7 @@ public class S3Uploader {
 
             amazonS3.putObject(bucket, key, inputStream, metadata);
             log.info("S3 프로필 업로드 성공: key={}", key);
-            return amazonS3.getUrl(bucket, key).toString();
+            return generateCloudFrontUrl(key);
         } catch (IOException e) {
             log.error("S3 프로필 업로드 실패: {}", e.getMessage());
             throw new IOException("S3 업로드 실패", e);
@@ -80,9 +83,16 @@ public class S3Uploader {
         return filename.substring(filename.lastIndexOf(".")).toLowerCase();
     }
 
+    private String generateCloudFrontUrl(String key) {
+        // 마지막 / 없이 처리된 CloudFront 도메인 보정
+        String domain = cloudFrontDomain.endsWith("/") ? cloudFrontDomain.substring(0, cloudFrontDomain.length() - 1) : cloudFrontDomain;
+        return domain + "/" + key;
+    }
+
     public void deleteFile(String fileUrl) {
         try {
-            String key = fileUrl.replace("https://crystalrose-web.s3.ap-northeast-2.amazonaws.com/", "");
+            // CloudFront URL을 S3 키로 변환
+            String key = fileUrl.replace(cloudFrontDomain + "/", "");
             amazonS3.deleteObject(bucket, key);
             log.info("S3 삭제 완료: {}", key);
         } catch (AmazonServiceException e) {
