@@ -1,24 +1,26 @@
 package com.rose.back.global.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rose.back.domain.auth.jwt.JwtTokenProvider;
+import com.rose.back.domain.auth.oauth2.CustomUserDetails;
+import com.rose.back.domain.auth.service.AccessTokenBlacklistService;
+import com.rose.back.domain.user.dto.UserInfoDto;
+import com.rose.back.global.handler.ErrorResponse;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import com.rose.back.domain.auth.jwt.JwtTokenProvider;
-import com.rose.back.domain.auth.oauth2.CustomUserDetails;
-import com.rose.back.domain.auth.service.AccessTokenBlacklistService;
-import com.rose.back.domain.user.dto.UserInfoDto;
-import com.rose.back.global.exception.MissingAccessTokenException;
 
-import io.jsonwebtoken.ExpiredJwtException;
 import java.io.IOException;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDateTime;
 
 @Slf4j
 public class JWTFilter extends OncePerRequestFilter {
@@ -69,8 +71,7 @@ public class JWTFilter extends OncePerRequestFilter {
         log.info("토큰 검사 대상 URI: {}", uri);
 
         String bearerToken = request.getHeader("Authorization");
-        
-        // 캘린더 API는 토큰이 있으면 인증 처리, 없으면 비인증으로 통과
+
         if (uri.startsWith("/api/calendar/data")) {
             if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
                 log.info("캘린더 API - 비인증 사용자 요청: {}", uri);
@@ -78,31 +79,26 @@ public class JWTFilter extends OncePerRequestFilter {
                 return;
             }
         } else {
-            // 다른 API들은 토큰 필수
             if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
                 log.warn("Authorization 헤더가 없거나 Bearer 형식이 아님: {}", bearerToken);
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.setContentType("application/json");
-                response.getWriter().write("{\"code\": \"AT\", \"message\": \"Access token이 존재하지 않거나 Bearer 형식이 아닙니다.\"}");
+                sendError(response, request, HttpServletResponse.SC_UNAUTHORIZED, "AT", "Access token이 존재하지 않거나 Bearer 형식이 아닙니다.");
                 return;
             }
         }
-        
+
         String accessToken = resolveToken(bearerToken);
 
-        // 블랙리스트 확인
         if (accessTokenBlacklistService.isBlacklisted(accessToken)) {
             log.warn("블랙리스트 토큰: {}", accessToken);
             if (uri.startsWith("/api/calendar/data")) {
                 filterChain.doFilter(request, response);
                 return;
             } else {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                sendError(response, request, HttpServletResponse.SC_UNAUTHORIZED, "BL", "로그아웃된 토큰입니다.");
                 return;
             }
         }
 
-        // 토큰 만료 확인
         try {
             jwtProvider.validateExpiration(accessToken);
         } catch (ExpiredJwtException e) {
@@ -111,7 +107,7 @@ public class JWTFilter extends OncePerRequestFilter {
                 filterChain.doFilter(request, response);
                 return;
             } else {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                sendError(response, request, HttpServletResponse.SC_UNAUTHORIZED, "EX", "Access token이 만료되었습니다.");
                 return;
             }
         }
@@ -122,12 +118,11 @@ public class JWTFilter extends OncePerRequestFilter {
                 filterChain.doFilter(request, response);
                 return;
             } else {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                sendError(response, request, HttpServletResponse.SC_UNAUTHORIZED, "CT", "유효하지 않은 토큰 카테고리입니다.");
                 return;
             }
         }
 
-        // 인증 정보 설정
         String userId = jwtProvider.getUserId(accessToken);
         String userRole = jwtProvider.getUserRole(accessToken);
         String userNick = jwtProvider.getUserNick(accessToken);
@@ -139,6 +134,7 @@ public class JWTFilter extends OncePerRequestFilter {
                 .userRole(userRole)
                 .userNick(userNick)
                 .build();
+
         CustomUserDetails customUserDetails = new CustomUserDetails(userDto);
         Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authToken);
@@ -151,6 +147,19 @@ public class JWTFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
-        throw new MissingAccessTokenException();
+        return null;
+    }
+
+    private void sendError(HttpServletResponse response, HttpServletRequest request, int status, String code, String message) throws IOException {
+        ErrorResponse err = new ErrorResponse(
+            status,
+            code,
+            message,
+            request.getRequestURI(),
+            LocalDateTime.now()
+        );
+        response.setStatus(status);
+        response.setContentType("application/json");
+        response.getWriter().write(new ObjectMapper().writeValueAsString(err));
     }
 }

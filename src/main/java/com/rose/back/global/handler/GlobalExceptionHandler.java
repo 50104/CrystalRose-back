@@ -1,17 +1,21 @@
 package com.rose.back.global.handler;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
 
-import com.rose.back.domain.user.dto.response.CommonResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rose.back.global.exception.MissingAccessTokenException;
 
 import java.time.LocalDateTime;
@@ -86,19 +90,5 @@ public class GlobalExceptionHandler {
 
         log.warn("JSON parse error @ {}: {}", req.getRequestURI(), ex.getMessage());
         return ResponseEntity.badRequest().body(err);
-    }
-
-    @ExceptionHandler(MissingAccessTokenException.class)
-    public ResponseEntity<ErrorResponse> handleMissingAccessToken(MissingAccessTokenException ex, HttpServletRequest request) {
-        ErrorResponse error = ErrorResponse.builder()
-            .timestamp(LocalDateTime.now())
-            .status(HttpStatus.UNAUTHORIZED.value())
-            .code("UNAUTHORIZED")
-            .message("Access Token이 존재하지 않습니다.")
-            .path(request.getRequestURI())
-            .build();
-
-        log.warn("Missing access token @ {}: {}", request.getRequestURI(), ex.getMessage());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 }

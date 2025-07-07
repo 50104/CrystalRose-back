@@ -106,6 +106,7 @@ public class WebSecurityConfig {
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN") // 특정 URL 패턴에 대한 접근 권한 설정 (ADMIN 역할 필요)
                 .requestMatchers("/actuator/health").permitAll() // API 헬스 체크
                 .requestMatchers("/api/v1/auth/withdraw/**").authenticated()
+                .requestMatchers("/doc/**", "/web/**", "/remote/login").permitAll()
                 .requestMatchers("/error").permitAll() // 에러 페이지 허용
                 .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
             )
