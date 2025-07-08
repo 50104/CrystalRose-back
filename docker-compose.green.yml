@@ -15,9 +15,6 @@ services:
       - "4001:4000"
     networks:
       - backend
-    build:
-      context: .
-      dockerfile: Dockerfile
 
 networks:
   backend:

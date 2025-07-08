@@ -7,6 +7,9 @@ echo "[INFO] Blue-Green 배포 시작"
 # 현재 Nginx가 사용하는 포트 추출
 CURRENT_PORT=$(grep -oP '127.0.0.1:\K[0-9]+' /etc/nginx/conf.d/service-url.inc || echo "")
 
+DOCKERHUB_USERNAME=$(grep DOCKERHUB_USERNAME /home/ubuntu/.env | cut -d '=' -f2)
+DOCKERHUB_REPO=$(grep DOCKERHUB_REPO /home/ubuntu/.env | cut -d '=' -f2)
+
 if [[ -z "$CURRENT_PORT" ]]; then
   echo "[ERROR] 현재 포트를 읽지 못했습니다. service-url.inc 포맷을 확인해주세요."
   sudo cat /etc/nginx/conf.d/service-url.inc
@@ -31,6 +34,9 @@ else
   COMPOSE_FILE="docker-compose.green.yml"
   CONTAINER_NAME="app-green"
 fi
+
+echo "[INFO] 최신 Docker 이미지 pull"
+sudo docker pull $DOCKERHUB_USERNAME/$DOCKERHUB_REPO
 
 echo "[INFO] 새 컨테이너(${AFTER_COLOR}) 실행"
 sudo docker-compose -p $AFTER_COLOR \
