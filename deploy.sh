@@ -77,9 +77,6 @@ if [[ "$HEALTH" != *'"status":"UP"'* ]]; then
 
   echo "[INFO] 이전 컨테이너 ${BEFORE_COLOR} 재실행"
   ROLLBACK_COMPOSE="docker-compose.${BEFORE_COLOR}.yml"
-  sudo docker-compose -p $BEFORE_COLOR \
-    -f /home/ubuntu/CrystalRose-back/$ROLLBACK_COMPOSE \
-    --env-file /home/ubuntu/.env up -d
 
   echo "[INFO] Nginx 포트 복구 (${AFTER_PORT} → ${BEFORE_PORT})"
   sudo bash -c "echo 'set \$service_url http://127.0.0.1:${BEFORE_PORT};' > /etc/nginx/conf.d/service-url.inc"
