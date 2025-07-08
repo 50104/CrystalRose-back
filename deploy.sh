@@ -65,7 +65,7 @@ if [[ "$HEALTH" != *'"status":"UP"'* ]]; then
     --env-file /home/ubuntu/.env up -d
 
   echo "[INFO] Nginx 포트 복구 (${AFTER_PORT} → ${BEFORE_PORT})"
-  sudo sed -i "s|set \$service_url http://127.0.0.1:[0-9]\+;|set \$service_url http://127.0.0.1:${BEFORE_PORT};|" /etc/nginx/conf.d/service-url.inc
+  sudo bash -c "echo 'set \$service_url http://127.0.0.1:${BEFORE_PORT};' > /etc/nginx/conf.d/service-url.inc"
 
   echo "[DEBUG] 롤백된 service-url.inc 내용:"
   sudo cat /etc/nginx/conf.d/service-url.inc
@@ -74,14 +74,14 @@ if [[ "$HEALTH" != *'"status":"UP"'* ]]; then
   sudo nginx -t || { echo "[ERROR] Nginx 설정 오류 - 롤백 중단"; exit 1; }
 
   echo "[INFO] Nginx 재시작"
-  sudo nginx -s reload
+  sudo systemctl reload nginx
 
   echo "[ROLLBACK 완료] ${BEFORE_COLOR} 컨테이너로 복원"
   exit 1
 fi
 
 echo "[INFO] Nginx 포트 스위칭: ${BEFORE_PORT} → ${AFTER_PORT}"
-sudo sed -i "s|set \$service_url http://127.0.0.1:[0-9]\+;|set \$service_url http://127.0.0.1:${AFTER_PORT};|" /etc/nginx/conf.d/service-url.inc
+sudo bash -c "echo 'set \$service_url http://127.0.0.1:${AFTER_PORT};' > /etc/nginx/conf.d/service-url.inc"
 
 echo "[DEBUG] 변경된 service-url.inc 내용:"
 sudo cat /etc/nginx/conf.d/service-url.inc
@@ -90,7 +90,7 @@ echo "[INFO] Nginx 설정 테스트"
 sudo nginx -t || { echo "[ERROR] Nginx 설정 오류 - 배포 중단"; exit 1; }
 
 echo "[INFO] Nginx Reload"
-sudo nginx -s reload
+sudo systemctl reload nginx
 sleep 2
 
 echo "[INFO] 이전 컨테이너(${BEFORE_COLOR}) 종료"
