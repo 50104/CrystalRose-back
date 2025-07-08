@@ -41,6 +41,7 @@ public class JWTFilter extends OncePerRequestFilter {
             "/connect/**",
             "/api/v1/auth/**",
             "/api/v1/wiki/list",
+            "/api/v1/wiki/list/",
             "/api/v1/wiki/detail/**",
             "/",
             "/join",
@@ -64,11 +65,12 @@ public class JWTFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
         String uri = request.getRequestURI();
         for (String pattern : EXCLUDE_PATHS) {
-            if (pathMatcher.match(pattern, uri)) {
+            if (pathMatcher.match(pattern, uri) || uri.startsWith(pattern.replace("/**", ""))) {
                 log.info("토큰 검사 제외: {}", uri);
                 return true;
             }
         }
+        log.info("토큰 검사 대상: {}", uri);
         return false;
     }
 
