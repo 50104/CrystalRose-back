@@ -45,6 +45,11 @@ jobs:
           echo "${{ secrets.EC2_PRIVATE_KEY_BASE64 }}" | base64 -d > private_key.pem
           chmod 600 private_key.pem
 
+      - name: Copy deploy.sh to EC2
+        run: |
+          scp -i private_key.pem -o StrictHostKeyChecking=no ./deploy.sh \
+          ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/ubuntu/CrystalRose-back/deploy.sh
+
       - name: Deploy via SSH
         env:
           APPLICATION_YML: ${{ secrets.APPLICATION_YML }}
