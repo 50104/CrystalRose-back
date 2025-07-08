@@ -59,20 +59,22 @@ jobs:
           CLOUD_AWS_CREDENTIALS_SECRET_KEY: ${{ secrets.CLOUD_AWS_CREDENTIALS_SECRET_KEY }}
           CLOUD_AWS_REGION_STATIC: ${{ secrets.CLOUD_AWS_REGION_STATIC }}
           CLOUD_AWS_S3_BUCKET: ${{ secrets.CLOUD_AWS_S3_BUCKET }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_REPO: ${{ secrets.DOCKERHUB_REPO }}
         run: |
-          ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'EOF'
+          ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} <<EOF
             cd /home/ubuntu/CrystalRose-back
 
             echo "[ENV] 환경 파일 설정"
             rm -f .env
             touch .env
-            echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
-            echo "DOCKERHUB_REPO=${{ secrets.DOCKERHUB_REPO }}" >> .env
-            echo "SPRING_JWT_SECRET=${{ secrets.SPRING_JWT_SECRET }}" >> .env
-            echo "CLOUD_AWS_CREDENTIALS_ACCESS_KEY=${{ secrets.CLOUD_AWS_CREDENTIALS_ACCESS_KEY }}" >> .env
-            echo "CLOUD_AWS_CREDENTIALS_SECRET_KEY=${{ secrets.CLOUD_AWS_CREDENTIALS_SECRET_KEY }}" >> .env
-            echo "CLOUD_AWS_REGION_STATIC=${{ secrets.CLOUD_AWS_REGION_STATIC }}" >> .env
-            echo "CLOUD_AWS_S3_BUCKET=${{ secrets.CLOUD_AWS_S3_BUCKET }}" >> .env
+            echo "DOCKERHUB_USERNAME=$DOCKERHUB_USERNAME" >> .env
+            echo "DOCKERHUB_REPO=$DOCKERHUB_REPO" >> .env
+            echo "SPRING_JWT_SECRET=$SPRING_JWT_SECRET" >> .env
+            echo "CLOUD_AWS_CREDENTIALS_ACCESS_KEY=$CLOUD_AWS_CREDENTIALS_ACCESS_KEY" >> .env
+            echo "CLOUD_AWS_CREDENTIALS_SECRET_KEY=$CLOUD_AWS_CREDENTIALS_SECRET_KEY" >> .env
+            echo "CLOUD_AWS_REGION_STATIC=$CLOUD_AWS_REGION_STATIC" >> .env
+            echo "CLOUD_AWS_S3_BUCKET=$CLOUD_AWS_S3_BUCKET" >> .env
 
             echo "[DEPLOY] 배포 스크립트 실행"
             chmod +x ./deploy.sh
