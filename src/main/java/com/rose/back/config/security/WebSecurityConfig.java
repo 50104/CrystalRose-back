@@ -131,6 +131,7 @@ public class WebSecurityConfig {
         // 개발 환경
         corsConfiguration.addAllowedOrigin("http://localhost:3000"); // 허용된 오리진 설정 (리액트 서버)
         corsConfiguration.addAllowedOrigin("http://localhost:4000"); // 백엔드 서버
+        corsConfiguration.addAllowedOrigin("https://d19ia5d1tq0pv9.cloudfront.net");
         corsConfiguration.addAllowedOrigin(frontendUrl); // 프로덕션 환경에서의 프론트엔드 URL
 
         corsConfiguration.addAllowedMethod("*"); // 허용된 HTTP 메서드 설정

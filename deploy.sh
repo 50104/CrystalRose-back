@@ -76,4 +76,17 @@ sudo docker-compose -p $BEFORE_COLOR \
   -f /home/ubuntu/CrystalRose-back/docker-compose.${BEFORE_COLOR}.yml \
   --env-file /home/ubuntu/.env down
 
+echo "최종 검증: Nginx 설정과 실제 서비스 일치 확인"
+NGINX_PORT=$(grep -oP '127.0.0.1:\K[0-9]+' /etc/nginx/conf.d/service-url.inc)
+ACTIVE_CONTAINER=$(sudo docker ps --format "table {{.Names}}\t{{.Ports}}" | grep app- | head -1)
+
+echo "Nginx 포트: $NGINX_PORT"
+echo "활성 컨테이너: $ACTIVE_CONTAINER"
+
+# 헬스체크로 최종 확인
+curl -f http://127.0.0.1:${NGINX_PORT}/actuator/health || {
+    echo "ERROR: Nginx 포트와 서비스 포트 불일치!"
+    exit 1
+}
+
 echo "배포 완료: ${AFTER_COLOR} 컨테이너 실행 중 (port: ${AFTER_PORT})"
