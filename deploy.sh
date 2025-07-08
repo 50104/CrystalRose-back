@@ -9,12 +9,12 @@ CURRENT_PORT=$(grep -oP '127.0.0.1:\K[0-9]+' /etc/nginx/conf.d/service-url.inc |
 
 if [[ -z "$CURRENT_PORT" ]]; then
   echo "[ERROR] 현재 포트를 읽지 못했습니다. service-url.inc 포맷을 확인해주세요."
-  cat /etc/nginx/conf.d/service-url.inc
+  sudo cat /etc/nginx/conf.d/service-url.inc
   exit 1
 fi
 
 echo "[DEBUG] 현재 Nginx 포트: $CURRENT_PORT"
-cat /etc/nginx/conf.d/service-url.inc
+sudo cat /etc/nginx/conf.d/service-url.inc
 
 if [[ "$CURRENT_PORT" == "4001" ]]; then
   AFTER_COLOR="blue"
@@ -65,10 +65,10 @@ if [[ "$HEALTH" != *'"status":"UP"'* ]]; then
     --env-file /home/ubuntu/.env up -d
 
   echo "[INFO] Nginx 포트 복구 (${AFTER_PORT} → ${BEFORE_PORT})"
-  sudo sed -i "s/${AFTER_PORT}/${BEFORE_PORT}/" /etc/nginx/conf.d/service-url.inc
+  sudo sed -i "s|set \$service_url http://127.0.0.1:[0-9]\+;|set \$service_url http://127.0.0.1:${BEFORE_PORT};|" /etc/nginx/conf.d/service-url.inc
 
   echo "[DEBUG] 롤백된 service-url.inc 내용:"
-  cat /etc/nginx/conf.d/service-url.inc
+  sudo cat /etc/nginx/conf.d/service-url.inc
 
   echo "[INFO] Nginx 설정 테스트"
   sudo nginx -t || { echo "[ERROR] Nginx 설정 오류 - 롤백 중단"; exit 1; }
@@ -81,10 +81,10 @@ if [[ "$HEALTH" != *'"status":"UP"'* ]]; then
 fi
 
 echo "[INFO] Nginx 포트 스위칭: ${BEFORE_PORT} → ${AFTER_PORT}"
-sudo sed -i "s/${BEFORE_PORT}/${AFTER_PORT}/" /etc/nginx/conf.d/service-url.inc
+sudo sed -i "s|set \$service_url http://127.0.0.1:[0-9]\+;|set \$service_url http://127.0.0.1:${AFTER_PORT};|" /etc/nginx/conf.d/service-url.inc
 
 echo "[DEBUG] 변경된 service-url.inc 내용:"
-cat /etc/nginx/conf.d/service-url.inc
+sudo cat /etc/nginx/conf.d/service-url.inc
 
 echo "[INFO] Nginx 설정 테스트"
 sudo nginx -t || { echo "[ERROR] Nginx 설정 오류 - 배포 중단"; exit 1; }
