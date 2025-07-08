@@ -16,17 +16,44 @@ import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
 public class JWTFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtProvider;
     private final AccessTokenBlacklistService accessTokenBlacklistService;
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
+
+    // 중앙 집중식 JWT 검사 제외 경로 리스트
+    private static final List<String> EXCLUDE_PATHS = Arrays.asList(
+            "/login/**",
+            "/oauth2/**",
+            "/reissue",
+            "/actuator/health",
+            "/connect/**",
+            "/api/v1/auth/**",
+            "/api/v1/wiki/list",
+            "/api/v1/wiki/detail/**",
+            "/",
+            "/join",
+            "/static/**",
+            "/images/**",
+            "/upload/**",
+            "/swagger-ui/**",
+            "/v3/api-docs/**",
+            "/swagger-resources/**",
+            "/webjars/**",
+            "/favicon.ico",
+            "/error"
+    );
 
     public JWTFilter(JwtTokenProvider jwtProvider, AccessTokenBlacklistService accessTokenBlacklistService) {
         this.jwtProvider = jwtProvider;
@@ -36,42 +63,23 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
         String uri = request.getRequestURI();
-        return uri.matches("^/connect(/.*)?$");
+        for (String pattern : EXCLUDE_PATHS) {
+            if (pathMatcher.match(pattern, uri)) {
+                log.info("토큰 검사 제외: {}", uri);
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         String uri = request.getRequestURI();
-
-        if (uri.startsWith("/login") ||
-            uri.startsWith("/oauth2/") ||
-            uri.startsWith("/reissue") ||
-            uri.startsWith("/actuator/health") ||
-            uri.startsWith("/connect") ||
-            uri.startsWith("/api/v1/auth/") ||
-            uri.startsWith("/api/v1/wiki/list") ||
-            uri.startsWith("/api/v1/wiki/detail/") ||
-            uri.equals("/") ||
-            uri.equals("/join") ||
-            uri.startsWith("/static/") ||
-            uri.startsWith("/images/") ||
-            uri.startsWith("/upload/") ||
-            uri.startsWith("/swagger-ui") ||
-            uri.startsWith("/v3/api-docs") ||
-            uri.startsWith("/swagger-resources") ||
-            uri.startsWith("/webjars") ||
-            uri.equals("/favicon.ico") ||
-            uri.equals("/error")
-        ) {
-            log.info("토큰 검사 제외: {}", uri);
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         log.info("토큰 검사 대상 URI: {}", uri);
 
         String bearerToken = request.getHeader("Authorization");
 
+        // 캘린더 API는 토큰이 없어도 허용
         if (uri.startsWith("/api/calendar/data")) {
             if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
                 log.info("캘린더 API - 비인증 사용자 요청: {}", uri);
@@ -144,10 +152,9 @@ public class JWTFilter extends OncePerRequestFilter {
     }
 
     private String resolveToken(String bearerToken) {
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
+        if (!StringUtils.hasText(bearerToken)) return null;
+        if (!bearerToken.startsWith("Bearer ")) return null;
+        return bearerToken.substring(7);
     }
 
     private void sendError(HttpServletResponse response, HttpServletRequest request, int status, String code, String message) throws IOException {
