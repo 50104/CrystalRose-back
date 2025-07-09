@@ -32,28 +32,28 @@ public class JWTFilter extends OncePerRequestFilter {
     private final AccessTokenBlacklistService accessTokenBlacklistService;
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
-    // 중앙 집중식 JWT 검사 제외 경로 리스트
+    // JWT 검증 제외 경로
     private static final List<String> EXCLUDE_PATHS = Arrays.asList(
-            "/login/**",
-            "/oauth2/**",
-            "/reissue",
-            "/actuator/health",
-            "/connect/**",
-            "/api/v1/auth/**",
-            "/api/v1/wiki/list",
-            "/api/v1/wiki/list/",
-            "/api/v1/wiki/detail/**",
-            "/",
-            "/join",
-            "/static/**",
-            "/images/**",
-            "/upload/**",
-            "/swagger-ui/**",
-            "/v3/api-docs/**",
-            "/swagger-resources/**",
-            "/webjars/**",
-            "/favicon.ico",
-            "/error"
+        "/login/**",
+        "/oauth2/**",
+        "/reissue",
+        "/actuator/health",
+        "/connect/**",
+        "/api/v1/auth/**",
+        "/api/v1/wiki/list",
+        "/api/v1/wiki/list/",
+        "/api/v1/wiki/detail/**",
+        "/",
+        "/join",
+        "/static/**",
+        "/images/**",
+        "/upload/**",
+        "/swagger-ui/**",
+        "/v3/api-docs/**",
+        "/swagger-resources/**",
+        "/webjars/**",
+        "/favicon.ico",
+        "/error"
     );
 
     public JWTFilter(JwtTokenProvider jwtProvider, AccessTokenBlacklistService accessTokenBlacklistService) {
@@ -65,7 +65,7 @@ public class JWTFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
         String uri = request.getRequestURI();
         for (String pattern : EXCLUDE_PATHS) {
-            if (pathMatcher.match(pattern, uri) || uri.startsWith(pattern.replace("/**", ""))) {
+            if (pathMatcher.match(pattern, uri)) {
                 log.info("토큰 검사 제외: {}", uri);
                 return true;
             }
@@ -74,23 +74,29 @@ public class JWTFilter extends OncePerRequestFilter {
         return false;
     }
 
+    // 토큰 없이도 접근 가능한 공개 API (토큰 있을 경우 검증)
+    private boolean isOptionalAuthPath(String uri) {
+        return uri.startsWith("/api/calendar/data");
+    }
+
     @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
+            throws ServletException, IOException {
+
         String uri = request.getRequestURI();
-        log.info("토큰 검사 대상 URI: {}", uri);
+        log.info("JWT 필터 실행 URI: {}", uri);
 
         String bearerToken = request.getHeader("Authorization");
+        boolean hasToken = StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ");
+        boolean isOptional = isOptionalAuthPath(uri);
 
-        // 캘린더 API는 토큰이 없어도 허용
-        if (uri.startsWith("/api/calendar/data")) {
-            if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
-                log.info("캘린더 API - 비인증 사용자 요청: {}", uri);
+        if (!hasToken) {
+            if (isOptional) {
+                log.info("비로그인 허용 경로 - 토큰 없음: {}", uri);
                 filterChain.doFilter(request, response);
                 return;
-            }
-        } else {
-            if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
-                log.warn("Authorization 헤더가 없거나 Bearer 형식이 아님: {}", bearerToken);
+            } else {
+                log.warn("Authorization 헤더 없음 또는 Bearer 아님: {}", bearerToken);
                 sendError(response, request, HttpServletResponse.SC_UNAUTHORIZED, "AT", "Access token이 존재하지 않거나 Bearer 형식이 아닙니다.");
                 return;
             }
@@ -98,9 +104,11 @@ public class JWTFilter extends OncePerRequestFilter {
 
         String accessToken = resolveToken(bearerToken);
 
+        // 블랙리스트 검증
         if (accessTokenBlacklistService.isBlacklisted(accessToken)) {
-            log.warn("블랙리스트 토큰: {}", accessToken);
-            if (uri.startsWith("/api/calendar/data")) {
+            log.warn("블랙리스트 토큰 요청: {}", accessToken);
+            if (isOptional) {
+                log.info("Optional 경로지만 블랙리스트 토큰 → 통과");
                 filterChain.doFilter(request, response);
                 return;
             } else {
@@ -109,11 +117,13 @@ public class JWTFilter extends OncePerRequestFilter {
             }
         }
 
+        // 만료 검증
         try {
             jwtProvider.validateExpiration(accessToken);
         } catch (ExpiredJwtException e) {
             log.warn("토큰 만료: {}", e.getMessage());
-            if (uri.startsWith("/api/calendar/data")) {
+            if (isOptional) {
+                log.info("Optional 경로지만 만료 토큰 → 통과");
                 filterChain.doFilter(request, response);
                 return;
             } else {
@@ -122,9 +132,10 @@ public class JWTFilter extends OncePerRequestFilter {
             }
         }
 
+        // 카테고리 검증
         if (!"access".equals(jwtProvider.getCategory(accessToken))) {
-            log.warn("잘못된 토큰 카테고리");
-            if (uri.startsWith("/api/calendar/data")) {
+            log.warn("유효하지 않은 토큰 카테고리");
+            if (isOptional) {
                 filterChain.doFilter(request, response);
                 return;
             } else {
@@ -133,6 +144,7 @@ public class JWTFilter extends OncePerRequestFilter {
             }
         }
 
+        // 유저 정보 설정
         String userId = jwtProvider.getUserId(accessToken);
         String userRole = jwtProvider.getUserRole(accessToken);
         String userNick = jwtProvider.getUserNick(accessToken);
@@ -146,10 +158,11 @@ public class JWTFilter extends OncePerRequestFilter {
                 .build();
 
         CustomUserDetails customUserDetails = new CustomUserDetails(userDto);
-        Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
+        Authentication authToken = new UsernamePasswordAuthenticationToken(
+                customUserDetails, null, customUserDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
-        log.debug("인증 완료: {}", userId);
+        log.info("SecurityContext 인증 객체 설정 완료: {}", userId);
         filterChain.doFilter(request, response);
     }
 
@@ -161,11 +174,8 @@ public class JWTFilter extends OncePerRequestFilter {
 
     private void sendError(HttpServletResponse response, HttpServletRequest request, int status, String code, String message) throws IOException {
         ErrorResponse err = new ErrorResponse(
-            status,
-            code,
-            message,
-            request.getRequestURI(),
-            LocalDateTime.now()
+                status, code, message,
+                request.getRequestURI(), LocalDateTime.now()
         );
         response.setStatus(status);
         response.setContentType("application/json");

@@ -84,6 +84,7 @@ jobs:
           KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
           GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
           SPRING_REDIS_HOST: ${{ secrets.SPRING_REDIS_HOST }}
+          CLOUD_AWS_CLOUDFRONT_DOMAIN: ${{ secrets.CLOUD_AWS_CLOUDFRONT_DOMAIN }}
         run: |
           ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} <<EOF
             cd /home/ubuntu/CrystalRose-back
@@ -121,6 +122,7 @@ jobs:
             echo "KAKAO_REDIRECT_URI=$KAKAO_REDIRECT_URI" >> .env
             echo "GOOGLE_REDIRECT_URI=$GOOGLE_REDIRECT_URI" >> .env
             echo "SPRING_REDIS_HOST=$SPRING_REDIS_HOST" >> .env
+            echo "CLOUD_AWS_CLOUDFRONT_DOMAIN=${{ secrets.CLOUD_AWS_CLOUDFRONT_DOMAIN }}" >> .env
 
             echo "[DEPLOY] 배포 스크립트 실행"
             chmod +x ./deploy.sh

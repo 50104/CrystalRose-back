@@ -61,9 +61,6 @@ public class WebSecurityConfig {
     private final AccessTokenBlacklistService accessTokenBlacklistService;
     private final UserRepository userRepository;
 
-    @Value("${app.oauth2.redirect.frontend-url}")
-    private String frontendUrl;
-
     @Bean
     AuthenticationManager authenticationManager() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -132,7 +129,8 @@ public class WebSecurityConfig {
         corsConfiguration.addAllowedOrigin("http://localhost:3000"); // 허용된 오리진 설정 (리액트 서버)
         corsConfiguration.addAllowedOrigin("http://localhost:4000"); // 백엔드 서버
         corsConfiguration.addAllowedOrigin("https://d19ia5d1tq0pv9.cloudfront.net");
-        corsConfiguration.addAllowedOrigin(frontendUrl); // 프로덕션 환경에서의 프론트엔드 URL
+        corsConfiguration.addAllowedOrigin("https://api.dodorose.com"); // API URL
+        corsConfiguration.addAllowedOrigin("https://dodorose.com"); // 프로덕션 환경 URL
 
         corsConfiguration.addAllowedMethod("*"); // 허용된 HTTP 메서드 설정
         corsConfiguration.addAllowedHeader("*"); // 허용된 헤더 설정
