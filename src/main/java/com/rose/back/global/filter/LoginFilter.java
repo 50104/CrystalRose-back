@@ -40,7 +40,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         this.jwtProvider = jwtProvider;
         this.refreshTokenService = refreshTokenService;
         
-        this.setFilterProcessesUrl("/login");
+        this.setFilterProcessesUrl("/api/v1/auth/login");
         this.setUsernameParameter("userId");
         this.setPasswordParameter("userPwd");
     }

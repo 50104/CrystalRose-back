@@ -34,26 +34,23 @@ public class JWTFilter extends OncePerRequestFilter {
 
     // JWT 검증 제외 경로
     private static final List<String> EXCLUDE_PATHS = Arrays.asList(
-        "/login/**",
-        "/oauth2/**",
-        "/reissue",
-        "/actuator/health",
-        "/connect/**",
-        "/api/v1/auth/**",
-        "/api/v1/wiki/list",
-        "/api/v1/wiki/list/",
-        "/api/v1/wiki/detail/**",
-        "/",
-        "/join",
+        "/error",
         "/static/**",
         "/images/**",
         "/upload/**",
+        "/webjars/**",
+        "/favicon.ico",
         "/swagger-ui/**",
         "/v3/api-docs/**",
         "/swagger-resources/**",
-        "/webjars/**",
-        "/favicon.ico",
-        "/error"
+        "/",
+        "/reissue",
+        "/oauth2/**",
+        "/connect/**",
+        "/api/v1/auth/**",
+        "/actuator/health",
+        "/api/v1/wiki/list",
+        "/api/v1/wiki/detail/**"
     );
 
     public JWTFilter(JwtTokenProvider jwtProvider, AccessTokenBlacklistService accessTokenBlacklistService) {
