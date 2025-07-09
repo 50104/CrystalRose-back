@@ -55,17 +55,28 @@ sudo docker-compose -p $AFTER_COLOR \
   --env-file /home/ubuntu/.env up -d
 
 echo "[INFO] Health 체크 중"
-for i in {1..10}
-do
-  echo "시도 $i: curl http://127.0.0.1:${AFTER_PORT}/actuator/health"
-  HEALTH=$(curl -s http://127.0.0.1:${AFTER_PORT}/actuator/health || true)
+for i in {1..20}; do
+  echo "[시도 $i] curl http://127.0.0.1:${AFTER_PORT}/actuator/health"
 
-  if [[ "$HEALTH" == *'"status":"UP"'* ]]; then
+  RESPONSE=$(curl -s -w "%{http_code}" -o health.json http://127.0.0.1:${AFTER_PORT}/actuator/health || true)
+  STATUS_CODE="${RESPONSE:(-3)}" 
+  BODY=$(cat health.json)
+
+  echo "[DEBUG] 응답 코드: $STATUS_CODE"
+  echo "[DEBUG] 응답 바디: $BODY"
+
+  if [[ "$STATUS_CODE" == "200" && "$BODY" == *'"status":"UP"'* ]]; then
     echo "[SUCCESS] 서버 정상 상태 확인됨"
     break
   fi
+
   sleep 5
 done
+
+if [[ "$BODY" != *'"status":"UP"'* ]]; then
+  echo "[ERROR] 20회 시도에도 헬스체크 실패. 배포 중단"
+  exit 1
+fi
 
 if [[ "$HEALTH" != *'"status":"UP"'* ]]; then
   echo "[ERROR] 헬스체크 실패 - 롤백 수행"
