@@ -58,15 +58,22 @@ echo "[INFO] Health 체크 중"
 for i in {1..20}; do
   echo "[시도 $i] curl http://127.0.0.1:${AFTER_PORT}/actuator/health"
 
-  RESPONSE=$(curl -s -w "%{http_code}" -o health.json http://127.0.0.1:${AFTER_PORT}/actuator/health || true)
-  STATUS_CODE="${RESPONSE:(-3)}" 
-  BODY=$(cat health.json)
+  RESPONSE=$(curl -s -w "%{http_code}" -o health.json.tmp http://127.0.0.1:${AFTER_PORT}/actuator/health || true)
+  STATUS_CODE="${RESPONSE:(-3)}"
+
+  if [[ -f health.json.tmp ]]; then
+    mv health.json.tmp health.json
+    BODY=$(cat health.json)
+  else
+    BODY=""
+  fi
 
   echo "[DEBUG] 응답 코드: $STATUS_CODE"
   echo "[DEBUG] 응답 바디: $BODY"
 
   if [[ "$STATUS_CODE" == "200" && "$BODY" == *'"status":"UP"'* ]]; then
     echo "[SUCCESS] 서버 정상 상태 확인됨"
+    rm -f health.json health.json.tmp
     break
   fi
 
@@ -75,6 +82,7 @@ done
 
 if [[ "$BODY" != *'"status":"UP"'* ]]; then
   echo "[ERROR] 20회 시도에도 헬스체크 실패. 배포 중단"
+  rm -f health.json health.json.tmp
   exit 1
 fi
 
