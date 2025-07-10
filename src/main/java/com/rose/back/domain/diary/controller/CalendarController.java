@@ -32,8 +32,8 @@ public class CalendarController implements CalendarControllerDocs {
 
     @GetMapping("/data")
     public ResponseEntity<CalendarDataResponse> getCalendarData(
-            @RequestParam String startDate, 
-            @RequestParam String endDate) {
+        @RequestParam(name = "startDate") String startDate,
+        @RequestParam(name = "endDate") String endDate) {
         
         log.info("[GET][/api/calendar/data] - 캘린더 데이터 조회 요청: {} ~ {}", startDate, endDate);
         

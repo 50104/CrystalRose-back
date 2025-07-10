@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -29,13 +30,11 @@ import com.rose.back.domain.user.entity.UserEntity;
 import com.rose.back.domain.user.repository.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
 @Transactional
-@RequiredArgsConstructor
 public class ChatService {
   
   private final ChatRoomRepository chatRoomRepository;
@@ -44,6 +43,22 @@ public class ChatService {
   private final ReadStatusRepository readStatusRepository;
   private final UserRepository userRepository;
   private final StringRedisTemplate stringRedisTemplate;
+
+  public ChatService(
+      ChatRoomRepository chatRoomRepository,
+      ChatParticipantRepository chatParticipantRepository,
+      ChatMessageRepository chatMessageRepository,
+      ReadStatusRepository readStatusRepository,
+      UserRepository userRepository,
+      @Qualifier("stringRedisTemplate") StringRedisTemplate stringRedisTemplate
+  ) {
+      this.chatRoomRepository = chatRoomRepository;
+      this.chatParticipantRepository = chatParticipantRepository;
+      this.chatMessageRepository = chatMessageRepository;
+      this.readStatusRepository = readStatusRepository;
+      this.userRepository = userRepository;
+      this.stringRedisTemplate = stringRedisTemplate;
+  }
 
   public void saveMessage(Long roomId, ChatMessageReqDto chatMessageReqDto) {
     // 채팅방 조회

@@ -3,8 +3,6 @@ package com.rose.back.config.security;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,7 +14,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -25,6 +22,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rose.back.domain.auth.jwt.JwtTokenProvider;
 import com.rose.back.domain.auth.oauth2.CustomOAuth2UserService;
 import com.rose.back.domain.auth.service.AccessTokenBlacklistService;
@@ -45,7 +43,6 @@ import jakarta.servlet.http.HttpServletResponse;
 // 인증 Authentication 방문자가 들어 갈 수있는지 확인
 // 인가 Authorization 방문자가 방문했을 때, 허가된 공간에만 접근 가능
 
-@Configurable
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -59,6 +56,7 @@ public class WebSecurityConfig {
     private final RefreshTokenService refreshTokenService;
     private final AccessTokenBlacklistService accessTokenBlacklistService;
     private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
 
     @Bean
     AuthenticationManager authenticationManager() {
@@ -91,7 +89,7 @@ public class WebSecurityConfig {
             )
             .authorizeHttpRequests(request -> request
                 // sockJS 사용 위한 /connect/**
-                .requestMatchers("/", "/api/v1/auth/*", "/connect/**", "/reissue", "/oauth2/**").permitAll()
+                .requestMatchers("/", "/api/v1/auth/**", "/connect/**", "/reissue", "/oauth2/**").permitAll()
                 .requestMatchers("/api/v1/wiki/list").permitAll() // 위키 목록 조회 API 허용
                 .requestMatchers("/api/v1/wiki/detail/**").permitAll() // 위키 상세 조회 API 허용 (숫자 ID만)
                 .requestMatchers("/static/**", "/images/**", "/upload/**").permitAll() // 정적 리소스 허용
@@ -107,8 +105,8 @@ public class WebSecurityConfig {
             .exceptionHandling(exceptionHandling -> exceptionHandling
                 .authenticationEntryPoint(new FailedAuthenticationEntryPoint()) // 인증 실패 핸들러 설정
             )
-            .addFilterAt(new LoginFilter(authenticationManager(), jwtProvider, refreshTokenService, userRepository), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(new JWTFilter(jwtProvider, accessTokenBlacklistService), LoginFilter.class) // JWT 인증 필터 추가
+            .addFilterAt(new LoginFilter(authenticationManager(), jwtProvider, refreshTokenService, userRepository, objectMapper), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(new JWTFilter(jwtProvider, accessTokenBlacklistService, objectMapper), LoginFilter.class) // JWT 인증 필터 추가
             .addFilterBefore(new CustomLogoutFilter(jwtProvider, refreshTokenService, accessTokenBlacklistService), LogoutFilter.class)
             .csrf((auth) -> auth.disable())
             .formLogin((auth) -> auth.disable())

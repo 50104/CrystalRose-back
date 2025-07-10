@@ -31,6 +31,16 @@ public class JWTFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtProvider;
     private final AccessTokenBlacklistService accessTokenBlacklistService;
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
+    private final ObjectMapper objectMapper;
+
+    public JWTFilter(JwtTokenProvider jwtProvider,
+                    AccessTokenBlacklistService accessTokenBlacklistService,
+                    ObjectMapper objectMapper) {
+    this.jwtProvider = jwtProvider;
+    this.accessTokenBlacklistService = accessTokenBlacklistService;
+    this.objectMapper = objectMapper;
+}
+
 
     // JWT 검증 제외 경로
     private static final List<String> EXCLUDE_PATHS = Arrays.asList(
@@ -52,11 +62,6 @@ public class JWTFilter extends OncePerRequestFilter {
         "/api/v1/wiki/list",
         "/api/v1/wiki/detail/**"
     );
-
-    public JWTFilter(JwtTokenProvider jwtProvider, AccessTokenBlacklistService accessTokenBlacklistService) {
-        this.jwtProvider = jwtProvider;
-        this.accessTokenBlacklistService = accessTokenBlacklistService;
-    }
 
     @Override
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
@@ -176,6 +181,6 @@ public class JWTFilter extends OncePerRequestFilter {
         );
         response.setStatus(status);
         response.setContentType("application/json");
-        response.getWriter().write(new ObjectMapper().writeValueAsString(err));
+        response.getWriter().write(objectMapper.writeValueAsString(err));
     }
 }

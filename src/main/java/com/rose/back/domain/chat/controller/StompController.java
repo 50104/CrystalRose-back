@@ -16,11 +16,12 @@ public class StompController implements StompControllerDocs {
 
     private final ChatService chatService;
     private final RedisPubSubService pubSubService;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
-    public StompController(ChatService chatService, RedisPubSubService pubSubService) {
+    public StompController(ChatService chatService, RedisPubSubService pubSubService, ObjectMapper objectMapper) {
         this.chatService = chatService;
         this.pubSubService = pubSubService;
+        this.objectMapper = objectMapper;
     }
 
     // STOMP 메시지 수신 및 Redis Pub/Sub 발행

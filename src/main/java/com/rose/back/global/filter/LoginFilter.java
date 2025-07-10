@@ -32,12 +32,13 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
-    public LoginFilter(AuthenticationManager authenticationManager, JwtTokenProvider jwtProvider, RefreshTokenService refreshTokenService, UserRepository userRepository) {
+    public LoginFilter(AuthenticationManager authenticationManager, JwtTokenProvider jwtProvider, RefreshTokenService refreshTokenService, UserRepository userRepository, ObjectMapper objectMapper) {
         this.userRepository = userRepository;
         this.authenticationManager = authenticationManager;
         this.jwtProvider = jwtProvider;
+        this.objectMapper = objectMapper;
         this.refreshTokenService = refreshTokenService;
         
         this.setFilterProcessesUrl("/api/v1/auth/login");

@@ -18,10 +18,10 @@ public class RedisPubSubService implements MessageListener {
   private final SimpMessageSendingOperations messagingTemplate;
   private final ObjectMapper objectMapper;
 
-  public RedisPubSubService(@Qualifier("chatPubSub") StringRedisTemplate stringRedisTemplate, SimpMessageSendingOperations messagingTemplate) {
+  public RedisPubSubService(@Qualifier("chatPubSub") StringRedisTemplate stringRedisTemplate, SimpMessageSendingOperations messagingTemplate, ObjectMapper objectMapper) {
     this.stringRedisTemplate = stringRedisTemplate;
     this.messagingTemplate = messagingTemplate;
-    this.objectMapper = new ObjectMapper();
+    this.objectMapper = objectMapper;
   }
 
   public void publish(String channel, String message) {
