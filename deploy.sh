@@ -86,7 +86,7 @@ if [[ "$BODY" != *'"status":"UP"'* ]]; then
   exit 1
 fi
 
-if [[ "$HEALTH" != *'"status":"UP"'* ]]; then
+if [[ "$BODY" != *'"status":"UP"'* ]]; then
   echo "[ERROR] 헬스체크 실패 - 롤백 수행"
 
   echo "[INFO] 실패한 컨테이너 ${AFTER_COLOR} 정리"
