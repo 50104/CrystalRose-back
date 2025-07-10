@@ -51,7 +51,6 @@ import jakarta.servlet.http.HttpServletResponse;
 @RequiredArgsConstructor
 public class WebSecurityConfig {
 
-    private final DefaultOAuth2UserService oAuth2UserService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
     private final OAuth2FailureHandler oAuth2FailureHandler;
     private final CustomOAuth2UserService oAuth2UserServiceImplement;
@@ -86,8 +85,7 @@ public class WebSecurityConfig {
             .oauth2Login(oauth2 -> oauth2
                 .authorizationEndpoint(endpoint -> endpoint.baseUri("/api/v1/auth/oauth2")) // OAuth2 인증 엔드포인트 설정
                 .redirectionEndpoint(endpoint -> endpoint.baseUri("/oauth2/callback/*")) // OAuth2 리다이렉션 엔드포인트 설정
-                .userInfoEndpoint(endpoint -> endpoint.userService(oAuth2UserService) // OAuth2 사용자 정보 엔드포인트 설정
-                .userService(oAuth2UserServiceImplement)) // OAuth2UserService 설정
+                .userInfoEndpoint(endpoint -> endpoint.userService(oAuth2UserServiceImplement)) // OAuth2 사용자 정보 엔드포인트 설정
                 .successHandler(oAuth2SuccessHandler) // OAuth2 인증 성공 핸들러 설정
                 .failureHandler(oAuth2FailureHandler) // OAuth2 인증 실패 핸들러 설정
             )

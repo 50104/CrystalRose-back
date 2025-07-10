@@ -30,19 +30,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(userRequest);
-
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
-        OAuth2Response oAuthResponse = null;
 
-        if (registrationId.equals("naver")) {
-            oAuthResponse = new NaverResponse(oAuth2User.getAttributes());
-        } else if (registrationId.equals("kakao")) {
-            oAuthResponse = new KakaoResponse(oAuth2User.getAttributes());
-        } else if (registrationId.equals("google")) {
-            oAuthResponse = new GoogleResponse(oAuth2User.getAttributes());
-        } else {
-            log.error("지원하지 않는 소셜 로그인입니다.");
-        }
+        OAuth2Response oAuthResponse = switch (registrationId) {
+            case "naver" -> new NaverResponse(oAuth2User.getAttributes());
+            case "kakao" -> new KakaoResponse(oAuth2User.getAttributes());
+            case "google" -> new GoogleResponse(oAuth2User.getAttributes());
+            default -> throw new OAuth2AuthenticationException("지원하지 않는 소셜 로그인입니다.");
+        };
 
         String username = oAuthResponse.getProvider() + "" + oAuthResponse.getProviderId();
         if (username.length() > 15) {
