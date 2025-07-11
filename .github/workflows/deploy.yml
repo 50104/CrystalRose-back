@@ -29,6 +29,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      - name: Replace application.yml
+        run: |
+          echo "$APPLICATION_YML" > src/main/resources/application.yml
+          echo "$APPLICATION_OAUTH2_YML" > src/main/resources/application-oauth2.yml
+
       - name: Build JAR
         run: |
           chmod +x ./gradlew
@@ -99,17 +104,10 @@ jobs:
         run: |
           ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} <<EOF
             cd /home/ubuntu/CrystalRose-back
-            cp src/main/resources/application.yml src/main/resources/application.yml.bak || true
-            cp src/main/resources/application-oauth2.yml src/main/resources/application-oauth2.yml.bak || true
 
             git reset --hard HEAD
             git fetch origin
             git reset --hard origin/main
-
-            echo "$APPLICATION_YML" | tee src/main/resources/application.yml > /dev/null
-            echo "$APPLICATION_OAUTH2_YML" | tee src/main/resources/application-oauth2.yml > /dev/null
-
-            chmod +x ./gradlew
 
             echo "[ENV] 환경 파일 설정"
             rm -f .env
