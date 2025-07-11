@@ -11,8 +11,6 @@ services:
       - HTTP_PORT=8080
       - SPRING_DATA_REDIS_HOST=redis-server
       - SPRING_PROFILES_ACTIVE=oauth2
-      - LOGGING_LEVEL_ROOT=DEBUG
-      - DEBUG=true
     ports:
       - "4001:4000"
     networks:
