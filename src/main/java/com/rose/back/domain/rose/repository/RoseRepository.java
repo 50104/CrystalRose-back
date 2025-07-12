@@ -20,4 +20,6 @@ public interface RoseRepository extends JpaRepository<RoseEntity, Long> {
     
     @Query("SELECT r FROM RoseEntity r JOIN FETCH r.wikiEntity WHERE r.id = :id AND r.userId = :userId")
     Optional<RoseEntity> findByIdAndUserId(@Param("id") Long id, @Param("userId") Long userId);
+
+    boolean existsByUserIdAndWikiEntityId(Long userId, Long wikiId);
 }

@@ -33,8 +33,14 @@ public class RoseService {
     @Transactional
     public void registerUserRose(CustomUserDetails userDetails, RoseRequest request) {
         log.info("내 장미 등록 시작: userId={}, wikiId={}", userDetails.getUserNo(), request.wikiId());
-        
+
         Long userId = userDetails.getUserNo();
+
+        boolean exists = userRoseRepository.existsByUserIdAndWikiEntityId(userId, request.wikiId());
+        if (exists) {
+            throw new IllegalStateException("이미 등록된 장미 품종입니다.");
+        }
+
         WikiEntity roseWiki = roseWikiRepository.findById(request.wikiId())
             .orElseThrow(() -> new IllegalArgumentException("도감 품종이 존재하지 않습니다"));
 
@@ -52,6 +58,11 @@ public class RoseService {
         createInitialDiary(userRose, request); // 첫 기록 등록
 
         log.info("내 장미 등록 완료: roseId={}", userRose.getId());
+    }
+    
+    @Transactional(readOnly = true)
+    public boolean existsByUserIdAndWikiId(Long userId, Long wikiId) {
+        return userRoseRepository.existsByUserIdAndWikiEntityId(userId, wikiId);
     }
 
     private void createInitialDiary(RoseEntity rose, RoseRequest request) {

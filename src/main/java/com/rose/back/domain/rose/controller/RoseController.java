@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -33,6 +34,13 @@ public class RoseController implements RoseControllerDocs {
         log.info("[POST][/api/roses/mine] - 내 장미 등록 요청");
         roseService.registerUserRose(userDetails, request);
         return ResponseEntity.ok(new MessageResponse("장미가 등록되었습니다."));
+    }
+
+    @GetMapping("/check-duplicate")
+    public ResponseEntity<?> checkDuplicateRose(@RequestParam("wikiId") Long wikiId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        log.info("[GET][/api/roses/check-duplicate] - 장미 중복 확인 요청: wikiId={}", wikiId);
+        boolean exists = roseService.existsByUserIdAndWikiId(userDetails.getUserNo(), wikiId);
+        return ResponseEntity.ok(Map.of("exists", exists));
     }
 
     @PostMapping("/image/upload")
