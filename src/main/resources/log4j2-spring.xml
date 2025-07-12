@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="5">
+  <Properties>
+    <Property name="LOG_PATH">logs</Property>
+    <Property name="DEFAULT_PATTERN">[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%5p] [%t] %c{1.} - %m%n</Property>
+  </Properties>
+
+  <Appenders>
+    <!-- Console -->
+    <Console name="Console" target="SYSTEM_OUT">
+      <PatternLayout pattern="${DEFAULT_PATTERN}" />
+    </Console>
+
+    <!-- Error -->
+    <RollingFile name="ErrorFile" fileName="${LOG_PATH}/error.log"
+                filePattern="${LOG_PATH}/error-%d{yyyy-MM-dd}.%i.log.gz">
+      <PatternLayout pattern="${DEFAULT_PATTERN}" />
+      <Policies>
+        <TimeBasedTriggeringPolicy interval="1"/>
+        <SizeBasedTriggeringPolicy size="10MB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="30">
+        <Delete basePath="${LOG_PATH}" maxDepth="1">
+          <IfLastModified age="30d"/>
+          <IfAccumulatedFileCount exceeds="30"/>
+        </Delete>
+      </DefaultRolloverStrategy>
+      <Filters>
+        <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+      </Filters>
+    </RollingFile>
+
+    <!-- Access -->
+    <RollingFile name="AccessFile" fileName="${LOG_PATH}/access.log"
+                filePattern="${LOG_PATH}/access-%d{yyyy-MM-dd}.%i.log.gz">
+      <PatternLayout pattern="${DEFAULT_PATTERN}" />
+      <Policies>
+        <TimeBasedTriggeringPolicy interval="1"/>
+        <SizeBasedTriggeringPolicy size="10MB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="30">
+        <Delete basePath="${LOG_PATH}" maxDepth="1">
+          <IfLastModified age="30d"/>
+          <IfAccumulatedFileCount exceeds="30"/>
+        </Delete>
+      </DefaultRolloverStrategy>
+    </RollingFile>
+
+    <!-- SQL -->
+    <RollingFile name="SqlFile" fileName="${LOG_PATH}/sql.log"
+                filePattern="${LOG_PATH}/sql-%d{yyyy-MM-dd}.%i.log.gz">
+      <PatternLayout pattern="${DEFAULT_PATTERN}" />
+      <Policies>
+        <TimeBasedTriggeringPolicy interval="1"/>
+        <SizeBasedTriggeringPolicy size="10MB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="30">
+        <Delete basePath="${LOG_PATH}" maxDepth="1">
+          <IfLastModified age="30d"/>
+          <IfAccumulatedFileCount exceeds="30"/>
+        </Delete>
+      </DefaultRolloverStrategy>
+    </RollingFile>
+
+    <!-- WebSocket -->
+    <RollingFile name="WebSocketFile" fileName="${LOG_PATH}/websocket.log"
+                filePattern="${LOG_PATH}/websocket-%d{yyyy-MM-dd}.%i.log.gz">
+      <PatternLayout pattern="${DEFAULT_PATTERN}" />
+      <Policies>
+        <TimeBasedTriggeringPolicy interval="1"/>
+        <SizeBasedTriggeringPolicy size="10MB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="30">
+        <Delete basePath="${LOG_PATH}" maxDepth="1">
+          <IfLastModified age="30d"/>
+          <IfAccumulatedFileCount exceeds="30"/>
+        </Delete>
+      </DefaultRolloverStrategy>
+    </RollingFile>
+  </Appenders>
+
+  <Loggers>
+    <Root level="INFO">
+      <AppenderRef ref="Console"/>
+      <AppenderRef ref="ErrorFile"/>
+    </Root>
+
+    <Logger name="com.rose.back" level="INFO" additivity="false">
+      <AppenderRef ref="AccessFile"/>
+    </Logger>
+
+    <Logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
+      <AppenderRef ref="SqlFile"/>
+    </Logger>
+
+    <Logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE" additivity="false">
+      <AppenderRef ref="SqlFile"/>
+    </Logger>
+
+    <!-- WebSocket 로그 -->
+    <Logger name="com.rose.back.global.websocket" level="INFO" additivity="false">
+      <AppenderRef ref="WebSocketFile"/>
+    </Logger>
+  </Loggers>
+</Configuration>

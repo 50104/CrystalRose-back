@@ -5,5 +5,7 @@ WORKDIR /app
 
 COPY build/libs/back-0.0.1-SNAPSHOT.jar app.jar
 
+RUN mkdir -p /app/logs
+
 EXPOSE 4000
 ENTRYPOINT ["java", "--enable-preview" ,"-jar", "app.jar"]

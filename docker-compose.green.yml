@@ -8,11 +8,12 @@ services:
       - .env
     environment:
       - LANG=ko_KR.UTF-8
-      - HTTP_PORT=8080
       - SPRING_DATA_REDIS_HOST=redis-server
       - SPRING_PROFILES_ACTIVE=oauth2
     ports:
       - "4001:4000"
+    volumes:
+      - ./logs:/app/logs  
     networks:
       - backend
 
