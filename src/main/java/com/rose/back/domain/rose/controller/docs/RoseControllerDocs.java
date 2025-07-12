@@ -47,6 +47,33 @@ public interface RoseControllerDocs {
         @AuthenticationPrincipal CustomUserDetails userDetails
     );
 
+    @Operation(summary = "내 장미 등록 중복 확인", description = "사용자가 이미 등록한 도감(Wiki ID) 장미인지 확인합니다.")
+    @CommonErrorResponses
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "중복 여부 반환 성공",
+            content = @Content(mediaType = "application/json",
+                examples = @ExampleObject(name = "ExistsTrue", value = """
+                    {
+                      "exists": true
+                    }
+                """)))
+    })
+    ResponseEntity<?> checkDuplicateRose(
+        @RequestParam("wikiId") Long wikiId,
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    );
+
+    @Operation(summary = "등록된 장미의 Wiki ID 목록 조회", description = "사용자가 등록한 장미 도감(Wiki ID) 리스트를 반환합니다.")
+    @CommonErrorResponses
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Wiki ID 목록 반환 성공",
+            content = @Content(mediaType = "application/json",
+                examples = @ExampleObject(name = "WikiIdList", value = """
+                    [1, 3, 5]
+                """)))
+    })
+    ResponseEntity<List<Long>> getMyRoseWikiIds(@AuthenticationPrincipal CustomUserDetails userDetails);
+
     @Operation(summary = "장미 이미지 업로드", description = "S3에 장미 이미지를 업로드하고 URL을 반환합니다.")
     @CommonErrorResponses
     @ApiResponses(value = {

@@ -43,6 +43,15 @@ public class RoseController implements RoseControllerDocs {
         return ResponseEntity.ok(Map.of("exists", exists));
     }
 
+    @GetMapping("/mine/wiki-ids")
+    public ResponseEntity<List<Long>> getMyRoseWikiIds(@AuthenticationPrincipal CustomUserDetails user) {
+        log.info("[GET][/api/roses/mine/wiki-ids] - 내 장미 위키 ID 목록 조회 요청");
+        List<Long> registeredWikiIds = roseService.getUserRoses(user.getUserNo()).stream()
+            .map(rose -> rose.getWikiEntity().getId())
+            .toList();
+        return ResponseEntity.ok(registeredWikiIds);
+    }
+
     @PostMapping("/image/upload")
     public ResponseEntity<ImageUploadResponse> upload(@RequestParam("file") MultipartFile file) {
         log.info("[POST][/api/roses/image/upload] - 장미 이미지 업로드 요청: {}", file.getOriginalFilename());
