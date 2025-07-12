@@ -36,11 +36,10 @@ public class JWTFilter extends OncePerRequestFilter {
     public JWTFilter(JwtTokenProvider jwtProvider,
                     AccessTokenBlacklistService accessTokenBlacklistService,
                     ObjectMapper objectMapper) {
-    this.jwtProvider = jwtProvider;
-    this.accessTokenBlacklistService = accessTokenBlacklistService;
-    this.objectMapper = objectMapper;
-}
-
+        this.jwtProvider = jwtProvider;
+        this.accessTokenBlacklistService = accessTokenBlacklistService;
+        this.objectMapper = objectMapper;
+    }
 
     // JWT 검증 제외 경로
     private static final List<String> EXCLUDE_PATHS = Arrays.asList(
@@ -76,96 +75,102 @@ public class JWTFilter extends OncePerRequestFilter {
         return false;
     }
 
-    // 토큰 없이도 접근 가능한 공개 API (토큰 있을 경우 검증)
     private boolean isOptionalAuthPath(String uri) {
         return uri.startsWith("/api/calendar/data");
     }
 
     @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
         String uri = request.getRequestURI();
         log.info("JWT 필터 실행 URI: {}", uri);
 
-        String bearerToken = request.getHeader("Authorization");
-        boolean hasToken = StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ");
-        boolean isOptional = isOptionalAuthPath(uri);
-
-        if (!hasToken) {
-            if (isOptional) {
-                log.info("비로그인 허용 경로 - 토큰 없음: {}", uri);
-                filterChain.doFilter(request, response);
-                return;
-            } else {
-                log.warn("Authorization 헤더 없음 또는 Bearer 아님: {}", bearerToken);
-                sendError(response, request, HttpServletResponse.SC_UNAUTHORIZED, "AT", "Access token이 존재하지 않거나 Bearer 형식이 아닙니다.");
-                return;
-            }
-        }
-
-        String accessToken = resolveToken(bearerToken);
-
-        // 블랙리스트 검증
-        if (accessTokenBlacklistService.isBlacklisted(accessToken)) {
-            log.warn("블랙리스트 토큰 요청: {}", accessToken);
-            if (isOptional) {
-                log.info("Optional 경로지만 블랙리스트 토큰 → 통과");
-                filterChain.doFilter(request, response);
-                return;
-            } else {
-                sendError(response, request, HttpServletResponse.SC_UNAUTHORIZED, "BL", "로그아웃된 토큰입니다.");
-                return;
-            }
-        }
-
-        // 만료 검증
         try {
-            jwtProvider.validateExpiration(accessToken);
-        } catch (ExpiredJwtException e) {
-            log.warn("토큰 만료: {}", e.getMessage());
-            if (isOptional) {
-                log.info("Optional 경로지만 만료 토큰 → 통과");
-                filterChain.doFilter(request, response);
-                return;
-            } else {
-                sendError(response, request, HttpServletResponse.SC_UNAUTHORIZED, "EX", "Access token이 만료되었습니다.");
-                return;
+            String bearerToken = request.getHeader("Authorization");
+            boolean hasToken = StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ");
+            boolean isOptional = isOptionalAuthPath(uri);
+
+            if (!hasToken) {
+                if (isOptional) {
+                    log.info("비로그인 허용 경로 - 토큰 없음: {}", uri);
+                    filterChain.doFilter(request, response);
+                    return;
+                } else {
+                    log.warn("Authorization 헤더 없음 또는 Bearer 아님: {}", bearerToken);
+                    sendError(response, request, HttpServletResponse.SC_UNAUTHORIZED, "AT", "Access token이 존재하지 않거나 Bearer 형식이 아닙니다.");
+                    return;
+                }
             }
-        }
 
-        // 카테고리 검증
-        if (!"access".equals(jwtProvider.getCategory(accessToken))) {
-            log.warn("유효하지 않은 토큰 카테고리");
-            if (isOptional) {
-                filterChain.doFilter(request, response);
-                return;
-            } else {
-                sendError(response, request, HttpServletResponse.SC_UNAUTHORIZED, "CT", "유효하지 않은 토큰 카테고리입니다.");
-                return;
+            String accessToken = resolveToken(bearerToken);
+
+            // 블랙리스트 검증
+            if (accessTokenBlacklistService.isBlacklisted(accessToken)) {
+                log.warn("블랙리스트 토큰 요청: {}", accessToken);
+                if (isOptional) {
+                    log.info("Optional 경로지만 블랙리스트 토큰 → 통과");
+                    filterChain.doFilter(request, response);
+                    return;
+                } else {
+                    sendError(response, request, HttpServletResponse.SC_UNAUTHORIZED, "BL", "로그아웃된 토큰입니다.");
+                    return;
+                }
             }
+
+            // 만료 검증
+            try {
+                jwtProvider.validateExpiration(accessToken);
+            } catch (ExpiredJwtException e) {
+                log.warn("토큰 만료: {}", e.getMessage());
+                if (isOptional) {
+                    filterChain.doFilter(request, response);
+                    return;
+                } else {
+                    sendError(response, request, HttpServletResponse.SC_UNAUTHORIZED, "EX", "Access token이 만료되었습니다.");
+                    return;
+                }
+            }
+
+            // 카테고리 검증
+            if (!"access".equals(jwtProvider.getCategory(accessToken))) {
+                log.warn("유효하지 않은 토큰 카테고리");
+                if (isOptional) {
+                    filterChain.doFilter(request, response);
+                    return;
+                } else {
+                    sendError(response, request, HttpServletResponse.SC_UNAUTHORIZED, "CT", "유효하지 않은 토큰 카테고리입니다.");
+                    return;
+                }
+            }
+
+            // 유저 정보 설정
+            String userId = jwtProvider.getUserId(accessToken);
+            String userRole = jwtProvider.getUserRole(accessToken);
+            String userNick = jwtProvider.getUserNick(accessToken);
+            Long userNo = jwtProvider.getUserNo(accessToken);
+
+            UserInfoDto userDto = UserInfoDto.builder()
+                    .userNo(userNo)
+                    .userName(userId)
+                    .userRole(userRole)
+                    .userNick(userNick)
+                    .build();
+
+            CustomUserDetails customUserDetails = new CustomUserDetails(userDto);
+            Authentication authToken = new UsernamePasswordAuthenticationToken(
+                    customUserDetails, null, customUserDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+
+            log.info("SecurityContext 인증 완료: {}", userId);
+            filterChain.doFilter(request, response);
+
+        } catch (Exception ex) {
+            log.error("JWTFilter 내부 예외 발생: {}", ex.getMessage(), ex);
+            sendError(response, request, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "FILTER_ERROR", "인증 필터 처리 중 서버 오류가 발생했습니다.");
         }
-
-        // 유저 정보 설정
-        String userId = jwtProvider.getUserId(accessToken);
-        String userRole = jwtProvider.getUserRole(accessToken);
-        String userNick = jwtProvider.getUserNick(accessToken);
-        Long userNo = jwtProvider.getUserNo(accessToken);
-
-        UserInfoDto userDto = UserInfoDto.builder()
-                .userNo(userNo)
-                .userName(userId)
-                .userRole(userRole)
-                .userNick(userNick)
-                .build();
-
-        CustomUserDetails customUserDetails = new CustomUserDetails(userDto);
-        Authentication authToken = new UsernamePasswordAuthenticationToken(
-                customUserDetails, null, customUserDetails.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-
-        log.info("SecurityContext 인증 객체 설정 완료: {}", userId);
-        filterChain.doFilter(request, response);
     }
 
     private String resolveToken(String bearerToken) {
