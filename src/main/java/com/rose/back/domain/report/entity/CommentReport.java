@@ -5,11 +5,13 @@ import java.time.LocalDateTime;
 import com.rose.back.domain.comment.entity.CommentEntity;
 import com.rose.back.domain.user.entity.UserEntity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -26,12 +28,15 @@ public class CommentReport {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reporter_id", nullable = false)
     private UserEntity reporter;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "target_comment_id", nullable = false)
     private CommentEntity targetComment;
 
     private String reason;
 
+    @Column(name = "reported_at", nullable = false)
     private LocalDateTime reportedAt = LocalDateTime.now();
 }

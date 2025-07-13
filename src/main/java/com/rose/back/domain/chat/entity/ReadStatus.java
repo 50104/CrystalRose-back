@@ -41,7 +41,7 @@ public class ReadStatus extends BaseTimeEntity {
   @JoinColumn(name = "message_no", nullable = false)
   private ChatMessage chatMessage;
 
-  @Column(nullable = false)
+  @Column(nullable = false, name = "is_read")
   private boolean isRead;
 
   public void updateIsRead(boolean isRead) {

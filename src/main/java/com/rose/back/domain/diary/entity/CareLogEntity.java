@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import com.rose.back.domain.user.entity.UserEntity;
 import com.rose.back.global.entity.BaseTimeEntity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -36,6 +37,7 @@ public class CareLogEntity extends BaseTimeEntity {
     @JoinColumn(name = "user_no", nullable = false)
     private UserEntity userNo;
 
+    @Column(name = "care_date", nullable = false)
     private LocalDate careDate;
 
     private String fertilizer;  // 영양제

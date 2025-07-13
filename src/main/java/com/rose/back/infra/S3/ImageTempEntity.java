@@ -29,6 +29,7 @@ public class ImageTempEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(length = 100, name = "file_url")
     private String fileUrl;
 
     @Enumerated(EnumType.STRING)
@@ -36,6 +37,7 @@ public class ImageTempEntity {
     private DomainType domainType;
 
     @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "uploaded_at")
     private Date uploadedAt;
 
     public enum DomainType { BOARD, ROSE, WIKI, DIARY }

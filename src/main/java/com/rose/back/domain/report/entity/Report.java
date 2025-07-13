@@ -46,6 +46,7 @@ public class Report {
     @Column(columnDefinition = "TEXT")
     private String reason;
 
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @PrePersist

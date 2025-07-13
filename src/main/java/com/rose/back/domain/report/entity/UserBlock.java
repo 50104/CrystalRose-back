@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import com.rose.back.domain.user.entity.UserEntity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -42,6 +43,7 @@ public class UserBlock {
     @JoinColumn(name = "blocked_id")
     private UserEntity blocked;
 
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @PrePersist

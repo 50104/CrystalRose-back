@@ -12,6 +12,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -35,12 +36,15 @@ public class DiaryEntity extends BaseTimeEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "rose_id", nullable = false)
     private RoseEntity roseEntity;
 
+    @Column(name = "image_url", nullable = false)
     private String imageUrl;
     private String note;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @Column(name = "recorded_at", nullable = false)
     private LocalDateTime recordedAt; // 기록날짜
 
     @Column(name = "stored_file_name")
