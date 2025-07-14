@@ -5,104 +5,108 @@
     <Property name="DEFAULT_PATTERN">[%d{yyyy-MM-dd HH:mm:ss.SSS}] %5p ${sys:PID} --- [%15.15t] %-40.40c{1.} : %m%n%xwEx</Property>
     <Property name="COLOR_PATTERN">[%clr{%d{yyyy-MM-dd HH:mm:ss.SSS}}{faint}] %clr{%5p} %clr{${sys:PID}}{magenta} %clr{---}{faint} %clr{[%15.15t]}{faint} %clr{%-40.40c{1.}}{cyan} %clr{:}{faint} %m%n%xwEx</Property>
   </Properties>
-  
+
   <Appenders>
     <!-- Console -->
     <Console name="Console" target="SYSTEM_OUT">
       <PatternLayout pattern="${COLOR_PATTERN}" />
     </Console>
-    
+
     <!-- Error -->
     <RollingFile name="ErrorFile" fileName="${LOG_PATH}/error.log"
-                filePattern="${LOG_PATH}/error-%d{yyyy-MM-dd}.%i.log.gz">
-      <PatternLayout pattern="${DEFAULT_PATTERN}" />
+                filePattern="${LOG_PATH}/error-%d{yyyy-MM-dd}.%i.log.gz"
+                append="false">
+      <PatternLayout pattern="${DEFAULT_PATTERN}" charset="UTF-8" />
       <Policies>
-        <TimeBasedTriggeringPolicy interval="1"/>
-        <SizeBasedTriggeringPolicy size="10MB"/>
+        <TimeBasedTriggeringPolicy interval="1" />
+        <SizeBasedTriggeringPolicy size="10MB" />
       </Policies>
       <DefaultRolloverStrategy max="30">
         <Delete basePath="${LOG_PATH}" maxDepth="1">
-          <IfLastModified age="30d"/>
-          <IfAccumulatedFileCount exceeds="30"/>
+          <IfLastModified age="30d" />
+          <IfAccumulatedFileCount exceeds="30" />
         </Delete>
       </DefaultRolloverStrategy>
       <Filters>
-        <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+        <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY" />
       </Filters>
     </RollingFile>
-    
+
     <!-- Access -->
     <RollingFile name="AccessFile" fileName="${LOG_PATH}/access.log"
-                filePattern="${LOG_PATH}/access-%d{yyyy-MM-dd}.%i.log.gz">
-      <PatternLayout pattern="${DEFAULT_PATTERN}" />
+                filePattern="${LOG_PATH}/access-%d{yyyy-MM-dd}.%i.log.gz"
+                append="false">
+      <PatternLayout pattern="${DEFAULT_PATTERN}" charset="UTF-8" />
       <Policies>
-        <TimeBasedTriggeringPolicy interval="1"/>
-        <SizeBasedTriggeringPolicy size="10MB"/>
+        <TimeBasedTriggeringPolicy interval="1" />
+        <SizeBasedTriggeringPolicy size="10MB" />
       </Policies>
       <DefaultRolloverStrategy max="30">
         <Delete basePath="${LOG_PATH}" maxDepth="1">
-          <IfLastModified age="30d"/>
-          <IfAccumulatedFileCount exceeds="30"/>
+          <IfLastModified age="30d" />
+          <IfAccumulatedFileCount exceeds="30" />
         </Delete>
       </DefaultRolloverStrategy>
     </RollingFile>
-    
+
     <!-- SQL -->
     <RollingFile name="SqlFile" fileName="${LOG_PATH}/sql.log"
-                filePattern="${LOG_PATH}/sql-%d{yyyy-MM-dd}.%i.log.gz">
-      <PatternLayout pattern="${DEFAULT_PATTERN}" />
+                filePattern="${LOG_PATH}/sql-%d{yyyy-MM-dd}.%i.log.gz"
+                append="false">
+      <PatternLayout pattern="${DEFAULT_PATTERN}" charset="UTF-8" />
       <Policies>
-        <TimeBasedTriggeringPolicy interval="1"/>
-        <SizeBasedTriggeringPolicy size="10MB"/>
+        <TimeBasedTriggeringPolicy interval="1" />
+        <SizeBasedTriggeringPolicy size="10MB" />
       </Policies>
       <DefaultRolloverStrategy max="30">
         <Delete basePath="${LOG_PATH}" maxDepth="1">
-          <IfLastModified age="30d"/>
-          <IfAccumulatedFileCount exceeds="30"/>
+          <IfLastModified age="30d" />
+          <IfAccumulatedFileCount exceeds="30" />
         </Delete>
       </DefaultRolloverStrategy>
     </RollingFile>
-    
+
     <!-- WebSocket -->
     <RollingFile name="WebSocketFile" fileName="${LOG_PATH}/websocket.log"
-                filePattern="${LOG_PATH}/websocket-%d{yyyy-MM-dd}.%i.log.gz">
-      <PatternLayout pattern="${DEFAULT_PATTERN}" />
+                filePattern="${LOG_PATH}/websocket-%d{yyyy-MM-dd}.%i.log.gz"
+                append="false">
+      <PatternLayout pattern="${DEFAULT_PATTERN}" charset="UTF-8" />
       <Policies>
-        <TimeBasedTriggeringPolicy interval="1"/>
-        <SizeBasedTriggeringPolicy size="10MB"/>
+        <TimeBasedTriggeringPolicy interval="1" />
+        <SizeBasedTriggeringPolicy size="10MB" />
       </Policies>
       <DefaultRolloverStrategy max="30">
         <Delete basePath="${LOG_PATH}" maxDepth="1">
-          <IfLastModified age="30d"/>
-          <IfAccumulatedFileCount exceeds="30"/>
+          <IfLastModified age="30d" />
+          <IfAccumulatedFileCount exceeds="30" />
         </Delete>
       </DefaultRolloverStrategy>
     </RollingFile>
   </Appenders>
-  
+
   <Loggers>
     <Root level="INFO">
-      <AppenderRef ref="Console"/>
-      <AppenderRef ref="ErrorFile"/>
+      <AppenderRef ref="Console" />
+      <AppenderRef ref="ErrorFile" />
     </Root>
-    
+
     <Logger name="com.rose.back" level="INFO" additivity="false">
-      <AppenderRef ref="Console"/>
-      <AppenderRef ref="AccessFile"/>
+      <AppenderRef ref="Console" />
+      <AppenderRef ref="AccessFile" />
+      <AppenderRef ref="ErrorFile" />
     </Logger>
-    
+
     <Logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
-      <AppenderRef ref="SqlFile"/>
+      <AppenderRef ref="SqlFile" />
     </Logger>
-    
+
     <Logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE" additivity="false">
-      <AppenderRef ref="Console"/>
-      <AppenderRef ref="SqlFile"/>
+      <AppenderRef ref="SqlFile" />
     </Logger>
-    
+
     <Logger name="com.rose.back.global.websocket" level="INFO" additivity="false">
-      <AppenderRef ref="Console"/>
-      <AppenderRef ref="WebSocketFile"/>
+      <AppenderRef ref="Console" />
+      <AppenderRef ref="WebSocketFile" />
     </Logger>
   </Loggers>
 </Configuration>
