@@ -92,7 +92,6 @@
     </Logger>
     
     <Logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
-      <AppenderRef ref="Console"/>
       <AppenderRef ref="SqlFile"/>
     </Logger>
     
