@@ -1,6 +1,5 @@
 package com.rose.back.config.websocket;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -14,9 +13,6 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
   
   private final StompHandler stompHandler;
 
-  @Value("${app.oauth2.redirect.frontend-url:http://localhost:3000}")
-  private String frontendUrl;
-
   public StompWebSocketConfig(StompHandler stompHandler) {
     this.stompHandler = stompHandler;
   }
@@ -24,7 +20,7 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
     registry.addEndpoint("/connect")
-      .setAllowedOrigins(frontendUrl, "http://localhost:3000", "http://localhost:4000")
+      .setAllowedOrigins("https://dodorose.com", "https://api.dodorose.com", "http://localhost:3000", "http://localhost:4000")
       // ws:// 가 아닌 http:// 엔드포인트를 사용할 수 있게 해주는 sockjs 라이브러리를 통안 요청을 허용하는 설정
       .withSockJS();
 	}

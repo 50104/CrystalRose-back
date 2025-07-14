@@ -51,7 +51,7 @@ public class ChatController implements ChatControllerDocs {
 
     // 이전 메세지 조회
     @GetMapping("/history/{roomId}")
-    public ResponseEntity<List<ChatMessageReqDto>> getChatHistory(@PathVariable("roomId") Long roomId, @RequestParam(required = false) LocalDateTime cursor) {
+    public ResponseEntity<List<ChatMessageReqDto>> getChatHistory(@PathVariable("roomId") Long roomId, @RequestParam(name = "cursor", required = false) LocalDateTime cursor) {
         log.info("[GET][history/{}] 채팅 히스토리 조회 요청", roomId);
         return ResponseEntity.ok(chatService.getChatHistory(roomId, cursor));
     }
@@ -89,7 +89,7 @@ public class ChatController implements ChatControllerDocs {
 
     // 채팅방 이름
     @GetMapping("/room/{roomId}/info")
-    public ResponseEntity<ChatRoomInfoDto> getChatRoomInfo(@PathVariable Long roomId) {
+    public ResponseEntity<ChatRoomInfoDto> getChatRoomInfo(@PathVariable("roomId") Long roomId) {
         log.info("[GET][room/{}/info] 채팅방 정보 조회 요청", roomId);
         return ResponseEntity.ok(chatService.getChatRoomInfo(roomId));
     }
