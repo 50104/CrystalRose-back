@@ -91,7 +91,7 @@ public class AdminController implements AdminControllerDocs {
 
     @GetMapping("/wiki/{requestId}/original")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<WikiModificationComparisonDto> getModificationComparison(@PathVariable Long requestId) {
+    public ResponseEntity<WikiModificationComparisonDto> getModificationComparison(@PathVariable("requestId") Long requestId) {
         log.info("도감 수정 요청 변경 사항 비교 조회 - 요청 ID: {}", requestId);
         
         try {

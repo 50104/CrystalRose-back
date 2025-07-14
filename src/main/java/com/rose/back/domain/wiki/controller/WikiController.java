@@ -50,7 +50,7 @@ public class WikiController {
     }
 
     @PutMapping("/modify/{id}")
-    public ResponseEntity<MessageResponse> submitModificationRequest(@PathVariable Long id, @RequestBody @Valid WikiRequest dto) {
+    public ResponseEntity<MessageResponse> submitModificationRequest(@PathVariable("id") Long id, @RequestBody @Valid WikiRequest dto) {
         log.info("[PUT][/api/v1/wiki/modify/{}] - 도감 수정 요청 시작", id);
         log.info("요청 데이터 - name: {}, category: {}, description: {}", dto.getName(), dto.getCategory(), dto.getDescription());
         
@@ -84,7 +84,7 @@ public class WikiController {
     }
 
     @GetMapping("/detail/{id}")
-    public ResponseEntity<WikiResponse> getWikiDetail(@PathVariable Long id) {
+    public ResponseEntity<WikiResponse> getWikiDetail(@PathVariable("id") Long id) {
         log.info("[GET][/api/v1/wiki/detail/{}] - 도감 상세 정보 조회 요청", id);
         WikiResponse wikiDetail = wikiService.getApprovedWikiDetail(id);
         return ResponseEntity.ok(wikiDetail);

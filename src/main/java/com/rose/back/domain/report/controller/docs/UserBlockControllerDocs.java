@@ -115,6 +115,6 @@ public interface UserBlockControllerDocs {
     })
     ResponseEntity<MessageResponse> unblock(
         @AuthenticationPrincipal CustomUserDetails userDetails,
-        @PathVariable Long blockedUserId
+        @PathVariable("blockedUserId") Long blockedUserId
     );
 }

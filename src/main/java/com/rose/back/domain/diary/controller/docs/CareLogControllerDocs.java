@@ -82,5 +82,5 @@ public interface CareLogControllerDocs {
                     }
                 """)))
     })
-    ResponseEntity<Void> update(@PathVariable Long id, @RequestBody CareLogRequest request, @AuthenticationPrincipal CustomUserDetails userDetails);
+    ResponseEntity<Void> update(@PathVariable("id") Long id, @RequestBody CareLogRequest request, @AuthenticationPrincipal CustomUserDetails userDetails);
 }

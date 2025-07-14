@@ -98,13 +98,13 @@ public interface CalendarControllerDocs {
             example = "2025-07-01",
             required = true
         )
-        @RequestParam String startDate,
-        
+        @RequestParam("startDate") String startDate,
+
         @Parameter(
             description = "조회 종료 날짜 (YYYY-MM-DD 형식)", 
             example = "2025-07-31",
             required = true
         )
-        @RequestParam String endDate
+        @RequestParam("endDate") String endDate
     );
 }

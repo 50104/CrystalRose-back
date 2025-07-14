@@ -96,5 +96,5 @@ public interface DiaryControllerDocs {
                     }
                 """)))
     })
-    ResponseEntity<List<DiaryResponse>> getRoseTimeline(@PathVariable Long roseId);
+    ResponseEntity<List<DiaryResponse>> getRoseTimeline(@PathVariable("roseId") Long roseId);
 }

@@ -33,7 +33,7 @@ public class ReportController implements ReportControllerDocs {
     }
 
     @GetMapping("/check")
-    public ResponseEntity<Map<String, Boolean>> checkReport(@RequestParam Long postId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<Map<String, Boolean>> checkReport(@RequestParam("postId") Long postId, @AuthenticationPrincipal CustomUserDetails userDetails) {
         log.info("[GET][/api/reports/check] - 신고 여부 확인 요청: postId={}, userId={}", postId, userDetails.getUserNo());
         boolean alreadyReported = reportService.isAlreadyReported(userDetails.getUserNo(), postId);
         return ResponseEntity.ok(Map.of("alreadyReported", alreadyReported));

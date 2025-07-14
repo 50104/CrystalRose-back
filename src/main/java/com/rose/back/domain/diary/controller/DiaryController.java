@@ -59,7 +59,7 @@ public class DiaryController implements DiaryControllerDocs {
 
     // 장미별 성장기록
     @GetMapping("/{roseId}/timeline")
-    public ResponseEntity<List<DiaryResponse>> getRoseTimeline(@PathVariable Long roseId) {
+    public ResponseEntity<List<DiaryResponse>> getRoseTimeline(@PathVariable("roseId") Long roseId) {
         log.info("[GET][/api/diaries/{}/timeline] - 장미별 성장기록 조회 요청", roseId);
         List<DiaryResponse> diaryList = diaryService.getRoseTimeline(roseId);
         return ResponseEntity.ok(diaryList);

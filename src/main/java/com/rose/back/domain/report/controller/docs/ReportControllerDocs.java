@@ -83,7 +83,7 @@ public interface ReportControllerDocs {
         )
     })
     ResponseEntity<Map<String, Boolean>> checkReport(
-            @RequestParam Long postId,
+            @RequestParam("postId") Long postId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     );
 }

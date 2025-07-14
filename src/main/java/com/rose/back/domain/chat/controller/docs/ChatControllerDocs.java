@@ -123,7 +123,7 @@ public interface ChatControllerDocs {
             )
         )
     })
-    ResponseEntity<List<ChatMessageReqDto>> getChatHistory(@PathVariable("roomId") Long roomId, @RequestParam(required = false) LocalDateTime cursor);
+    ResponseEntity<List<ChatMessageReqDto>> getChatHistory(@PathVariable("roomId") Long roomId, @RequestParam(name = "cursor", required = false) LocalDateTime cursor);
 
     @Operation(summary = "채팅 메시지 읽음 처리", description = "특정 채팅방의 메시지를 읽음 처리합니다.")
     @CommonErrorResponses
@@ -248,5 +248,5 @@ public interface ChatControllerDocs {
             )
         )
     })
-    ResponseEntity<ChatRoomInfoDto> getChatRoomInfo(@PathVariable Long roomId);
+    ResponseEntity<ChatRoomInfoDto> getChatRoomInfo(@PathVariable("roomId") Long roomId);
 }

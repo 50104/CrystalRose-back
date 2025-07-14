@@ -39,7 +39,7 @@ public class UserBlockController implements UserBlockControllerDocs {
     }
 
     @DeleteMapping("/{blockedUserId}")
-    public ResponseEntity<MessageResponse> unblock(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long blockedUserId) {
+    public ResponseEntity<MessageResponse> unblock(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable("blockedUserId") Long blockedUserId) {
 
         log.info("[DELETE][/api/v1/blocks/{}] - 사용자 차단 해제 요청", blockedUserId);
         userBlockService.unblockUser(userDetails.getUserNo(), blockedUserId);

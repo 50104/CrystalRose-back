@@ -61,6 +61,6 @@ public interface CommentReportControllerDocs {
     })
     ResponseEntity<Map<String, Boolean>> checkReported(
         @AuthenticationPrincipal CustomUserDetails userDetails,
-        @RequestParam Long commentId
+        @RequestParam("commentId") Long commentId
     );
 }

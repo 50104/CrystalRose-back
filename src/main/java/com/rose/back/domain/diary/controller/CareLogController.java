@@ -43,7 +43,7 @@ public class CareLogController implements CareLogControllerDocs {
     }
 
     @PutMapping("/carelogs/{id}")
-    public ResponseEntity<Void> update(@PathVariable Long id, @RequestBody CareLogRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<Void> update(@PathVariable("id") Long id, @RequestBody CareLogRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
         log.info("[PUT][/api/diaries/carelogs/{}] - 케어로그 수정 요청 (userNo: {})", id, userDetails.getUserNo());
         careLogService.update(id, request, userDetails.getUserNo());
         return ResponseEntity.ok().build();
