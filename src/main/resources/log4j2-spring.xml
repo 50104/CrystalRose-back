@@ -10,6 +10,9 @@
     <!-- Console -->
     <Console name="Console" target="SYSTEM_OUT">
       <PatternLayout pattern="${COLOR_PATTERN}" />
+      <Filters>
+        <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY" />
+      </Filters>
     </Console>
 
     <!-- Error -->
@@ -47,6 +50,9 @@
           <IfAccumulatedFileCount exceeds="30" />
         </Delete>
       </DefaultRolloverStrategy>
+      <Filters>
+        <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY" />
+      </Filters>
     </RollingFile>
 
     <!-- SQL -->
@@ -82,20 +88,60 @@
         </Delete>
       </DefaultRolloverStrategy>
     </RollingFile>
+
+    <!-- Debug -->
+    <RollingFile name="DebugFile" fileName="${LOG_PATH}/debug.log"
+                filePattern="${LOG_PATH}/debug-%d{yyyy-MM-dd}.%i.log.gz"
+                append="false">
+      <PatternLayout pattern="${DEFAULT_PATTERN}" charset="UTF-8" />
+      <Policies>
+        <TimeBasedTriggeringPolicy interval="1" />
+        <SizeBasedTriggeringPolicy size="10MB" />
+      </Policies>
+      <DefaultRolloverStrategy max="30">
+        <Delete basePath="${LOG_PATH}" maxDepth="1">
+          <IfLastModified age="30d" />
+          <IfAccumulatedFileCount exceeds="30" />
+        </Delete>
+      </DefaultRolloverStrategy>
+      <Filters>
+        <ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY" />
+      </Filters>
+    </RollingFile>
   </Appenders>
 
   <Loggers>
+    <!-- Root -->
     <Root level="INFO">
       <AppenderRef ref="Console" />
       <AppenderRef ref="ErrorFile" />
     </Root>
 
-    <Logger name="com.rose.back" level="INFO" additivity="false">
-      <AppenderRef ref="Console" />
-      <AppenderRef ref="AccessFile" />
-      <AppenderRef ref="ErrorFile" />
+    <!-- Main App -->
+    <Logger name="com.rose.back" level="DEBUG" additivity="false">
+      <AppenderRef ref="Console">
+        <Filter type="ThresholdFilter" level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+      </AppenderRef>
+
+      <AppenderRef ref="AccessFile">
+        <Filter type="ThresholdFilter" level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+      </AppenderRef>
+      
+      <AppenderRef ref="ErrorFile">
+        <Filter type="ThresholdFilter" level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+      </AppenderRef>
+
+      <AppenderRef ref="DebugFile">
+        <Filter type="ThresholdFilter" level="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
+      </AppenderRef>
     </Logger>
 
+    <!-- handler -->
+    <Logger name="com.rose.back.global.handler" level="DEBUG" additivity="true">
+      <AppenderRef ref="DebugFile"/>
+    </Logger>
+
+    <!-- Hibernate SQL -->
     <Logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
       <AppenderRef ref="SqlFile" />
     </Logger>
@@ -104,6 +150,7 @@
       <AppenderRef ref="SqlFile" />
     </Logger>
 
+    <!-- WebSocket -->
     <Logger name="com.rose.back.global.websocket" level="INFO" additivity="false">
       <AppenderRef ref="Console" />
       <AppenderRef ref="WebSocketFile" />
