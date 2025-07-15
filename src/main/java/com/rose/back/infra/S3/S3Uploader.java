@@ -27,7 +27,7 @@ public class S3Uploader {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    @Value("${cloud.aws.cloudfront.domain}")
+    @Value("https://dodorose.com")
     private String cloudFrontDomain;
 
     public String uploadFile(String folderName, MultipartFile file) throws IOException {
