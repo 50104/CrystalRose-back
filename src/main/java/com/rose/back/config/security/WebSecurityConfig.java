@@ -156,13 +156,13 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    protected SecurityFilterChain configure(HttpSecurity httpSecurity) throws Exception {
+    public SecurityFilterChain configure(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
             .cors(cors -> cors
                 .configurationSource(corsConfigurationSource())
             )
-            .sessionManagement(sessionManagement -> 
-                sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 생성 정책 설정 (STATELESS: 세션을 사용하지 않음)
+            .sessionManagement(session -> 
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 생성 정책 설정 (STATELESS: 세션을 사용하지 않음)
             )
             .oauth2Login(oauth2 -> oauth2
                 .authorizationEndpoint(endpoint -> endpoint.baseUri("/api/v1/auth/oauth2")) // OAuth2 인증 엔드포인트 설정
@@ -172,18 +172,17 @@ public class WebSecurityConfig {
                 .failureHandler(oAuth2FailureHandler) // OAuth2 인증 실패 핸들러 설정
             )
             .authorizeHttpRequests(request -> request
-                // sockJS 사용 위한 /connect/**
-                .requestMatchers("/", "/api/v1/auth/**", "/connect/**", "/reissue", "/oauth2/**").permitAll()
+                // sockJS 사용 위한 /api/v1/connect/**
+                .requestMatchers("/", "/error", "/api/v1/auth/**", "/api/v1/connect/**", "/reissue", "/oauth2/**").permitAll()
                 .requestMatchers("/api/v1/wiki/list").permitAll() // 위키 목록 조회 API 허용
                 .requestMatchers("/api/v1/wiki/detail/**").permitAll() // 위키 상세 조회 API 허용 (숫자 ID만)
                 .requestMatchers("/static/**", "/images/**", "/upload/**").permitAll() // 정적 리소스 허용
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**", "/favicon.ico").permitAll() // Swagger UI 허용
+                .requestMatchers("/actuator/health").permitAll() // API 헬스 체크
+                .requestMatchers("/doc/**", "/web/**", "/remote/login").permitAll()
                 .requestMatchers("/api/v1/user/**").hasRole("USER") // 특정 URL 패턴에 대한 접근 권한 설정 (USER 역할 필요)
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN") // 특정 URL 패턴에 대한 접근 권한 설정 (ADMIN 역할 필요)
-                .requestMatchers("/actuator/health").permitAll() // API 헬스 체크
                 .requestMatchers("/api/v1/auth/withdraw/**").authenticated()
-                .requestMatchers("/doc/**", "/web/**", "/remote/login").permitAll()
-                .requestMatchers("/error").permitAll() // 에러 페이지 허용
                 .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
             )
             .exceptionHandling(exceptionHandling -> exceptionHandling
@@ -192,11 +191,9 @@ public class WebSecurityConfig {
             .addFilterAt(new LoginFilter(authenticationManager(), jwtProvider, refreshTokenService, userRepository, objectMapper), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(new JWTFilter(jwtProvider, accessTokenBlacklistService, objectMapper), LoginFilter.class) // JWT 인증 필터 추가
             .addFilterBefore(new CustomLogoutFilter(jwtProvider, refreshTokenService, accessTokenBlacklistService), LogoutFilter.class)
-            .csrf((auth) -> auth.disable())
-            .formLogin((auth) -> auth.disable())
-            .httpBasic((auth) -> auth.disable());
-            ;
-
+            .csrf(csrf -> csrf.disable())
+            .formLogin(form -> form.disable())
+            .httpBasic(basic -> basic.disable());
         return httpSecurity.build();
     }
 

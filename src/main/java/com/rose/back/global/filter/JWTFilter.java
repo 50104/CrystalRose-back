@@ -55,7 +55,7 @@ public class JWTFilter extends OncePerRequestFilter {
         "/",
         "/reissue",
         "/oauth2/**",
-        "/connect/**",
+        "/api/v1/connect/**",
         "/api/v1/auth/**",
         "/actuator/health",
         "/api/v1/wiki/list",

@@ -44,15 +44,22 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex, HttpServletRequest req) {
+        String uri = req.getRequestURI();
+
+        if (uri.contains("/xhr") || uri.contains("/info") || uri.contains("/websocket")) {
+            log.debug("Skip exception handling for SockJS fallback: {}", uri);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }
+
         ErrorResponse err = ErrorResponse.builder()
             .timestamp(now())
             .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
             .code("INTERNAL_ERROR")
             .message("서버에 오류가 발생했습니다. 잠시 후 다시 시도해주세요.")
-            .path(req.getRequestURI())
+            .path(uri)
             .build();
 
-        log.error("Unhandled error @ {}: {}", req.getRequestURI(), ex.getMessage(), ex);
+        log.error("Unhandled error @ {}: {}", uri, ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(err);
     }
 
