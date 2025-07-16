@@ -6,7 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 public class ImageValidator {
 
-    private static final List<String> ALLOWED_EXTENSIONS = List.of(".jpg", ".jpeg", ".png", ".gif");
+    private static final List<String> ALLOWED_EXTENSIONS = List.of(".webp", ".jpeg", ".jpg", ".png", ".gif");
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
     public static void validate(MultipartFile file) {
