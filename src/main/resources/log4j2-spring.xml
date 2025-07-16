@@ -70,6 +70,9 @@
           <IfAccumulatedFileCount exceeds="30" />
         </Delete>
       </DefaultRolloverStrategy>
+      <Filters>
+        <ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY" />
+      </Filters>
     </RollingFile>
 
     <!-- WebSocket -->
@@ -87,6 +90,9 @@
           <IfAccumulatedFileCount exceeds="30" />
         </Delete>
       </DefaultRolloverStrategy>
+      <Filters>
+        <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY" />
+      </Filters>
     </RollingFile>
 
     <!-- Debug -->
@@ -119,21 +125,10 @@
 
     <!-- Main App -->
     <Logger name="com.rose.back" level="DEBUG" additivity="false">
-      <AppenderRef ref="Console">
-        <Filter type="ThresholdFilter" level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
-      </AppenderRef>
-
-      <AppenderRef ref="AccessFile">
-        <Filter type="ThresholdFilter" level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
-      </AppenderRef>
-      
-      <AppenderRef ref="ErrorFile">
-        <Filter type="ThresholdFilter" level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
-      </AppenderRef>
-
-      <AppenderRef ref="DebugFile">
-        <Filter type="ThresholdFilter" level="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
-      </AppenderRef>
+      <AppenderRef ref="Console" />
+      <AppenderRef ref="AccessFile" />
+      <AppenderRef ref="ErrorFile" />
+      <AppenderRef ref="DebugFile" />
     </Logger>
 
     <!-- handler -->
