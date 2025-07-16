@@ -1,6 +1,6 @@
 package com.rose.back.domain.diary.service;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -28,7 +28,7 @@ public class DiaryService {
     private final RoseService roseService;
 
     @Transactional
-    public void saveDiaryWithImages(Long userId, Long roseId, String note, String imageUrl, LocalDateTime recordedAt) {
+    public void saveDiaryWithImages(Long userId, Long roseId, String note, String imageUrl, LocalDate recordedAt) {
         log.info("Saving diary: roseId={}, note={}, imageUrl={}, recordedAt={}", roseId, note, imageUrl, recordedAt);
         RoseEntity rose = roseService.getUserRose(userId, roseId);
 
@@ -75,9 +75,9 @@ public class DiaryService {
     
     // 날짜 범위로 다이어리 조회
     public List<DiaryResponse> getUserTimelineByDateRange(Long userId, String startDate, String endDate) {
-        LocalDateTime start = LocalDateTime.parse(startDate + "T00:00:00");
-        LocalDateTime end = LocalDateTime.parse(endDate + "T23:59:59");
-        
+        LocalDate start = LocalDate.parse(startDate);
+        LocalDate end = LocalDate.parse(endDate);
+
         return diaryRepository.findAllByRoseEntity_UserIdAndRecordedAtBetweenOrderByRecordedAtDesc(userId, start, end)
             .stream()
             .map(d -> new DiaryResponse(d.getId(), d.getNote(), d.getImageUrl(), d.getRecordedAt()))

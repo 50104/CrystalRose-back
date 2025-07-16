@@ -1,5 +1,6 @@
 package com.rose.back.domain.rose.service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -68,9 +69,9 @@ public class RoseService {
     private void createInitialDiary(RoseEntity rose, RoseRequest request) {
         log.info("첫 번째 성장기록 생성 시작: roseId={}", rose.getId());
         
-        java.time.LocalDateTime recordedAt = request.acquiredDate() != null  // 등록 시점 시간 기록 (or 입양일)
-            ? request.acquiredDate().atStartOfDay() 
-            : java.time.LocalDateTime.now();
+        LocalDate recordedAt = request.acquiredDate() != null  // 등록 시점 시간 기록 (or 입양일)
+            ? request.acquiredDate()
+            : LocalDate.now();
 
         DiaryEntity initialDiary = DiaryEntity.builder()
             .roseEntity(rose)

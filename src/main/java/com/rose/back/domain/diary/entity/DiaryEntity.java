@@ -1,6 +1,6 @@
 package com.rose.back.domain.diary.entity;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.rose.back.domain.rose.entity.RoseEntity;
@@ -43,9 +43,9 @@ public class DiaryEntity extends BaseTimeEntity {
     private String imageUrl;
     private String note;
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     @Column(name = "recorded_at", nullable = false)
-    private LocalDateTime recordedAt; // 기록날짜
+    private LocalDate recordedAt; // 기록날짜
 
     @Column(name = "stored_file_name")
     private String storedFileName;
@@ -53,7 +53,7 @@ public class DiaryEntity extends BaseTimeEntity {
     @PrePersist
     public void prePersist() {
         if (this.recordedAt == null) {
-            this.recordedAt = LocalDateTime.now();
+            this.recordedAt = LocalDate.now();
         }
     }
 }
