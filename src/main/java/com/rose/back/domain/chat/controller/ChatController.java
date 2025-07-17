@@ -6,7 +6,7 @@ import com.rose.back.domain.chat.dto.ChatMessageReqDto;
 import com.rose.back.domain.chat.dto.ChatRoomInfoDto;
 import com.rose.back.domain.chat.dto.ChatRoomListResDto;
 import com.rose.back.domain.chat.dto.MyChatListResDto;
-import com.rose.back.domain.chat.dto.RoomIdResponse;
+import com.rose.back.domain.chat.dto.RoomInfoResponse;
 import com.rose.back.domain.chat.service.ChatService;
 
 import lombok.RequiredArgsConstructor;
@@ -81,10 +81,10 @@ public class ChatController implements ChatControllerDocs {
 
     // 개인 채팅방 생성 or 기존 반환
     @PostMapping("/room/private/create")
-    public ResponseEntity<RoomIdResponse> getOrCreatePrivateRoom(@RequestParam("otherMemberId") Long otherMemberId) {
+    public ResponseEntity<RoomInfoResponse> getOrCreatePrivateRoom(@RequestParam("otherMemberId") Long otherMemberId) {
         log.info("[POST][room/private/create] 개인 채팅방 생성 또는 조회 요청 - 대상 ID: {}", otherMemberId);
-        Long roomId = chatService.getOrCreatePrivateRoom(otherMemberId);
-        return ResponseEntity.ok(new RoomIdResponse(roomId));
+        RoomInfoResponse response = chatService.getOrCreatePrivateRoom(otherMemberId);
+        return ResponseEntity.ok(response);
     }
 
     // 채팅방 이름

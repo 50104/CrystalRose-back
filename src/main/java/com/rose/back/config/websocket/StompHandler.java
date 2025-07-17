@@ -94,7 +94,7 @@ public class StompHandler implements ChannelInterceptor {
 
             try {
                 Long roomId = Long.parseLong(roomIdStr);
-                if (!chatService.isRoomPaticipant(userId, roomId)) {
+                if (!chatService.isRoomParticipant(userId, roomId)) {
                     log.warn("구독 권한 없음: userId={}, roomId={}", userId, roomId);
                     throw new AuthenticationServiceException("해당 방에 참여 권한이 없습니다.");
                 }

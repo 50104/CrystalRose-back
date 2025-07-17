@@ -11,7 +11,7 @@ import com.rose.back.domain.chat.dto.ChatMessageReqDto;
 import com.rose.back.domain.chat.dto.ChatRoomInfoDto;
 import com.rose.back.domain.chat.dto.ChatRoomListResDto;
 import com.rose.back.domain.chat.dto.MyChatListResDto;
-import com.rose.back.domain.chat.dto.RoomIdResponse;
+import com.rose.back.domain.chat.dto.RoomInfoResponse;
 import com.rose.back.global.exception.CommonErrorResponses;
 import com.rose.back.global.handler.ErrorResponse;
 
@@ -223,7 +223,7 @@ public interface ChatControllerDocs {
             )
         )
     })
-    ResponseEntity<RoomIdResponse> getOrCreatePrivateRoom(@RequestParam("otherMemberId") Long otherMemberId);
+    ResponseEntity<RoomInfoResponse> getOrCreatePrivateRoom(@RequestParam("otherMemberId") Long otherMemberId);
 
     @Operation(summary = "채팅방 정보 조회", description = "특정 채팅방의 정보를 조회합니다.")
     @CommonErrorResponses
