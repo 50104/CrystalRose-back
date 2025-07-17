@@ -10,7 +10,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.rose.back.common.util.ImageValidator;
 import com.rose.back.domain.user.dto.UserInfoDto;
@@ -96,21 +95,22 @@ public class UserServiceImpl implements UserService {
         UserEntity user = userRepository.findByUserId(dto.getUserName());
         String beforeUrl = user.getUserProfileImg();
 
-        try { // 이미지 새로 업로드
-            if (dto.getUserProfileFile() != null && !dto.getUserProfileFile().isEmpty() && !Boolean.parseBoolean(dto.getIsDelete())) {
-                ImageValidator.validate(dto.getUserProfileFile());
-                String uploadedUrl = s3Uploader.uploadProfile(dto.getUserProfileFile(), dto.getUserName());
-                user.setUserProfileImg(uploadedUrl);
-
+        try {
+            boolean isDelete = Boolean.parseBoolean(dto.getIsDelete());
+            // 프로필 이미지 삭제 요청
+            if (isDelete) {
                 if (beforeUrl != null && !beforeUrl.isEmpty()) {
                     s3Uploader.deleteFile(beforeUrl);
                 }
-            }
-            if (Boolean.parseBoolean(dto.getIsDelete())) { // 삭제 요청 처리
-                if (beforeUrl != null) {
+                user.setUserProfileImg(null);
+            } else if (dto.getUserProfileFile() != null && !dto.getUserProfileFile().isEmpty()) {
+                // 새 이미지 업로드
+                ImageValidator.validate(dto.getUserProfileFile());
+                String uploadedUrl = s3Uploader.uploadProfile(dto.getUserProfileFile(), dto.getUserName());
+                user.setUserProfileImg(uploadedUrl);
+                if (beforeUrl != null && !beforeUrl.isEmpty()) {
                     s3Uploader.deleteFile(beforeUrl);
                 }
-                user.setUserProfileImg(null);
             }
             user.setUserNick(dto.getUserNick());
             userRepository.save(user);
