@@ -46,4 +46,5 @@ public class UserInfoDto {
     @JsonIgnore // password는 보안상 노출되면 안되므로 json으로 변환하지 않음
     private MultipartFile userProfileFile;
     private String isDelete;
+    private String certificationNumber;
 }
