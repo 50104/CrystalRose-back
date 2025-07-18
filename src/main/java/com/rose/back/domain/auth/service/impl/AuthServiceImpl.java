@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import com.rose.back.common.constants.ResponseCode;
 import com.rose.back.common.util.CertificationNumber;
 import com.rose.back.domain.auth.jwt.JwtTokenProvider;
 import com.rose.back.domain.auth.repository.AuthRepository;
@@ -180,11 +181,12 @@ public class AuthServiceImpl implements AuthService {
         try {
             UserEntity user = userRepository.findByUserEmail(userEmail);
             if (user != null) {
-                String userIdPart = user.getUserId().substring(0, 3) + "***";
-                emailService.sendCertificationMail(userEmail, "회원님의 아이디는 " + userIdPart + "입니다.");
+                String userIdPart = user.getUserId();
+
+                emailService.userIdFound(userEmail, userIdPart);
                 return ResponseEntity.ok(new CommonResponse());
             } else {
-                return ResponseEntity.badRequest().body(new CommonResponse("해당 이메일로 등록된 아이디가 없습니다.", userEmail));
+                return ResponseEntity.badRequest().body(new CommonResponse(ResponseCode.VALIDATION_FAIL.getCode(), "해당 이메일로 등록된 아이디가 없습니다."));
             }
         } catch (Exception e) {
             return CommonResponse.databaseError();
@@ -202,10 +204,10 @@ public class AuthServiceImpl implements AuthService {
                 user.setUserPwd(hashedUserPwd);
                 userRepository.save(user);
 
-                emailService.sendCertificationMail(userEmail, "회원님의 임시 비밀번호는 " + randomUserPwd + "입니다.");
+                emailService.resetPassword(userEmail, randomUserPwd);
                 return ResponseEntity.ok(new CommonResponse());
             } else {
-                return ResponseEntity.badRequest().body(new CommonResponse("해당 이메일과 아이디로 등록된 사용자가 없습니다.", userEmail));
+                return ResponseEntity.badRequest().body(new CommonResponse(ResponseCode.VALIDATION_FAIL.getCode(), "해당 이메일과 아이디로 등록된 사용자가 없습니다."));
             }
         } catch (Exception e) {
             return CommonResponse.databaseError();

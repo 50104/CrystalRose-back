@@ -3,6 +3,8 @@ package com.rose.back.domain.auth.controller;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rose.back.domain.auth.controller.docs.AuthControllerDocs;
+import com.rose.back.domain.auth.dto.FindUserIdRequest;
+import com.rose.back.domain.auth.dto.ResetUserPwdRequest;
 import com.rose.back.domain.auth.service.AuthService;
 import com.rose.back.domain.user.dto.UserInfoDto;
 import com.rose.back.domain.user.dto.request.EmailVerifyRequest;
@@ -77,13 +79,13 @@ public class AuthController implements AuthControllerDocs {
     }
 
     @PostMapping("/findUserId")
-    public ResponseEntity<?> findUserId(@RequestBody @Valid EmailSendRequest request) {
+    public ResponseEntity<?> findUserId(@RequestBody @Valid FindUserIdRequest request) {
         log.info("[POST][/api/v1/auth/findUserId] - 아이디 찾기 요청");
         return authService.findUserId(request.getUserEmail());
     }
 
     @PostMapping("/findUserPwd")
-    public ResponseEntity<?> findUserPwd(@RequestBody @Valid EmailSendRequest request) {
+    public ResponseEntity<?> findUserPwd(@RequestBody @Valid ResetUserPwdRequest request) {
         log.info("[POST][/api/v1/auth/findUserPwd] - 비밀번호 초기화 요청");
         return authService.resetUserPwd(request.getUserEmail(), request.getUserId());
     }

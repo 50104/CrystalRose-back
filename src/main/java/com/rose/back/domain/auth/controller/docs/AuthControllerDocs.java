@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import com.rose.back.domain.auth.dto.FindUserIdRequest;
+import com.rose.back.domain.auth.dto.ResetUserPwdRequest;
 import com.rose.back.domain.user.dto.UserInfoDto;
 import com.rose.back.domain.user.dto.request.EmailVerifyRequest;
 import com.rose.back.domain.user.dto.request.EmailSendRequest;
@@ -182,7 +184,7 @@ public interface AuthControllerDocs {
             )
         )
     })
-    ResponseEntity<?> findUserId(@RequestBody EmailSendRequest request);
+    ResponseEntity<?> findUserId(@RequestBody FindUserIdRequest request);
 
     @Operation(summary = "비밀번호 초기화", description = "이메일과 아이디로 비밀번호를 초기화합니다.")
     @CommonErrorResponses
@@ -207,7 +209,7 @@ public interface AuthControllerDocs {
             )
         )
     })
-    ResponseEntity<?> findUserPwd(@RequestBody EmailSendRequest request);
+    ResponseEntity<?> findUserPwd(@RequestBody ResetUserPwdRequest request);
 
     @Operation(summary = "회원 탈퇴", description = "회원 탈퇴(회원 정보 삭제 및 토큰 무효화)를 수행합니다.")
     @JwtReissueErrorResponses
