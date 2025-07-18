@@ -101,9 +101,9 @@ public class AuthController implements AuthControllerDocs {
         log.info("[PUT][/api/v1/auth/withdraw/cancel] - 탈퇴 취소 요청");
         String accessToken = resolveAccessToken(request);
         if (accessToken == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Access Token이 유효하지 않습니다.");
         }
-        return authService.cancelWithdraw(accessToken, response);
+        return authService.cancelWithdraw(accessToken);
     }
 
     private String resolveAccessToken(HttpServletRequest request) {

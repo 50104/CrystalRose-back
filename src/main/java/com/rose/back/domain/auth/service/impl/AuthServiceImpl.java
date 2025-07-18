@@ -314,21 +314,24 @@ public class AuthServiceImpl implements AuthService {
     }
 
     // 회원 탈퇴 예약 철회
-    public ResponseEntity<?> cancelWithdraw(String accessToken, HttpServletResponse response) {
+    @Transactional
+    public ResponseEntity<?> cancelWithdraw(String accessToken) {
         String userId = jwtProvider.getUserId(accessToken);
         UserEntity user = authRepository.findByUserId(userId);
 
-        if (user.getReservedDeleteAt() == null) {
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("사용자를 찾을 수 없습니다.");
+        }
+        if (user.getReservedDeleteAt() == null || user.getUserStatus() != UserStatus.WITHDRAWAL_PENDING) {
             return ResponseEntity.badRequest().body("탈퇴 요청 상태가 아닙니다.");
         }
 
         user.setReservedDeleteAt(null);
         user.setUserStatus(UserStatus.ACTIVE);
         authRepository.saveAndFlush(user);
+        refreshTokenService.delete(userId); // 기존 토큰 무효화
 
-        refreshTokenService.delete(userId); // 기존 토큰 무효화, 재로그인 요구, access 제거
-
-        return ResponseEntity.ok().body("탈퇴 철회가 완료되었습니다. 다시 로그인해주세요.");
+        return ResponseEntity.ok("탈퇴 철회가 완료되었습니다. 다시 로그인해주세요.");
     }
 
     private String resolveToken(String bearerToken) {

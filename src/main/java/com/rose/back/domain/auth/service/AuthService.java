@@ -34,5 +34,5 @@ public interface AuthService {
     
     ResponseEntity<?> withdraw(HttpServletRequest request, HttpServletResponse response, Map<String, String> body);
     
-    ResponseEntity<?> cancelWithdraw(String accessToken, HttpServletResponse response);
+    ResponseEntity<?> cancelWithdraw(String accessToken);
 }

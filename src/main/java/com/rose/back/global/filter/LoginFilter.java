@@ -83,6 +83,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             if (user.getUserStatus() == UserStatus.WITHDRAWAL_PENDING) {
                 log.info("탈퇴 예약 계정입니다: {}", userId);
                 request.setAttribute("withdrawalPending", true);
+                response.setHeader("withdrawal", "true");
             }
         }
 
