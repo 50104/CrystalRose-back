@@ -12,6 +12,7 @@ import com.rose.back.domain.auth.service.RefreshTokenService;
 import com.rose.back.domain.user.repository.UserRepository;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.*;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -68,33 +69,30 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     }
     
     private String determineRedirectUrl(HttpServletRequest request) {
-        // 로컬 실행 확인
-        String requestUrl = request.getRequestURL().toString();
-        boolean isLocalBackend = requestUrl.contains("localhost:4000") || requestUrl.contains("127.0.0.1:4000");
-        
-        if (isLocalBackend) {
-            return "http://localhost:3000/getAccess";
+        String redirectUri = request.getParameter("redirect_uri");
+        if (redirectUri != null && isValidRedirectUri(redirectUri)) {
+            return redirectUri + "/getAccess";
         }
-        if (frontendUrl.contains("localhost") || frontendUrl.contains("127.0.0.1")) {
-            return frontendUrl + "/getAccess";
-        }
-        
+
         String origin = request.getHeader("Origin");
-        String referer = request.getHeader("Referer");
-        
-        // Origin이나 Referer를 통해 동적으로 결정
-        if (origin != null) {
+        if (origin != null && !origin.contains("localhost")) {
             return origin + "/getAccess";
-        } else if (referer != null) {
-            // Referer에서 도메인 추출
+        }
+
+        String referer = request.getHeader("Referer");
+        if (referer != null) {
             try {
-                java.net.URL url = new java.net.URL(referer);
-                return url.getProtocol() + "://" + url.getHost() + 
-                      (url.getPort() != -1 ? ":" + url.getPort() : "") + "/getAccess";
+                URL url = new URL(referer);
+                return url.getProtocol() + "://" + url.getHost() +
+                    (url.getPort() != -1 ? ":" + url.getPort() : "") + "/getAccess";
             } catch (Exception e) {
-                return frontendUrl + "/getAccess";
             }
         }
-        return frontendUrl + "/getAccess"; // 기본값 (설정값 사용)
+
+        return frontendUrl + "/getAccess";
+    }
+
+    private boolean isValidRedirectUri(String uri) {
+        return uri.startsWith("https://dodorose.com") || uri.startsWith("http://localhost:3000");
     }
 }
