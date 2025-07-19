@@ -12,7 +12,8 @@ import com.rose.back.domain.auth.service.RefreshTokenService;
 import com.rose.back.domain.user.repository.UserRepository;
 
 import java.io.IOException;
-import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -70,25 +71,12 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     
     private String determineRedirectUrl(HttpServletRequest request) {
         String redirectUri = request.getParameter("redirect_uri");
-        if (redirectUri != null && isValidRedirectUri(redirectUri)) {
-            return redirectUri + "/getAccess";
-        }
-
-        String origin = request.getHeader("Origin");
-        if (origin != null && !origin.contains("localhost")) {
-            return origin + "/getAccess";
-        }
-
-        String referer = request.getHeader("Referer");
-        if (referer != null) {
-            try {
-                URL url = new URL(referer);
-                return url.getProtocol() + "://" + url.getHost() +
-                    (url.getPort() != -1 ? ":" + url.getPort() : "") + "/getAccess";
-            } catch (Exception e) {
+        if (redirectUri != null) {
+            redirectUri = URLDecoder.decode(redirectUri, StandardCharsets.UTF_8);
+            if (isValidRedirectUri(redirectUri)) {
+                return redirectUri + "/getAccess";
             }
         }
-
         return frontendUrl + "/getAccess";
     }
 
