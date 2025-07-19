@@ -61,9 +61,13 @@ public class ChatService {
       this.stringRedisTemplate = stringRedisTemplate;
   }
 
-  public void saveMessage(Long roomId, ChatMessageReqDto chatMessageReqDto) {
+  public void saveMessage(Long roomId, ChatMessageReqDto chatMessageReqDto, String userId) {
     ChatRoom chatRoom = getChatRoomById(roomId);
-    UserEntity sender = getCurrentUser();
+    
+    UserEntity sender = userRepository.findByUserId(userId);
+    if (sender == null) {
+        throw new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId);
+    }
 
     // 메세지 저장
     ChatMessage chatMessage = ChatMessage.builder()
@@ -82,7 +86,7 @@ public class ChatService {
         .chatMessage(chatMessage)
         .isRead(c.getUserEntity().equals(sender))
         .build();
-        readStatusRepository.save(readStatus);
+      readStatusRepository.save(readStatus);
     }
   }
 

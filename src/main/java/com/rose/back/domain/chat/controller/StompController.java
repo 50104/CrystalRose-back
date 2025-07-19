@@ -8,6 +8,7 @@ import com.rose.back.domain.chat.service.RedisPubSubService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.stereotype.Controller;
 
 @Slf4j
@@ -26,10 +27,18 @@ public class StompController implements StompControllerDocs {
 
     // STOMP 메시지 수신 및 Redis Pub/Sub 발행
     @MessageMapping("/{roomId}")
-    public void sendMessage(@DestinationVariable("roomId") Long roomId, ChatMessageReqDto chatMessageReqDto) {
+    public void sendMessage(@DestinationVariable("roomId") Long roomId, 
+                          ChatMessageReqDto chatMessageReqDto,
+                          SimpMessageHeaderAccessor headerAccessor) {
         log.info("[STOMP][roomId: {}] 채팅 메시지 수신: {}", roomId, chatMessageReqDto.getMessage());
         try {
-            chatService.saveMessage(roomId, chatMessageReqDto);
+            String userId = (String) headerAccessor.getSessionAttributes().get("userId");
+            if (userId == null) {
+                log.error("[STOMP] 세션에 userId가 없습니다 - roomId: {}", roomId);
+                return;
+            }
+            chatService.saveMessage(roomId, chatMessageReqDto, userId);
+
             chatMessageReqDto.setRoomId(roomId);
             String message = objectMapper.writeValueAsString(chatMessageReqDto);
             pubSubService.publish("chat", message);
