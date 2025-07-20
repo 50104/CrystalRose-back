@@ -73,14 +73,23 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     
     private String determineRedirectUrl(HttpServletRequest request) {
         String redirectUri = request.getParameter("redirect_uri");
-        if (redirectUri != null) {
+        
+        if (redirectUri != null && !redirectUri.isBlank()) {
             redirectUri = URLDecoder.decode(redirectUri, StandardCharsets.UTF_8);
+
+            log.info("Received redirect_uri param: {}", redirectUri);
+
             if (isValidRedirectUri(redirectUri)) {
                 return redirectUri + "/getAccess";
             }
         }
-        log.info("frontendUrl: {}", frontendUrl);
-        return frontendUrl + "/getAccess";
+
+        String host = request.getServerName();
+        if (host.contains("dodorose.com")) {
+            return "https://dodorose.com/getAccess";
+        } else {
+            return "http://localhost:3000/getAccess";
+        }
     }
 
     private boolean isValidRedirectUri(String uri) {
