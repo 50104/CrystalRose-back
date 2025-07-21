@@ -1,14 +1,22 @@
 package com.rose.back.domain.diary.service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.Objects;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.rose.back.domain.diary.dto.DiaryRequest;
 import com.rose.back.domain.diary.dto.DiaryResponse;
+import com.rose.back.domain.diary.dto.DiaryWithCareResponse;
+import com.rose.back.domain.diary.entity.CareLogEntity;
 import com.rose.back.domain.diary.entity.DiaryEntity;
+import com.rose.back.domain.diary.repository.CareLogRepository;
 import com.rose.back.domain.diary.repository.DiaryRepository;
 import com.rose.back.domain.rose.entity.RoseEntity;
 import com.rose.back.domain.rose.service.RoseService;
@@ -24,6 +32,7 @@ public class DiaryService {
 
     private final DiaryRepository diaryRepository;
     private final ImageTempRepository tempRepository;
+    private final CareLogRepository careLogRepository;
     private final DiaryImageService diaryImageService;
     private final RoseService roseService;
 
@@ -84,10 +93,40 @@ public class DiaryService {
             .toList();
     }
 
-    public List<DiaryResponse> getRoseTimeline(Long roseId) {
-        return diaryRepository.findAllByRoseEntity_IdOrderByRecordedAtAsc(roseId)
-            .stream()
-            .map(d -> new DiaryResponse(d.getId(), d.getNote(), d.getImageUrl(), d.getRecordedAt()))
-            .toList();
+    public List<DiaryWithCareResponse> getRoseTimeline(Long roseId) {
+        List<DiaryEntity> diaries = diaryRepository.findAllByRoseEntity_IdOrderByRecordedAtAsc(roseId);
+
+        return diaries.stream().map(diary -> {
+            LocalDate date = diary.getRecordedAt();
+            Long userNo = diary.getRoseEntity().getUserId();
+
+            List<CareLogEntity> careLogs = careLogRepository.findByUserNo_UserNoAndCareDate(userNo, date);
+            log.info("케어 로그 조회: userNo={}, date={}, careLogs={}", userNo, date, careLogs.size());
+            
+            Set<String> careTypes = careLogs.stream()
+                .flatMap(log -> Stream.of(
+                    hasText(log.getWatering()) ? "watering" : null,
+                    hasText(log.getFertilizer()) ? "fertilizer" : null,
+                    hasText(log.getPesticide()) ? "pesticide" : null,
+                    hasText(log.getAdjuvant()) ? "adjuvant" : null,
+                    hasText(log.getFungicide()) ? "fungicide" : null,
+                    hasText(log.getCompost()) ? "compost" : null,
+                    hasText(log.getNote()) ? "note" : null
+                ))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+            return new DiaryWithCareResponse(
+                diary.getId(),
+                diary.getNote(),
+                diary.getImageUrl(),
+                diary.getRecordedAt(),
+                new ArrayList<>(careTypes)
+            );
+        }).toList();
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.trim().isEmpty();
     }
 }

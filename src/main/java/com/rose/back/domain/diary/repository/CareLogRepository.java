@@ -19,4 +19,7 @@ public interface CareLogRepository extends JpaRepository<CareLogEntity, Long> {
 
     // 사용자별 케어 로그 조회 (최신순)
     List<CareLogEntity> findByUserNo_UserNoOrderByCareDateDesc(Long userNo);
+
+    // 특정 날짜의 케어 로그 조회
+    List<CareLogEntity> findByUserNo_UserNoAndCareDate(Long userNo, LocalDate careDate);
 }

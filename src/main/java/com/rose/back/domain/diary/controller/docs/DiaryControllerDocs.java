@@ -4,6 +4,7 @@ import com.rose.back.common.dto.MessageResponse;
 import com.rose.back.domain.auth.oauth2.CustomUserDetails;
 import com.rose.back.domain.diary.dto.DiaryRequest;
 import com.rose.back.domain.diary.dto.DiaryResponse;
+import com.rose.back.domain.diary.dto.DiaryWithCareResponse;
 import com.rose.back.domain.diary.dto.ImageUploadResponse;
 import com.rose.back.global.exception.CommonErrorResponses;
 import com.rose.back.global.handler.ErrorResponse;
@@ -96,5 +97,5 @@ public interface DiaryControllerDocs {
                     }
                 """)))
     })
-    ResponseEntity<List<DiaryResponse>> getRoseTimeline(@PathVariable("roseId") Long roseId);
+    ResponseEntity<List<DiaryWithCareResponse>> getRoseTimeline(@PathVariable("roseId") Long roseId);
 }

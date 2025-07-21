@@ -12,6 +12,7 @@ import com.rose.back.domain.auth.oauth2.CustomUserDetails;
 import com.rose.back.domain.diary.controller.docs.DiaryControllerDocs;
 import com.rose.back.domain.diary.dto.DiaryRequest;
 import com.rose.back.domain.diary.dto.DiaryResponse;
+import com.rose.back.domain.diary.dto.DiaryWithCareResponse;
 import com.rose.back.domain.diary.dto.ImageUploadResponse;
 import com.rose.back.domain.diary.service.DiaryImageService;
 import com.rose.back.domain.diary.service.DiaryService;
@@ -59,9 +60,8 @@ public class DiaryController implements DiaryControllerDocs {
 
     // 장미별 성장기록
     @GetMapping("/{roseId}/timeline")
-    public ResponseEntity<List<DiaryResponse>> getRoseTimeline(@PathVariable("roseId") Long roseId) {
+    public ResponseEntity<List<DiaryWithCareResponse>> getRoseTimeline(@PathVariable("roseId") Long roseId) {
         log.info("[GET][/api/diaries/{}/timeline] - 장미별 성장기록 조회 요청", roseId);
-        List<DiaryResponse> diaryList = diaryService.getRoseTimeline(roseId);
-        return ResponseEntity.ok(diaryList);
+        return ResponseEntity.ok(diaryService.getRoseTimeline(roseId));
     }
 }
