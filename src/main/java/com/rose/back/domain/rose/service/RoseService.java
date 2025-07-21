@@ -150,4 +150,29 @@ public class RoseService {
         return userRoseRepository.findByIdAndUserId(roseId, userId)
             .orElseThrow(() -> new IllegalArgumentException("해당 장미를 찾을 수 없거나 접근 권한이 없습니다"));
     }
+
+    @Transactional
+    public void updateUserRose(Long userId, Long roseId, RoseRequest request) {
+        log.info("장미 수정 시작: roseId={}, userId={}", roseId, userId);
+        RoseEntity rose = getUserRose(userId, roseId);
+
+        if (!rose.getWikiEntity().getId().equals(request.wikiId())) {
+            log.warn("장미 품종 변경 시도 감지: roseId={}, 기존={}, 요청={}", roseId, rose.getWikiEntity().getId(), request.wikiId());
+            throw new IllegalArgumentException("장미 품종(wikiId)은 수정할 수 없습니다.");
+        }
+        if (!rose.getWikiEntity().getId().equals(request.wikiId())) {
+            WikiEntity newWiki = roseWikiRepository.findById(request.wikiId())
+                .orElseThrow(() -> new IllegalArgumentException("해당 도감 품종이 존재하지 않습니다."));
+            rose.setWikiEntity(newWiki);
+        }
+
+        rose.setNickname(request.nickname());
+        rose.setAcquiredDate(request.acquiredDate());
+        rose.setLocationNote(request.locationNote());
+        rose.setImageUrl(request.imageUrl());
+
+        userRoseRepository.save(rose);
+
+        log.info("장미 수정 완료: roseId={}", rose.getId());
+    }
 }

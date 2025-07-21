@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
@@ -107,4 +108,25 @@ public interface RoseControllerDocs {
                 """)))
     })
     ResponseEntity<List<RoseResponse>> getMyRoses(@AuthenticationPrincipal CustomUserDetails userDetails);
+
+    @Operation(summary = "장미 정보 수정", description = "사용자가 등록한 장미 정보를 수정합니다.")
+    @CommonErrorResponses
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "장미 정보 수정 성공"),
+        @ApiResponse(responseCode = "409", description = "장미 정보 수정 실패",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(name = "InternalError", value = """
+                    {
+                      "status": 409,
+                      "error": "CONFLICT",
+                      "message": "장미 정보 수정 실패",
+                      "path": "/api/roses/modify/{roseId}"
+                    }
+                """)))
+    })
+    ResponseEntity<MessageResponse> updateRose(
+        @PathVariable("roseId") Long roseId,
+        @RequestBody RoseRequest request,
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    );
 }

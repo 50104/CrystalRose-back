@@ -76,4 +76,15 @@ public class RoseController implements RoseControllerDocs {
         log.info("내 장미 목록 조회 완료: {} 개", responses.size());
         return ResponseEntity.ok(responses);
     }
+
+    @PutMapping("/modify/{roseId}")
+    public ResponseEntity<MessageResponse> updateRose(
+        @PathVariable("roseId") Long roseId,
+        @RequestBody RoseRequest request,
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        log.info("[PUT][/api/roses/modify/{}] - 장미 수정 요청", roseId);
+        roseService.updateUserRose(userDetails.getUserNo(), roseId, request);
+        return ResponseEntity.ok(new MessageResponse("장미 정보가 수정되었습니다."));
+    }
 }
