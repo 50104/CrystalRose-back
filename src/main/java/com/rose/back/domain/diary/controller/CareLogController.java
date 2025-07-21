@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.rose.back.domain.auth.oauth2.CustomUserDetails;
 import com.rose.back.domain.diary.controller.docs.CareLogControllerDocs;
 import com.rose.back.domain.diary.dto.CareLogRequest;
+import com.rose.back.domain.diary.dto.CareLogResponse;
 import com.rose.back.domain.diary.service.CareLogService;
 
 import lombok.RequiredArgsConstructor;
@@ -35,11 +36,10 @@ public class CareLogController implements CareLogControllerDocs {
         return ResponseEntity.ok().build();
     }
 
-    // 관리 날짜만 조회 (타임라인 점용)
-    @GetMapping("/caredates/list")
-    public ResponseEntity<List<String>> getCareDates(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        log.info("[GET][/api/diaries/caredates/list] - 케어 날짜 조회 요청 (userNo: {})", userDetails.getUserNo());
-        return ResponseEntity.ok(careLogService.getCareDates(userDetails.getUserNo()));
+    @GetMapping("/carelogs/list")
+    public ResponseEntity<List<CareLogResponse>> getCareLogs(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        log.info("[GET][/api/diaries/carelogs/list] - 케어로그 전체 조회 요청 (userNo: {})", userDetails.getUserNo());
+        return ResponseEntity.ok(careLogService.getAllByUser(userDetails.getUserNo()));
     }
 
     @PutMapping("/carelogs/{id}")

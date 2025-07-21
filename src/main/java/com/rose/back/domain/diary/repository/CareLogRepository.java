@@ -16,4 +16,7 @@ public interface CareLogRepository extends JpaRepository<CareLogEntity, Long> {
 
     @Query("SELECT DISTINCT c.careDate FROM CareLogEntity c WHERE c.userNo.userNo = :userNo")
     List<LocalDate> findDistinctCareDatesByUserNo(@Param("userNo") Long userNo);
+
+    // 사용자별 케어 로그 조회 (최신순)
+    List<CareLogEntity> findByUserNo_UserNoOrderByCareDateDesc(Long userNo);
 }

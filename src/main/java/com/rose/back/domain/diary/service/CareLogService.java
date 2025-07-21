@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.rose.back.domain.diary.dto.CareLogRequest;
+import com.rose.back.domain.diary.dto.CareLogResponse;
 import com.rose.back.domain.diary.dto.RoseCareLogDto;
 import com.rose.back.domain.diary.entity.CareLogEntity;
 import com.rose.back.domain.diary.repository.CareLogRepository;
@@ -39,9 +40,19 @@ public class CareLogService {
         careLogRepository.save(entity);
     }
 
-    public List<String> getCareDates(Long userNo) {
-        return careLogRepository.findDistinctCareDatesByUserNo(userNo).stream()
-            .map(LocalDate::toString)
+    public List<CareLogResponse> getAllByUser(Long userNo) {
+        return careLogRepository.findByUserNo_UserNoOrderByCareDateDesc(userNo)
+            .stream()
+            .map(log -> new CareLogResponse(
+                log.getCareDate(),
+                log.getWatering(),
+                log.getFertilizer(),
+                log.getPesticide(),
+                log.getAdjuvant(),
+                log.getFungicide(),
+                log.getCompost(),
+                log.getNote()
+            ))
             .toList();
     }
     
@@ -66,25 +77,22 @@ public class CareLogService {
     }
 
     public void update(Long id, CareLogRequest request, Long userNo) {
-        CareLogEntity existingEntity = careLogRepository.findById(id)
+        CareLogEntity entity = careLogRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("관리 기록을 찾을 수 없습니다."));
         
-        if (!existingEntity.getUserNo().getUserNo().equals(userNo)) {
+        if (!entity.getUserNo().getUserNo().equals(userNo)) {
             throw new RuntimeException("수정 권한이 없습니다.");
         }
         
-        CareLogEntity updatedEntity = CareLogEntity.builder()
-            .id(existingEntity.getId())
-            .userNo(existingEntity.getUserNo())
-            .careDate(request.careDate())
-            .fertilizer(request.fertilizer())
-            .pesticide(request.pesticide())
-            .adjuvant(request.adjuvant())
-            .compost(request.compost())
-            .fungicide(request.fungicide())
-            .watering(request.watering())
-            .note(request.note())
-            .build();
-        careLogRepository.save(updatedEntity);
+        entity.setCareDate(request.careDate());
+        entity.setFertilizer(request.fertilizer());
+        entity.setPesticide(request.pesticide());
+        entity.setAdjuvant(request.adjuvant());
+        entity.setCompost(request.compost());
+        entity.setFungicide(request.fungicide());
+        entity.setWatering(request.watering());
+        entity.setNote(request.note());
+
+        careLogRepository.save(entity);
     }
 }
