@@ -17,6 +17,7 @@ import com.rose.back.domain.board.repository.ContentRepository;
 import com.rose.back.domain.board.repository.ContentImageRepository;
 import com.rose.back.domain.user.entity.UserEntity;
 import com.rose.back.domain.user.repository.UserRepository;
+import com.rose.back.domain.user.service.UserService;
 import com.rose.back.infra.S3.ImageUrlExtractor;
 import com.rose.back.infra.S3.S3Uploader;
 
@@ -37,6 +38,7 @@ public class ContentService {
     private final ImageUrlExtractor imageUrlExtractor;
     private final S3Uploader s3Uploader;
     private final UserRepository userRepository;
+    private final UserService userService;
 
     @Transactional
     public Long saveContent(ContentRequestDto req) {
@@ -47,6 +49,9 @@ public class ContentService {
         UserEntity user = userRepository.findByUserId(req.getUserId());
         if (user == null) {
             throw new IllegalArgumentException("해당 유저를 찾을 수 없습니다.");
+        }
+        if ("공지".equalsIgnoreCase(req.getBoardTag()) && !userService.isAdmin(req.getUserId())) {
+            throw new AccessDeniedException("공지 작성 권한이 없습니다.");
         }
         content.setWriter(user);
         ContentEntity savedContent = contentRepository.save(content);

@@ -1,5 +1,7 @@
 package com.rose.back.domain.user.repository;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -23,4 +25,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     UserEntity findByUserPwd(String userPwd);
 
     UserEntity findByUserNo(Long userNo);
+
+    Optional<UserEntity> findOptionalByUserId(String userId);
 }

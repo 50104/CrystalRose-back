@@ -16,4 +16,6 @@ public interface UserService {
     public void modify(UserInfoDto userDto);
 
     public List<MemberSearchCondition> findAll();
+
+    public boolean isAdmin(String userId);
 }

@@ -133,4 +133,11 @@ public class UserServiceImpl implements UserService {
         }
         return memberListResDtos;
     }
+
+    public boolean isAdmin(String userId) {
+        return userRepository.findOptionalByUserId(userId)
+            .map(UserEntity::getUserRole)
+            .map(role -> role.equals("ROLE_ADMIN"))
+            .orElse(false);
+    }
 }
