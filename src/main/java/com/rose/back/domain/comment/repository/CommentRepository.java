@@ -11,4 +11,6 @@ import com.rose.back.domain.comment.entity.CommentEntity;
 public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
   
     List<CommentEntity> findByContentEntityBoardNo(Long boardNo);
+
+    long countByContentEntity_BoardNo(Long boardNo);
 }

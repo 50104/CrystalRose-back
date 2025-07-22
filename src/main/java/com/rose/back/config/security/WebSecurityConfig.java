@@ -175,6 +175,7 @@ public class WebSecurityConfig {
                 // sockJS 사용 위한 /api/v1/connect/**
                 .requestMatchers("/", "/error", "/api/v1/auth/**", "/api/v1/connect/**", "/reissue", "/oauth2/**").permitAll()
                 .requestMatchers("/api/v1/wiki/list").permitAll() // 위키 목록 조회 API 허용
+                .requestMatchers("/api/v1/board/list").permitAll()
                 .requestMatchers("/api/v1/wiki/detail/**").permitAll() // 위키 상세 조회 API 허용 (숫자 ID만)
                 .requestMatchers("/static/**", "/images/**", "/upload/**").permitAll() // 정적 리소스 허용
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**", "/favicon.ico").permitAll() // Swagger UI 허용

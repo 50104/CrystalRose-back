@@ -1,5 +1,6 @@
 package com.rose.back.domain.board.dto;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import com.rose.back.domain.board.entity.ContentEntity;
@@ -7,11 +8,13 @@ import com.rose.back.domain.board.entity.ContentEntity;
 public record ContentListDto(
     Long boardNo,
     String boardTitle,
-    String writerNick,
     String boardTag,
-    String writerStatus
+    String writerNick,
+    String writerStatus,
+    LocalDateTime createdDate,
+    Long commentCount
 ) {
-    public static ContentListDto from(ContentEntity entity) {
+    public static ContentListDto from(ContentEntity entity, Long commentCount) {
         String writerNick = Optional.ofNullable(entity.getWriter())
                 .map(writer -> writer.getUserNick())
                 .orElse("탈퇴한 사용자");
@@ -26,7 +29,9 @@ public record ContentListDto(
             entity.getBoardTitle(),
             entity.getBoardTag(),
             writerNick,
-            writerStatus
+            writerStatus,
+            entity.getCreatedDate(),
+            commentCount
         );
     }
 }

@@ -72,6 +72,31 @@ public interface CommentControllerDocs {
     })
     ResponseEntity<MessageResponse> addComment(@PathVariable("boardNo") Long boardNo, @RequestBody CommentRequestDto dto);
 
+    @Operation(summary = "댓글 개수 조회", description = "특정 게시글의 댓글 개수를 조회합니다.")
+    @CommonErrorResponses
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "댓글 개수 조회 성공"),
+        @ApiResponse(
+            responseCode = "409",
+            description = "댓글 개수 조회 실패",
+            content = @Content(
+                schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(
+                    name = "Conflict",
+                    value = """
+                    {
+                      "status": 409,
+                      "error": "CONFLICT",
+                      "message": "댓글 개수를 조회할 수 없습니다.",
+                      "path": "/board/{boardNo}/comments/count"
+                    }
+                    """
+                )
+            )
+        )
+    })
+    ResponseEntity<Long> getCommentCount(@PathVariable Long boardNo);
+
     @Operation(summary = "댓글 삭제", description = "특정 댓글을 삭제합니다.")
     @CommonErrorResponses
     @ApiResponses({

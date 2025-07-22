@@ -22,11 +22,17 @@ public class CommentController implements CommentControllerDocs {
 
     private final CommentService commentService;
 
-    @GetMapping("/{boardNo}/comments")
+    @GetMapping("/{boardNo}/comments/list")
     public ResponseEntity<List<CommentResponseDto>> getComments(@PathVariable("boardNo") Long boardNo) {
-        log.info("[GET][/board/{}/comments] - 댓글 목록 조회 요청", boardNo);
+        log.info("[GET][/board/{}/comments/list] - 댓글 목록 조회 요청", boardNo);
         List<CommentResponseDto> comments = commentService.getComments(boardNo);
         return ResponseEntity.ok(comments);
+    }
+
+    @GetMapping("/{boardNo}/comments/count")
+    public ResponseEntity<Long> getCommentCount(@PathVariable Long boardNo) {
+        long count = commentService.countByBoardNo(boardNo);
+        return ResponseEntity.ok(count);
     }
 
     @PostMapping("/{boardNo}/comments")

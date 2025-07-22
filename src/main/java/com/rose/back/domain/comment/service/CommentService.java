@@ -76,6 +76,10 @@ public class CommentService {
         commentRepository.save(comment);
     }
 
+    public long countByBoardNo(Long boardNo) {
+        return commentRepository.countByContentEntity_BoardNo(boardNo);
+    }
+
     @Transactional
     public void deleteComment(Long commentId) {
         CommentEntity comment = commentRepository.findById(commentId)
