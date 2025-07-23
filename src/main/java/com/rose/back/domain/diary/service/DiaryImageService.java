@@ -43,7 +43,7 @@ public class DiaryImageService {
         diaryImageRepository.save(DiaryImageEntity.builder()
             .fileUrl(imageUrl)
             .originalFileName(null)
-            .storedFileName(imageUrl.replace("https://crystalrose-web.s3.ap-northeast-2.amazonaws.com/", ""))
+            .storedFileName(imageUrl.replace("https://dodorose.com/", ""))
             .diary(diary)
             .build());
         tempRepository.findByFileUrl(imageUrl).ifPresent(tempRepository::delete);

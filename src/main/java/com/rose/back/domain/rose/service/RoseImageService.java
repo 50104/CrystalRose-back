@@ -44,7 +44,7 @@ public class RoseImageService {
         if (!roseImageRepository.existsByFileUrl(fileUrl)) {
             RoseImageEntity saved = roseImageRepository.save(RoseImageEntity.builder()
                 .fileUrl(fileUrl)
-                .storedFileName(fileUrl.replace("https://crystalrose-web.s3.ap-northeast-2.amazonaws.com/", ""))
+                .storedFileName(fileUrl.replace("https://dodorose.com/", ""))
                 .originalFileName(originalFileName)
                 .rose(rose)
                 .build());

@@ -64,7 +64,7 @@ public class ContentImageService {
 
         ContentImageEntity image = ContentImageEntity.builder()
             .originalFileName(file.getOriginalFilename())
-            .storedFileName(fileUrl.replace("https://crystalrose-web.s3.ap-northeast-2.amazonaws.com/", ""))
+            .storedFileName(fileUrl.replace("https://dodorose.com/", ""))
             .fileUrl(fileUrl)
             .content(content)
             .build();
@@ -98,7 +98,7 @@ public class ContentImageService {
         if (!contentImageRepository.existsByFileUrl(fileUrl)) {
             contentImageRepository.save(ContentImageEntity.builder()
                 .fileUrl(fileUrl)
-                .storedFileName(fileUrl.replace("https://crystalrose-web.s3.ap-northeast-2.amazonaws.com/", ""))
+                .storedFileName(fileUrl.replace("https://dodorose.com/", ""))
                 .content(content)
                 .build());
         }

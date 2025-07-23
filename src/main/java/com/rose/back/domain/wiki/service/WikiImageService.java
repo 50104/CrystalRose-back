@@ -41,7 +41,7 @@ public class WikiImageService {
         if (!wikiImageRepository.existsByFileUrl(fileUrl)) {
             wikiImageRepository.save(WikiImageEntity.builder()
                 .fileUrl(fileUrl)
-                .storedFileName(fileUrl.replace("https://crystalrose-web.s3.ap-northeast-2.amazonaws.com/", ""))
+                .storedFileName(fileUrl.replace("https://dodorose.com/", ""))
                 .originalFileName(null) 
                 .wiki(wiki)
                 .build());
