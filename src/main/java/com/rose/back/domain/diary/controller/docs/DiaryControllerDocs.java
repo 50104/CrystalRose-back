@@ -98,4 +98,24 @@ public interface DiaryControllerDocs {
                 """)))
     })
     ResponseEntity<List<DiaryWithCareResponse>> getRoseTimeline(@PathVariable("roseId") Long roseId);
+
+    @Operation(summary = "장미 삭제", description = "사용자가 등록한 장미를 삭제합니다.")
+    @CommonErrorResponses
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "장미 삭제 성공"),
+        @ApiResponse(responseCode = "409", description = "장미 삭제 실패",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(name = "InternalError", value = """
+                    {
+                      "status": 409,
+                      "error": "CONFLICT",
+                      "message": "장미 삭제 실패",
+                      "path": "/api/diaries/delete/{roseId}"
+                    }
+                """)))
+    })
+    ResponseEntity<Void> deleteDiary(
+        @PathVariable("roseId") Long roseId,
+        @AuthenticationPrincipal CustomUserDetails user
+    );
 }

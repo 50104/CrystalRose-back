@@ -3,11 +3,14 @@ package com.rose.back.domain.diary.service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,11 +20,13 @@ import com.rose.back.domain.diary.dto.DiaryWithCareResponse;
 import com.rose.back.domain.diary.entity.CareLogEntity;
 import com.rose.back.domain.diary.entity.DiaryEntity;
 import com.rose.back.domain.diary.repository.CareLogRepository;
+import com.rose.back.domain.diary.repository.DiaryImageRepository;
 import com.rose.back.domain.diary.repository.DiaryRepository;
 import com.rose.back.domain.rose.entity.RoseEntity;
 import com.rose.back.domain.rose.service.RoseService;
 import com.rose.back.infra.S3.ImageTempRepository;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,6 +40,7 @@ public class DiaryService {
     private final CareLogRepository careLogRepository;
     private final DiaryImageService diaryImageService;
     private final RoseService roseService;
+    private final DiaryImageRepository diaryImageRepository;
 
     @Transactional
     public void saveDiaryWithImages(Long userId, Long roseId, String note, String imageUrl, LocalDate recordedAt) {
@@ -121,12 +127,55 @@ public class DiaryService {
                 diary.getNote(),
                 diary.getImageUrl(),
                 diary.getRecordedAt(),
-                new ArrayList<>(careTypes)
+                new ArrayList<>(careTypes),
+                diary.getRoseEntity().getUserId().equals(userNo) // isMine
             );
         }).toList();
     }
 
     private boolean hasText(String value) {
         return value != null && !value.trim().isEmpty();
+    }
+
+    @Transactional
+    public void deleteDiary(Long userId, Long diaryId) {
+        Optional<DiaryEntity> optional = diaryRepository.findWithoutJoinById(diaryId);
+
+        if (optional.isEmpty()) {
+            forceDeleteDiary(diaryId);
+            return;
+        }
+        DiaryEntity diary = optional.get();
+
+        RoseEntity rose = diary.getRoseEntity();
+        if (rose == null) {
+            forceDeleteDiary(diaryId);
+            return;
+        }
+        if (!rose.getUserId().equals(userId)) {
+            throw new AccessDeniedException("본인의 다이어리만 삭제할 수 없습니다.");
+        }
+
+        String imageUrl = diary.getImageUrl();
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            try {
+                diaryImageService.deleteImageAndUnbind(imageUrl, diary);
+            } catch (Exception e) {
+                log.error("S3 이미지 삭제 실패: {}", imageUrl, e);
+            }
+        }
+
+        diaryRepository.delete(diary);
+        log.info("다이어리 삭제 완료: diaryId = {}", diaryId);
+    }
+
+    @Transactional
+    public void forceDeleteDiary(Long diaryId) {
+        Map<String, Object> diary = diaryRepository.findRawDiary(diaryId);
+        if (diary == null || diary.isEmpty()) {
+            throw new EntityNotFoundException("해당 다이어리가 존재하지 않습니다.");
+        }
+        diaryImageRepository.deleteByDiaryId(diaryId);
+        diaryRepository.deleteById(diaryId);
     }
 }

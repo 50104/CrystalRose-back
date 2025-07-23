@@ -8,5 +8,6 @@ public record DiaryWithCareResponse(
     String note,
     String imageUrl,
     LocalDate recordedAt,
-    List<String> careTypes
+    List<String> careTypes,
+    boolean isMine
 ) {}

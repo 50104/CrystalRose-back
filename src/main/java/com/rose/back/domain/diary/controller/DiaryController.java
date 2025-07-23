@@ -64,4 +64,11 @@ public class DiaryController implements DiaryControllerDocs {
         log.info("[GET][/api/diaries/{}/timeline] - 장미별 성장기록 조회 요청", roseId);
         return ResponseEntity.ok(diaryService.getRoseTimeline(roseId));
     }
+
+    @DeleteMapping("/delete/{diaryId}")
+    public ResponseEntity<Void> deleteDiary(@PathVariable("diaryId") Long diaryId, @AuthenticationPrincipal CustomUserDetails user) {
+        log.info("[DELETE][/api/diaries/delete/{}] - 다이어리 삭제 요청", diaryId);
+        diaryService.deleteDiary(user.getUserNo(), diaryId);
+        return ResponseEntity.noContent().build();
+    }
 }

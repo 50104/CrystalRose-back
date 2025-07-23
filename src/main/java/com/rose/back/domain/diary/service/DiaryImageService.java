@@ -48,4 +48,11 @@ public class DiaryImageService {
             .build());
         tempRepository.findByFileUrl(imageUrl).ifPresent(tempRepository::delete);
     }
+
+    @Transactional
+    public void deleteImageAndUnbind(String imageUrl, DiaryEntity diary) {
+        s3Uploader.deleteFile(imageUrl);
+        diaryImageRepository.deleteByDiaryId(diary.getId());
+        tempRepository.findByFileUrl(imageUrl).ifPresent(tempRepository::delete);
+    }
 }
