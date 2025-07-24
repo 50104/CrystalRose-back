@@ -27,4 +27,6 @@ public interface DiaryRepository extends JpaRepository<DiaryEntity, Long> {
 
     @Query(value = "SELECT * FROM rose_diary WHERE id = :id", nativeQuery = true)
     Map<String, Object> findRawDiary(@Param("id") Long id);
+
+    boolean existsByRoseEntity_Id(Long roseId); // 다이어리 내역 조회
 }

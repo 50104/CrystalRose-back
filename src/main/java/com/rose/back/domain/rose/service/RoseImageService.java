@@ -52,4 +52,11 @@ public class RoseImageService {
         }
         tempRepository.findByFileUrl(fileUrl).ifPresent(tempRepository::delete);
     }
+
+    @Transactional
+    public void deleteImageAndUnbind(String imageUrl, RoseEntity rose) {
+        s3Uploader.deleteFile(imageUrl);
+        roseImageRepository.deleteByRoseId(rose.getId());
+        tempRepository.findByFileUrl(imageUrl).ifPresent(tempRepository::delete);
+    }
 }

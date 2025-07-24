@@ -87,4 +87,12 @@ public class RoseController implements RoseControllerDocs {
         roseService.updateUserRose(userDetails.getUserNo(), roseId, request);
         return ResponseEntity.ok(new MessageResponse("장미 정보가 수정되었습니다."));
     }
+
+    @DeleteMapping("/delete/{roseId}")
+    public ResponseEntity<?> deleteRose(@PathVariable Long roseId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        log.info("[DELETE][/api/roses/delete/{}] - 장미 삭제 요청: roseId={}", roseId, roseId);
+        Long userId = userDetails.getUserNo();
+        roseService.deleteRoseIfNoDiaries(roseId, userId);
+        return ResponseEntity.ok().body(Map.of("message", "장미가 삭제되었습니다."));
+    }
 }

@@ -11,8 +11,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -93,18 +95,31 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(err);
     }
 
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex, HttpServletRequest req) {
-        String message = ex.getMessage() != null ? ex.getMessage() : "접근이 거부되었습니다.";
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalStateException(IllegalStateException ex, HttpServletRequest req) {
         ErrorResponse err = ErrorResponse.builder()
             .timestamp(now())
-            .status(HttpStatus.FORBIDDEN.value())
-            .code("FORBIDDEN")
-            .message(message)
+            .status(HttpStatus.CONFLICT.value())
+            .code("CONFLICT")
+            .message(ex.getMessage())
             .path(req.getRequestURI())
             .build();
 
-        log.warn("Access denied @ {}: {}", req.getRequestURI(), message);
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(err);
+        log.warn("IllegalStateException @ {}: {}", req.getRequestURI(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(err);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ErrorResponse> handleResponseStatusException(ResponseStatusException ex, HttpServletRequest req) {
+        ErrorResponse err = ErrorResponse.builder()
+            .timestamp(now())
+            .status(ex.getStatusCode().value())
+            .code("RESPONSE_STATUS_ERROR")
+            .message(ex.getReason() != null ? ex.getReason() : "요청 처리 중 오류가 발생했습니다.")
+            .path(req.getRequestURI())
+            .build();
+
+        log.warn("ResponseStatusException @ {}: {}", req.getRequestURI(), ex.getReason());
+        return ResponseEntity.status(ex.getStatusCode()).body(err);
     }
 }

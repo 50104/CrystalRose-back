@@ -3,8 +3,11 @@ package com.rose.back.domain.rose.service;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.rose.back.domain.auth.oauth2.CustomUserDetails;
 import com.rose.back.domain.diary.entity.DiaryEntity;
@@ -17,6 +20,7 @@ import com.rose.back.domain.rose.repository.RoseRepository;
 import com.rose.back.domain.wiki.entity.WikiEntity;
 import com.rose.back.domain.wiki.repository.WikiRepository;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class RoseService {
 
-    private final RoseRepository userRoseRepository;
+    private final RoseRepository roseRepository;
     private final WikiRepository roseWikiRepository;
     private final RoseImageService roseImageService;
     private final DiaryRepository diaryRepository;
@@ -37,7 +41,7 @@ public class RoseService {
 
         Long userId = userDetails.getUserNo();
 
-        boolean exists = userRoseRepository.existsByUserIdAndWikiEntityId(userId, request.wikiId());
+        boolean exists = roseRepository.existsByUserIdAndWikiEntityId(userId, request.wikiId());
         if (exists) {
             throw new IllegalStateException("이미 등록된 장미 품종입니다.");
         }
@@ -53,7 +57,7 @@ public class RoseService {
             .locationNote(request.locationNote())
             .imageUrl(request.imageUrl())
             .build();
-        userRose = userRoseRepository.save(userRose);
+        userRose = roseRepository.save(userRose);
 
         roseImageService.saveImageEntityAndDeleteTemp(request.imageUrl(), null, userRose);
         createInitialDiary(userRose, request); // 첫 기록 등록
@@ -63,7 +67,7 @@ public class RoseService {
     
     @Transactional(readOnly = true)
     public boolean existsByUserIdAndWikiId(Long userId, Long wikiId) {
-        return userRoseRepository.existsByUserIdAndWikiEntityId(userId, wikiId);
+        return roseRepository.existsByUserIdAndWikiEntityId(userId, wikiId);
     }
 
     private void createInitialDiary(RoseEntity rose, RoseRequest request) {
@@ -98,7 +102,7 @@ public class RoseService {
             return List.of();
         }
         try {
-            List<RoseEntity> roses = userRoseRepository.findByUserIdOrderByAcquiredDateDesc(userId);
+            List<RoseEntity> roses = roseRepository.findByUserIdOrderByAcquiredDateDesc(userId);
             log.info("조회된 장미 개수: {}", roses != null ? roses.size() : 0);
             
             if (roses == null || roses.isEmpty()) {
@@ -136,7 +140,7 @@ public class RoseService {
             return List.of();
         }
         try {
-            List<RoseEntity> roses = userRoseRepository.findByUserIdOrderByAcquiredDateDesc(userId);
+            List<RoseEntity> roses = roseRepository.findByUserIdOrderByAcquiredDateDesc(userId);
             return roses != null ? roses : List.of();
             
         } catch (Exception e) {
@@ -148,7 +152,7 @@ public class RoseService {
     // 특정 장미 조회 (본인 소유 확인)
     @Transactional(readOnly = true)
     public RoseEntity getUserRose(Long userId, Long roseId) {
-        return userRoseRepository.findByIdAndUserId(roseId, userId)
+        return roseRepository.findByIdAndUserId(roseId, userId)
             .orElseThrow(() -> new IllegalArgumentException("해당 장미를 찾을 수 없거나 접근 권한이 없습니다"));
     }
 
@@ -168,8 +172,28 @@ public class RoseService {
         rose.setLocationNote(request.locationNote());
         rose.setImageUrl(request.imageUrl());
 
-        userRoseRepository.save(rose);
+        roseRepository.save(rose);
 
         log.info("장미 수정 완료: roseId={}", rose.getId());
+    }
+
+    @Transactional
+    public void deleteRoseIfNoDiaries(Long roseId, Long userId) {
+        RoseEntity rose = roseRepository.findById(roseId)
+            .orElseThrow(() -> new EntityNotFoundException("장미가 존재하지 않습니다."));
+        if (!rose.getUserId().equals(userId)) {
+            throw new AccessDeniedException("본인의 장미만 삭제할 수 있습니다.");
+        }
+        if (diaryRepository.existsByRoseEntity_Id(roseId)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "해당 장미에 기록된 다이어리가 존재하여 삭제할 수 없습니다.");
+        }
+
+        String imageUrl = rose.getImageUrl();
+        if (imageUrl != null && !imageUrl.isBlank()) {
+            roseImageService.deleteImageAndUnbind(imageUrl, rose);
+        }
+
+        roseRepository.delete(rose);
+        log.info("장미 삭제 완료: roseId = {}", roseId);
     }
 }

@@ -9,4 +9,6 @@ import com.rose.back.domain.rose.entity.RoseImageEntity;
 public interface RoseImageRepository extends JpaRepository<RoseImageEntity, Long> {
     
     boolean existsByFileUrl(String fileUrl);
+
+    void deleteByRoseId(Long roseId);
 }
