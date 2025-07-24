@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 public record RoseResponse(
     Long id,
+    Long wikiId,
     String nickname,
     String varietyName,
     LocalDate acquiredDate,
