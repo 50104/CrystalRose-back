@@ -2,6 +2,7 @@ package com.rose.back.domain.diary.repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -21,5 +22,5 @@ public interface CareLogRepository extends JpaRepository<CareLogEntity, Long> {
     List<CareLogEntity> findByUserNo_UserNoOrderByCareDateDesc(Long userNo);
 
     // 특정 날짜의 케어 로그 조회
-    List<CareLogEntity> findByUserNo_UserNoAndCareDate(Long userNo, LocalDate careDate);
+    Optional<CareLogEntity> findByUserNo_UserNoAndCareDate(Long userNo, LocalDate careDate);
 }

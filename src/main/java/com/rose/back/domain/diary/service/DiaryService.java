@@ -106,8 +106,8 @@ public class DiaryService {
             LocalDate date = diary.getRecordedAt();
             Long userNo = diary.getRoseEntity().getUserId();
 
-            List<CareLogEntity> careLogs = careLogRepository.findByUserNo_UserNoAndCareDate(userNo, date);
-            log.info("케어 로그 조회: userNo={}, date={}, careLogs={}", userNo, date, careLogs.size());
+            Optional<CareLogEntity> careLogs = careLogRepository.findByUserNo_UserNoAndCareDate(userNo, date);
+            log.info("케어 로그 조회: userNo={}, date={}, careLogs={}", userNo, date, careLogs.isPresent());
             
             Set<String> careTypes = careLogs.stream()
                 .flatMap(log -> Stream.of(
@@ -128,7 +128,8 @@ public class DiaryService {
                 diary.getImageUrl(),
                 diary.getRecordedAt(),
                 new ArrayList<>(careTypes),
-                diary.getRoseEntity().getUserId().equals(userNo) // isMine
+                diary.getRoseEntity().getUserId().equals(userNo), // isMine
+                careLogs.isPresent() // hasCareLog
             );
         }).toList();
     }

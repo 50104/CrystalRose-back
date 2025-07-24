@@ -95,4 +95,10 @@ public class CareLogService {
 
         careLogRepository.save(entity);
     }
+
+    public CareLogResponse getByDate(Long roseId, LocalDate date, Long userNo) {
+        CareLogEntity entity = careLogRepository.findByUserNo_UserNoAndCareDate(userNo, date)
+                .orElseThrow(() -> new RuntimeException("해당 날짜에 대한 관리 기록이 없습니다."));
+        return CareLogResponse.fromEntity(entity);
+    }
 }

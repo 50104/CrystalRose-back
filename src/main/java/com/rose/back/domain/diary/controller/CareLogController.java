@@ -1,7 +1,9 @@
 package com.rose.back.domain.diary.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rose.back.domain.auth.oauth2.CustomUserDetails;
@@ -47,5 +50,14 @@ public class CareLogController implements CareLogControllerDocs {
         log.info("[PUT][/api/diaries/carelogs/{}] - 케어로그 수정 요청 (userNo: {})", id, userDetails.getUserNo());
         careLogService.update(id, request, userDetails.getUserNo());
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/carelogs/{roseId}")
+    public ResponseEntity<CareLogResponse> getCareLogByDate(
+            @PathVariable Long roseId,
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        log.info("[GET][/api/diaries/carelogs/{}] - 케어로그 단건 조회 요청 (userNo: {}, date: {})", roseId, userDetails.getUserNo(), date);
+        return ResponseEntity.ok(careLogService.getByDate(roseId, date, userDetails.getUserNo()));
     }
 }
