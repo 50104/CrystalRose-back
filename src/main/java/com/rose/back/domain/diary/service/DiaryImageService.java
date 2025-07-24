@@ -40,19 +40,38 @@ public class DiaryImageService {
 
     @Transactional
     public void saveAndBindImage(String imageUrl, DiaryEntity diary) {
-        diaryImageRepository.save(DiaryImageEntity.builder()
-            .fileUrl(imageUrl)
-            .originalFileName(null)
-            .storedFileName(imageUrl.replace("https://dodorose.com/", ""))
-            .diary(diary)
-            .build());
+        diaryImageRepository.save(toDiaryImageEntity(imageUrl, diary));
         tempRepository.findByFileUrl(imageUrl).ifPresent(tempRepository::delete);
     }
 
     @Transactional
     public void deleteImageAndUnbind(String imageUrl, DiaryEntity diary) {
-        s3Uploader.deleteFile(imageUrl);
+        deleteImageIfExists(imageUrl);
         diaryImageRepository.deleteByDiaryId(diary.getId());
-        tempRepository.findByFileUrl(imageUrl).ifPresent(tempRepository::delete);
+    }
+
+    @Transactional
+    public void replaceImage(String newImageUrl, DiaryEntity diary) {
+        diaryImageRepository.findByDiaryId(diary.getId()).ifPresent(existingImage -> {
+            deleteImageIfExists(existingImage.getFileUrl());
+            diaryImageRepository.delete(existingImage);
+        });
+
+        diaryImageRepository.save(toDiaryImageEntity(newImageUrl, diary));
+        tempRepository.findByFileUrl(newImageUrl).ifPresent(tempRepository::delete);
+    }
+
+    private DiaryImageEntity toDiaryImageEntity(String imageUrl, DiaryEntity diary) {
+        return DiaryImageEntity.builder()
+            .fileUrl(imageUrl)
+            .originalFileName(null)
+            .storedFileName(imageUrl.replace("https://dodorose.com/", ""))
+            .diary(diary)
+            .build();
+    }
+
+    private void deleteImageIfExists(String fileUrl) {
+        s3Uploader.deleteFile(fileUrl);
+        tempRepository.findByFileUrl(fileUrl).ifPresent(tempRepository::delete);
     }
 }

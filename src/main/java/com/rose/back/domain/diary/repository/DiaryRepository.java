@@ -29,4 +29,7 @@ public interface DiaryRepository extends JpaRepository<DiaryEntity, Long> {
     Map<String, Object> findRawDiary(@Param("id") Long id);
 
     boolean existsByRoseEntity_Id(Long roseId); // 다이어리 내역 조회
+
+    @Query("SELECT d FROM DiaryEntity d JOIN FETCH d.roseEntity WHERE d.id = :id")
+    Optional<DiaryEntity> findWithRoseById(@Param("id") Long id);
 }

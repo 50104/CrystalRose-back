@@ -71,4 +71,17 @@ public class DiaryController implements DiaryControllerDocs {
         diaryService.deleteDiary(user.getUserNo(), diaryId);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/update/{diaryId}")
+    public ResponseEntity<MessageResponse> updateDiary(@PathVariable("diaryId") Long diaryId, @RequestBody DiaryRequest request, @AuthenticationPrincipal CustomUserDetails user) {
+        log.info("[PUT][/api/diaries/update/{}] - 다이어리 수정 요청 (userId: {})", diaryId, user.getUserNo());
+        diaryService.updateDiary(user.getUserNo(), diaryId, request);
+        return ResponseEntity.ok(new MessageResponse("성장 기록이 수정되었습니다."));
+    }
+
+    @GetMapping("/{diaryId}")
+    public ResponseEntity<DiaryResponse> getDiary(@PathVariable("diaryId") Long diaryId, @AuthenticationPrincipal CustomUserDetails user) {
+        log.info("[GET][/api/diaries/{}] - 다이어리 조회 요청 (userId: {})", diaryId, user.getUserNo());
+        return ResponseEntity.ok(diaryService.getDiary(diaryId, user.getUserNo()));
+    }
 }

@@ -14,6 +14,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.amazonaws.services.kms.model.NotFoundException;
 import com.rose.back.domain.diary.dto.DiaryRequest;
 import com.rose.back.domain.diary.dto.DiaryResponse;
 import com.rose.back.domain.diary.dto.DiaryWithCareResponse;
@@ -84,7 +85,7 @@ public class DiaryService {
     public List<DiaryResponse> getUserTimeline(Long userId) {
         return diaryRepository.findAllByRoseEntity_UserIdOrderByRecordedAtDesc(userId)
             .stream()
-            .map(d -> new DiaryResponse(d.getId(), d.getNote(), d.getImageUrl(), d.getRecordedAt()))
+            .map(DiaryResponse::from)
             .toList();
     }
     
@@ -95,7 +96,7 @@ public class DiaryService {
 
         return diaryRepository.findAllByRoseEntity_UserIdAndRecordedAtBetweenOrderByRecordedAtDesc(userId, start, end)
             .stream()
-            .map(d -> new DiaryResponse(d.getId(), d.getNote(), d.getImageUrl(), d.getRecordedAt()))
+            .map(DiaryResponse::from)
             .toList();
     }
 
@@ -178,5 +179,35 @@ public class DiaryService {
         }
         diaryImageRepository.deleteByDiaryId(diaryId);
         diaryRepository.deleteById(diaryId);
+    }
+
+    @Transactional
+    public void updateDiary(Long userId, Long diaryId, DiaryRequest request) {
+        DiaryEntity diary = diaryRepository.findWithRoseById(diaryId)
+            .orElseThrow(() -> new NotFoundException("다이어리를 찾을 수 없습니다."));
+
+        if (!diary.getRoseEntity().getUserId().equals(userId)) {
+            throw new AccessDeniedException("본인의 다이어리만 수정할 수 있습니다.");
+        }
+
+        if (!Objects.equals(request.imageUrl(), diary.getImageUrl())) {
+            diaryImageService.replaceImage(request.imageUrl(), diary);
+            diary.setImageUrl(request.imageUrl());
+        }
+        diary.setNote(request.note());
+        diary.setRecordedAt(request.recordedAt());
+
+        log.info("다이어리 수정 완료: id={}", diaryId);
+    }
+
+    @Transactional(readOnly = true)
+    public DiaryResponse getDiary(Long diaryId, Long userId) {
+        DiaryEntity diary = diaryRepository.findWithRoseById(diaryId)
+            .orElseThrow(() -> new NotFoundException("다이어리를 찾을 수 없습니다."));
+
+        if (!diary.getRoseEntity().getUserId().equals(userId)) {
+            throw new AccessDeniedException("조회 권한이 없습니다.");
+        }
+        return DiaryResponse.from(diary);
     }
 }

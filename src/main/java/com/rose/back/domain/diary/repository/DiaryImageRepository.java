@@ -1,5 +1,7 @@
 package com.rose.back.domain.diary.repository;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -14,4 +16,7 @@ public interface DiaryImageRepository extends JpaRepository<DiaryImageEntity, Lo
     @Modifying
     @Query("DELETE FROM DiaryImageEntity d WHERE d.diary.id = :diaryId")
     int deleteByDiaryId(@Param("diaryId") Long diaryId);
+
+    @Query("SELECT d FROM DiaryImageEntity d WHERE d.diary.id = :diaryId")
+    Optional<DiaryImageEntity> findByDiaryId(@Param("diaryId") Long diaryId);
 }
