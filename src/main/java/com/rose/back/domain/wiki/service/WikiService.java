@@ -32,19 +32,19 @@ public class WikiService {
             WikiEntity wiki = WikiEntity.builder()
                 .name(dto.getName())
                 .category(dto.getCategory())
-                .cultivarCode(dto.getCultivarCode())
-                .flowerSize(dto.getFlowerSize())
-                .petalCount(dto.getPetalCount())
-                .fragrance(dto.getFragrance())
-                .diseaseResistance(dto.getDiseaseResistance())
-                .growthType(dto.getGrowthType())
-                .usageType(dto.getUsageType())
-                .recommendedPosition(dto.getRecommendedPosition())
+                .cultivarCode(defaultValue(dto.getCultivarCode(), "-"))
+                .flowerSize(defaultValue(dto.getFlowerSize(), "-"))
+                .petalCount(defaultValue(dto.getPetalCount(), "-"))
+                .fragrance(defaultValue(dto.getFragrance(), "-"))
+                .diseaseResistance(defaultValue(dto.getDiseaseResistance(), "-"))
+                .growthType(defaultValue(dto.getGrowthType(), "-"))
+                .usageType(defaultValue(dto.getUsageType(), "-"))
+                .recommendedPosition(defaultValue(dto.getRecommendedPosition(), "-"))
                 .imageUrl(dto.getImageUrl())
-                .continuousBlooming(dto.getContinuousBlooming())
-                .multiBlooming(dto.getMultiBlooming())
-                .growthPower(dto.getGrowthPower())
-                .coldResistance(dto.getColdResistance())
+                .continuousBlooming(defaultValue(dto.getContinuousBlooming(), "-"))
+                .multiBlooming(defaultValue(dto.getMultiBlooming(), "-"))
+                .growthPower(defaultValue(dto.getGrowthPower(), "-"))
+                .coldResistance(defaultValue(dto.getColdResistance(), "-"))
                 .status(WikiEntity.Status.PENDING)
                 .modificationStatus(WikiEntity.ModificationStatus.NONE)
                 .build();
@@ -58,6 +58,10 @@ public class WikiService {
             log.error("도감 등록 중 예외 발생: {}", e.getMessage(), e);
             throw new RuntimeException("도감 등록 실패", e);
         }
+    }
+
+    private String defaultValue(String value, String fallback) {
+        return (value == null || value.trim().isEmpty()) ? fallback : value;
     }
 
     public void updateWiki(Long id, WikiRequest dto) {
