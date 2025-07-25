@@ -293,4 +293,11 @@ public class AdminService {
                 .createdDate(request.getCreatedDate())
                 .build();
     }
+
+    @Transactional
+    public void deleteWikiByAdmin(Long wikiId) {
+        WikiEntity wiki = wikiRepository.findById(wikiId)
+            .orElseThrow(() -> new EntityNotFoundException("도감을 찾을 수 없습니다."));
+        wiki.setStatus(WikiEntity.Status.DELETED);
+    }
 }

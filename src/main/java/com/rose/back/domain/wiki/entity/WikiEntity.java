@@ -68,7 +68,7 @@ public class WikiEntity extends BaseTimeEntity {
     private ModificationStatus modificationStatus;
 
     public enum Status {
-        PENDING, APPROVED, REJECTED
+        PENDING, APPROVED, REJECTED, DELETED
     }
 
     public enum ModificationStatus {
