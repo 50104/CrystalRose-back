@@ -141,6 +141,7 @@ public class ChatService {
     ChatParticipant chatParticipant = ChatParticipant.builder()
       .chatRoom(chatRoom)
       .userEntity(userEntity)
+      .displayName(userEntity.getUserNick())
       .build();
     chatParticipantRepository.save(chatParticipant);  
   }
