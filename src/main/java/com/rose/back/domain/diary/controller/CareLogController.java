@@ -54,7 +54,7 @@ public class CareLogController implements CareLogControllerDocs {
 
     @GetMapping("/carelogs/{roseId}")
     public ResponseEntity<CareLogResponse> getCareLogByDate(
-            @PathVariable Long roseId,
+            @PathVariable("roseId") Long roseId,
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         log.info("[GET][/api/diaries/carelogs/{}] - 케어로그 단건 조회 요청 (userNo: {}, date: {})", roseId, userDetails.getUserNo(), date);
