@@ -78,6 +78,7 @@
       </Filters>
     </RollingFile>
 
+    <!-- WebSocket -->
     <RollingFile name="WebSocketFile"
                 fileName="${LOG_PATH}/websocket.log"
                 filePattern="${LOG_PATH}/websocket-%d{yyyy-MM-dd}.%i.log.gz"
@@ -151,6 +152,21 @@
 
     <!-- WebSocket -->
     <Logger name="com.rose.back.global.websocket" level="INFO" additivity="false">
+      <AppenderRef ref="Console"/>
+      <AppenderRef ref="WebSocketFile"/>
+    </Logger>
+
+    <Logger name="com.rose.back.domain.chat.controller.StompController" level="INFO" additivity="false">
+      <AppenderRef ref="Console"/>
+      <AppenderRef ref="WebSocketFile"/>
+    </Logger>
+
+    <Logger name="com.rose.back.domain.chat.service.RedisPubSubService" level="INFO" additivity="false">
+      <AppenderRef ref="Console"/>
+      <AppenderRef ref="WebSocketFile"/>
+    </Logger>
+
+    <Logger name="com.rose.back.domain.chat.controller.ChatController" level="INFO" additivity="false">
       <AppenderRef ref="Console"/>
       <AppenderRef ref="WebSocketFile"/>
     </Logger>
