@@ -43,7 +43,7 @@ public class S3Uploader {
         try (InputStream inputStream = file.getInputStream()) {
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentLength(file.getSize());
-            metadata.setContentType(file.getContentType());
+            metadata.setContentType(resolveContentType(extension));
 
             amazonS3.putObject(bucket, key, inputStream, metadata);
             log.info("S3 업로드 성공: key={}", key);
@@ -64,7 +64,7 @@ public class S3Uploader {
         try (InputStream inputStream = file.getInputStream()) {
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentLength(file.getSize());
-            metadata.setContentType(file.getContentType());
+            metadata.setContentType(resolveContentType(extension));
 
             amazonS3.putObject(bucket, key, inputStream, metadata);
             log.info("S3 프로필 업로드 성공: key={}", key);
@@ -83,15 +83,23 @@ public class S3Uploader {
         return filename.substring(filename.lastIndexOf(".")).toLowerCase();
     }
 
+    private String resolveContentType(String extension) {
+        return switch (extension) {
+            case ".webp" -> "image/webp";
+            case ".png" -> "image/png";
+            case ".jpg", ".jpeg" -> "image/jpeg";
+            case ".gif" -> "image/gif";
+            default -> "application/octet-stream";
+        };
+    }
+
     private String generateCloudFrontUrl(String key) {
-        // 마지막 / 없이 처리된 CloudFront 도메인 보정
         String domain = cloudFrontDomain.endsWith("/") ? cloudFrontDomain.substring(0, cloudFrontDomain.length() - 1) : cloudFrontDomain;
         return domain + "/" + key;
     }
 
     public void deleteFile(String fileUrl) {
         try {
-            // CloudFront URL을 S3 키로 변환
             String key = fileUrl.replace(cloudFrontDomain + "/", "");
             amazonS3.deleteObject(bucket, key);
             log.info("S3 삭제 완료: {}", key);
