@@ -8,9 +8,7 @@ import com.rose.back.domain.user.controller.docs.AdminControllerDocs;
 import com.rose.back.domain.user.dto.AdminResponse;
 import com.rose.back.domain.user.service.AdminService;
 import com.rose.back.domain.wiki.dto.WikiModificationRequestDto;
-
-import jakarta.persistence.EntityNotFoundException;
-
+import com.rose.back.domain.wiki.dto.WikiDetailResponse;
 import com.rose.back.domain.wiki.dto.WikiModificationComparisonDto;
 
 import lombok.RequiredArgsConstructor;
@@ -113,5 +111,13 @@ public class AdminController implements AdminControllerDocs {
         log.info("[DELETE][/api/v1/admin/wiki/{}] - 도감 삭제 요청 (관리자)", id);
         adminService.deleteWikiByAdmin(id);
         return ResponseEntity.ok(new MessageResponse("도감이 삭제 처리되었습니다."));
+    }
+
+    @GetMapping("/wiki/detail/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<WikiDetailResponse> getWikiDetailByAdmin(@PathVariable("id") Long id) {
+        log.info("[GET][/api/v1/admin/wiki/detail/{}] - 관리자 도감 상세 조회 요청", id);
+        WikiDetailResponse response = adminService.getWikiDetailByAdmin(id);
+        return ResponseEntity.ok(response);
     }
 }

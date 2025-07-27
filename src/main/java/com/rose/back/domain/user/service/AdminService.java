@@ -17,6 +17,7 @@ import com.rose.back.domain.wiki.entity.WikiModificationRequest;
 import com.rose.back.domain.wiki.repository.WikiRepository;
 import com.rose.back.domain.wiki.repository.WikiModificationRequestRepository;
 import com.rose.back.domain.wiki.dto.WikiModificationRequestDto;
+import com.rose.back.domain.wiki.dto.WikiDetailResponse;
 import com.rose.back.domain.wiki.dto.WikiModificationComparisonDto;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -300,4 +301,31 @@ public class AdminService {
             .orElseThrow(() -> new EntityNotFoundException("도감을 찾을 수 없습니다."));
         wiki.setStatus(WikiEntity.Status.DELETED);
     }
+
+    public WikiDetailResponse getWikiDetailByAdmin(Long id) {
+    WikiEntity wiki = getWikiOrThrow(id);
+
+    return WikiDetailResponse.builder()
+            .id(wiki.getId())
+            .name(wiki.getName())
+            .category(wiki.getCategory())
+            .cultivarCode(wiki.getCultivarCode())
+            .flowerSize(wiki.getFlowerSize())
+            .petalCount(wiki.getPetalCount())
+            .fragrance(wiki.getFragrance())
+            .diseaseResistance(wiki.getDiseaseResistance())
+            .growthType(wiki.getGrowthType())
+            .usageType(wiki.getUsageType())
+            .recommendedPosition(wiki.getRecommendedPosition())
+            .continuousBlooming(wiki.getContinuousBlooming())
+            .multiBlooming(wiki.getMultiBlooming())
+            .growthPower(wiki.getGrowthPower())
+            .coldResistance(wiki.getColdResistance())
+            .imageUrl(wiki.getImageUrl())
+            .status(wiki.getStatus().name())
+            .modificationStatus(wiki.getModificationStatus().name())
+            .createdDate(wiki.getCreatedDate())
+            .build();
+}
+
 }

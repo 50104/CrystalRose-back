@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import com.rose.back.common.dto.MessageResponse;
 import com.rose.back.domain.user.dto.AdminResponse;
+import com.rose.back.domain.wiki.dto.WikiDetailResponse;
 import com.rose.back.global.exception.CommonErrorResponses;
 import com.rose.back.global.handler.ErrorResponse;
 
@@ -112,4 +113,25 @@ public interface AdminControllerDocs {
                     """))),
     })
     ResponseEntity<MessageResponse> deleteWikiByAdmin(@PathVariable("id") Long id);
+
+    // public ResponseEntity<WikiDetailResponse> getWikiDetailByAdmin(@PathVariable("id") Long id);
+    @Operation(summary = "도감 상세 조회", description = "특정 ID의 도감을 상세 조회합니다. ADMIN 권한이 필요합니다.")
+    @CommonErrorResponses
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "도감 상세 조회 성공",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = WikiDetailResponse.class))
+        ),
+        @ApiResponse(responseCode = "409", description = "도감 상세 조회 실패 - 도감이 존재하지 않음",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(name = "Conflict", value = """
+                    {
+                      "status": 409,
+                      "error": "CONFLICT",
+                      "message": "도감 상세 조회에 실패했습니다. 도감이 존재하지 않습니다.",
+                      "path": "/api/v1/admin/wiki/detail/{id}"
+                    }
+                    """)))
+    })
+    ResponseEntity<WikiDetailResponse> getWikiDetailByAdmin(@PathVariable("id") Long id);
 }
