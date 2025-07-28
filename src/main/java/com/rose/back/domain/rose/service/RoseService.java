@@ -185,7 +185,7 @@ public class RoseService {
             throw new AccessDeniedException("본인의 장미만 삭제할 수 있습니다.");
         }
         if (diaryRepository.existsByRoseEntity_Id(roseId)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "해당 장미에 기록된 다이어리가 존재하여 삭제할 수 없습니다.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "해당 장미의 타임라인에 기록이 존재하여 삭제할 수 없습니다.");
         }
 
         String imageUrl = rose.getImageUrl();
