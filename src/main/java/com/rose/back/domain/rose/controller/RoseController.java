@@ -89,7 +89,7 @@ public class RoseController implements RoseControllerDocs {
     }
 
     @DeleteMapping("/delete/{roseId}")
-    public ResponseEntity<?> deleteRose(@PathVariable Long roseId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<?> deleteRose(@PathVariable("roseId") Long roseId, @AuthenticationPrincipal CustomUserDetails userDetails) {
         log.info("[DELETE][/api/roses/delete/{}] - 장미 삭제 요청: roseId={}", roseId, roseId);
         Long userId = userDetails.getUserNo();
         roseService.deleteRoseIfNoDiaries(roseId, userId);

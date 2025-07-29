@@ -52,12 +52,17 @@ public class DiaryImageService {
 
     @Transactional
     public void replaceImage(String newImageUrl, DiaryEntity diary) {
-        diaryImageRepository.findByDiaryId(diary.getId()).ifPresent(existingImage -> {
-            deleteImageIfExists(existingImage.getFileUrl());
-            diaryImageRepository.delete(existingImage);
-        });
+        DiaryImageEntity existing = diaryImageRepository.findByDiaryId(diary.getId())
+            .orElse(null);
 
-        diaryImageRepository.save(toDiaryImageEntity(newImageUrl, diary));
+        if (existing != null) {
+            deleteImageIfExists(existing.getFileUrl());
+            existing.setFileUrl(newImageUrl);
+            existing.setStoredFileName(newImageUrl.replace("https://dodorose.com/", ""));
+            diaryImageRepository.save(existing);
+        } else {
+            diaryImageRepository.save(toDiaryImageEntity(newImageUrl, diary));
+        }
         tempRepository.findByFileUrl(newImageUrl).ifPresent(tempRepository::delete);
     }
 
