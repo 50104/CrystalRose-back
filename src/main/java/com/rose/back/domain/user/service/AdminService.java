@@ -280,6 +280,7 @@ public class AdminService {
                 .originalWikiId(request.getOriginalWiki().getId())
                 .requesterNick(request.getRequester().getUserNick())
                 .name(request.getName())
+                .originalName(request.getOriginalWiki().getName())
                 .category(request.getCategory())
                 .cultivarCode(request.getCultivarCode())
                 .flowerSize(request.getFlowerSize())

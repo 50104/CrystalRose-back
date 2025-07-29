@@ -15,7 +15,10 @@ public class WikiModificationRequestDto {
     private Long id;
     private Long originalWikiId;
     private String requesterNick;
+
     private String name;
+    private String originalName;  
+    
     private String category;
     private String cultivarCode;
     private String flowerSize;
