@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.rose.back.domain.diary.entity.DiaryEntity;
+import com.rose.back.domain.rose.entity.RoseEntity;
 
 public interface DiaryRepository extends JpaRepository<DiaryEntity, Long> {
 
@@ -32,4 +33,6 @@ public interface DiaryRepository extends JpaRepository<DiaryEntity, Long> {
 
     @Query("SELECT d FROM DiaryEntity d JOIN FETCH d.roseEntity WHERE d.id = :id")
     Optional<DiaryEntity> findWithRoseById(@Param("id") Long id);
+
+    Optional<DiaryEntity> findFirstByRoseEntityOrderByRecordedAtAsc(RoseEntity rose);
 }

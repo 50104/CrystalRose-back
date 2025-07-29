@@ -2,6 +2,8 @@ package com.rose.back.domain.rose.service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -161,19 +163,54 @@ public class RoseService {
         log.info("장미 수정 시작: roseId={}, userId={}", roseId, userId);
         RoseEntity rose = getUserRose(userId, roseId);
 
+        // 도감 정보 변경
         if (!rose.getWikiEntity().getId().equals(request.wikiId())) {
             WikiEntity newWiki = roseWikiRepository.findById(request.wikiId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 도감 품종이 존재하지 않습니다."));
             rose.setWikiEntity(newWiki);
         }
 
+        // 기존 정보 저장
+        String oldImage = rose.getImageUrl();
+
+        // 기본 정보 업데이트
         rose.setNickname(request.nickname());
         rose.setAcquiredDate(request.acquiredDate());
         rose.setLocationNote(request.locationNote());
+
+        // 이미지 변경 시 처리
         roseImageService.updateImageChanged(request.imageUrl(), rose);
+
+        // 🌹 첫 다이어리도 함께 수정
+        updateInitialDiary(rose, request, oldImage);
 
         roseRepository.save(rose);
         log.info("장미 수정 완료: roseId={}", rose.getId());
+    }
+
+    private void updateInitialDiary(RoseEntity rose, RoseRequest request, String oldImage) {
+        Optional<DiaryEntity> firstDiaryOpt = diaryRepository.findFirstByRoseEntityOrderByRecordedAtAsc(rose);
+
+        if (firstDiaryOpt.isPresent()) {
+            DiaryEntity diary = firstDiaryOpt.get();
+
+            // nickname 변경 → 다이어리 note 반영
+            diary.setNote(String.format("%s 첫 기록", rose.getNickname()));
+
+            // acquiredDate 변경 → 다이어리 기록일 변경
+            diary.setRecordedAt(request.acquiredDate() != null ? request.acquiredDate() : diary.getRecordedAt());
+
+            // image 변경 → 다이어리 이미지 교체
+            if (!Objects.equals(request.imageUrl(), oldImage)) {
+                diaryImageService.replaceImage(request.imageUrl(), diary);
+                diary.setImageUrl(request.imageUrl());
+            }
+
+            diaryRepository.save(diary);
+            log.info("첫 다이어리 정보 동기화 완료: diaryId={}", diary.getId());
+        } else {
+            log.warn("첫 다이어리를 찾을 수 없어 동기화되지 않았습니다: roseId={}", rose.getId());
+        }
     }
 
     @Transactional

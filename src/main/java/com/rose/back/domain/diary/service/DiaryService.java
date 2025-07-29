@@ -23,6 +23,7 @@ import com.rose.back.domain.diary.entity.DiaryEntity;
 import com.rose.back.domain.diary.repository.CareLogRepository;
 import com.rose.back.domain.diary.repository.DiaryImageRepository;
 import com.rose.back.domain.diary.repository.DiaryRepository;
+import com.rose.back.domain.rose.dto.RoseRequest;
 import com.rose.back.domain.rose.entity.RoseEntity;
 import com.rose.back.domain.rose.service.RoseService;
 import com.rose.back.infra.S3.ImageTempRepository;
