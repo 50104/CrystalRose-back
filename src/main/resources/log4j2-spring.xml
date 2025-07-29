@@ -33,6 +33,7 @@
       </DefaultRolloverStrategy>
       <Filters>
         <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+        <RegexFilter regex=".*Unhandled error @ /: No static resource \..*" onMatch="DENY" onMismatch="NEUTRAL"/>
       </Filters>
     </RollingFile>
 
