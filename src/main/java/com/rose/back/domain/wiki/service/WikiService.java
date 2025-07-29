@@ -64,37 +64,6 @@ public class WikiService {
         return (value == null || value.trim().isEmpty()) ? fallback : value;
     }
 
-    public void updateWiki(Long id, WikiRequest dto) {
-        WikiEntity existing = wikiRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("수정할 도감 정보를 찾을 수 없습니다. ID: " + id));
-
-        WikiEntity updated = WikiEntity.builder()
-            .id(existing.getId())
-            .name(dto.getName())
-            .category(dto.getCategory())
-            .cultivarCode(dto.getCultivarCode())
-            .flowerSize(dto.getFlowerSize())
-            .petalCount(dto.getPetalCount())
-            .fragrance(dto.getFragrance())
-            .diseaseResistance(dto.getDiseaseResistance())
-            .growthType(dto.getGrowthType())
-            .usageType(dto.getUsageType())
-            .recommendedPosition(dto.getRecommendedPosition())
-            .imageUrl(dto.getImageUrl())
-            .continuousBlooming(dto.getContinuousBlooming())
-            .multiBlooming(dto.getMultiBlooming())
-            .growthPower(dto.getGrowthPower())
-            .coldResistance(dto.getColdResistance())
-            .status(existing.getStatus())
-            .modificationStatus(WikiEntity.ModificationStatus.PENDING)
-            .build();
-
-        wikiRepository.save(updated);
-        wikiImageService.saveAndBindImage(dto.getImageUrl(), updated);
-
-        log.info("도감 ID {} 수정 완료 - 수정 검증 대기 중", id);
-    }
-
     public void submitModificationRequest(Long wikiId, WikiRequest dto, UserEntity requester) {
         log.info("도감 수정 요청 처리 시작 - wikiId: {}, requester: {}", wikiId, requester.getUserId());
         

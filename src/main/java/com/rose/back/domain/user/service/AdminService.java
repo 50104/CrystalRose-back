@@ -15,6 +15,7 @@ import com.rose.back.domain.comment.entity.CommentEntity;
 import com.rose.back.domain.wiki.entity.WikiEntity;
 import com.rose.back.domain.wiki.entity.WikiModificationRequest;
 import com.rose.back.domain.wiki.repository.WikiRepository;
+import com.rose.back.domain.wiki.service.WikiImageService;
 import com.rose.back.domain.wiki.repository.WikiModificationRequestRepository;
 import com.rose.back.domain.wiki.dto.WikiModificationRequestDto;
 import com.rose.back.domain.wiki.dto.WikiDetailResponse;
@@ -33,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AdminService {
 
     private final WikiRepository wikiRepository;
+    private final WikiImageService wikiImageService;
     private final CommentReportRepository commentReportRepository;
     private final WikiModificationRequestRepository wikiModificationRequestRepository;
 
@@ -73,15 +75,17 @@ public class AdminService {
 
     public void approveModificationRequest(Long requestId) {
         WikiModificationRequest request = getModificationRequestOrThrow(requestId);
-        
-        // 원본 도감 업데이트
         WikiEntity originalWiki = request.getOriginalWiki();
         updateWikiFromRequest(originalWiki, request);
-        
-        // 수정 완료 시 상태 변경(NONE)
+
+        wikiImageService.wikiModification(
+            request.getImageUrl(),
+            originalWiki
+        );
+
         originalWiki.setModificationStatus(WikiEntity.ModificationStatus.NONE);
-        
         wikiModificationRequestRepository.delete(request);
+
         log.info("도감 수정 요청 ID {} 승인 완료 - 원본 도감 ID {} 업데이트 및 요청 삭제", requestId, originalWiki.getId());
     }
 

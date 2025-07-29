@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import com.rose.back.global.entity.BaseTimeEntity;
 
@@ -14,6 +15,7 @@ import jakarta.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Setter
 @Table(name = "rose_wiki_image")
 public class WikiImageEntity extends BaseTimeEntity {
 

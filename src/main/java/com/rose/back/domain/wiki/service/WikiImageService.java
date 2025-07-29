@@ -2,6 +2,7 @@ package com.rose.back.domain.wiki.service;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,7 +17,9 @@ import com.rose.back.infra.S3.S3Uploader;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class WikiImageService {
@@ -47,5 +50,53 @@ public class WikiImageService {
                 .build());
         }
         tempRepository.findByFileUrl(fileUrl).ifPresent(tempRepository::delete);
+    }
+
+    @Transactional
+    public void wikiModification(Object imageInput, WikiEntity wiki) {
+        List<String> newFileUrls;
+
+        if (imageInput instanceof String singleUrl) {
+            newFileUrls = List.of(singleUrl);
+        } else if (imageInput instanceof List<?> list) {
+            newFileUrls = list.stream()
+                .filter(url -> url instanceof String)
+                .map(url -> (String) url)
+                .toList();
+        } else {
+            throw new IllegalArgumentException("지원되지 않는 이미지 입력 타입입니다: " + imageInput);
+        }
+        if (newFileUrls.isEmpty()) return;
+
+        String newFileUrl = newFileUrls.get(0);
+        List<WikiImageEntity> existingImages = wikiImageRepository.findByWiki(wiki);
+
+        if (!existingImages.isEmpty()) {
+            WikiImageEntity existing = existingImages.get(0);
+
+            if (existing.getFileUrl().equals(newFileUrl)) {
+                log.info("이미지 변경 없음 - 기존과 동일: {}", newFileUrl);
+                tempRepository.findByFileUrl(newFileUrl).ifPresent(tempRepository::delete);
+                wiki.setImageUrl(newFileUrl);
+                return;
+            }
+            s3Uploader.deleteFile(existing.getFileUrl());
+
+            existing.setFileUrl(newFileUrl);
+            existing.setStoredFileName(newFileUrl.replace("https://dodorose.com/", ""));
+            existing.setOriginalFileName(null);
+            log.info("기존 WikiImageEntity 덮어쓰기 완료 (id 유지): {}", existing.getId());
+
+        } else {
+            WikiImageEntity saved = wikiImageRepository.save(WikiImageEntity.builder()
+                .fileUrl(newFileUrl)
+                .storedFileName(newFileUrl.replace("https://dodorose.com/", ""))
+                .originalFileName(null)
+                .wiki(wiki)
+                .build());
+            log.info("새 WikiImageEntity 저장: {}", saved.getId());
+        }
+        tempRepository.findByFileUrl(newFileUrl).ifPresent(tempRepository::delete);
+        wiki.setImageUrl(newFileUrl);
     }
 }
