@@ -54,7 +54,7 @@ public class RoseController implements RoseControllerDocs {
 
     @PostMapping("/image/upload")
     public ResponseEntity<ImageUploadResponse> upload(@RequestParam("file") MultipartFile file) {
-        log.info("[POST][/api/roses/image/upload] - 장미 이미지 업로드 요청: {}", file.getOriginalFilename());
+        log.info("[POST][/api/roses/image/upload] - 장미 이미지 업로드 요청");
         try {
             String url = roseImageService.uploadImage(file);
             return ResponseEntity.ok(new ImageUploadResponse(true, url, null));

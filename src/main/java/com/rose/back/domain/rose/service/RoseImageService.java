@@ -2,6 +2,7 @@ package com.rose.back.domain.rose.service;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,5 +59,40 @@ public class RoseImageService {
         s3Uploader.deleteFile(imageUrl);
         roseImageRepository.deleteByRoseId(rose.getId());
         tempRepository.findByFileUrl(imageUrl).ifPresent(tempRepository::delete);
+    }
+
+    @Transactional
+    public void updateImageChanged(String newFileUrl, RoseEntity rose) {
+        if (newFileUrl == null || newFileUrl.isBlank()) return;
+
+        List<RoseImageEntity> existingImages = roseImageRepository.findByRoseId(rose.getId());
+
+        if (!existingImages.isEmpty()) {
+            RoseImageEntity current = existingImages.get(0);
+
+            if (current.getFileUrl().equals(newFileUrl)) {
+                log.info("이미지 변경 없음: {}", newFileUrl);
+                return;
+            }
+
+            s3Uploader.deleteFile(current.getFileUrl());
+
+            current.setFileUrl(newFileUrl);
+            current.setStoredFileName(newFileUrl.replace("https://dodorose.com/", ""));
+            current.setOriginalFileName(null);
+            log.info("기존 RoseImageEntity 수정 완료 (id 유지): {}", current.getId());
+
+        } else {
+            RoseImageEntity saved = roseImageRepository.save(RoseImageEntity.builder()
+                .fileUrl(newFileUrl)
+                .storedFileName(newFileUrl.replace("https://dodorose.com/", ""))
+                .originalFileName(null)
+                .rose(rose)
+                .build());
+            log.info("RoseImageEntity 새로 저장: {}", saved.getId());
+        }
+
+        tempRepository.findByFileUrl(newFileUrl).ifPresent(tempRepository::delete);
+        rose.setImageUrl(newFileUrl);
     }
 }

@@ -170,10 +170,9 @@ public class RoseService {
         rose.setNickname(request.nickname());
         rose.setAcquiredDate(request.acquiredDate());
         rose.setLocationNote(request.locationNote());
-        rose.setImageUrl(request.imageUrl());
+        roseImageService.updateImageChanged(request.imageUrl(), rose);
 
         roseRepository.save(rose);
-
         log.info("장미 수정 완료: roseId={}", rose.getId());
     }
 
