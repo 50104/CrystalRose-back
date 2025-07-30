@@ -27,4 +27,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     UserEntity findByUserNo(Long userNo);
 
     Optional<UserEntity> findOptionalByUserId(String userId);
+
+    boolean existsByUserProfileImg(String imageUrl);
 }

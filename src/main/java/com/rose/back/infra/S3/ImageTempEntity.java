@@ -40,5 +40,5 @@ public class ImageTempEntity {
     @Column(name = "uploaded_at")
     private Date uploadedAt;
 
-    public enum DomainType { BOARD, ROSE, WIKI, DIARY }
+    public enum DomainType { BOARD, ROSE, WIKI, DIARY, USER }
 }

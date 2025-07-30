@@ -11,11 +11,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.rose.back.common.util.ImageValidator;
 import com.rose.back.domain.user.dto.UserInfoDto;
 import com.rose.back.domain.user.dto.request.MemberSearchCondition;
 import com.rose.back.domain.user.entity.UserEntity;
 import com.rose.back.domain.user.repository.UserRepository;
+import com.rose.back.domain.user.service.UserImageService;
 import com.rose.back.domain.user.service.UserService;
 import com.rose.back.infra.S3.S3Uploader;
 
@@ -28,6 +28,7 @@ import lombok.extern.log4j.Log4j2;
 public class UserServiceImpl implements UserService {
     
     private final UserRepository userRepository;
+    private final UserImageService userImageService;
     private final PasswordEncoder passwordEncoder;
     private final S3Uploader s3Uploader;
 
@@ -93,31 +94,31 @@ public class UserServiceImpl implements UserService {
     @Override
     public void modify(UserInfoDto dto) {
         UserEntity user = userRepository.findByUserId(dto.getUserName());
+        if (user == null) {
+            throw new RuntimeException("존재하지 않는 사용자입니다.");
+        }
+
         String beforeUrl = user.getUserProfileImg();
 
         try {
             boolean isDelete = Boolean.parseBoolean(dto.getIsDelete());
-            // 프로필 이미지 삭제 요청
+
             if (isDelete) {
-                if (beforeUrl != null && !beforeUrl.isEmpty()) {
-                    s3Uploader.deleteFile(beforeUrl);
-                }
-                user.setUserProfileImg(null);
+                userImageService.deleteImageAndUnbind(beforeUrl, user);
             } else if (dto.getUserProfileFile() != null && !dto.getUserProfileFile().isEmpty()) {
-                // 새 이미지 업로드
-                ImageValidator.validate(dto.getUserProfileFile());
-                String uploadedUrl = s3Uploader.uploadProfile(dto.getUserProfileFile(), dto.getUserName());
+                String uploadedUrl = userImageService.uploadImage(dto.getUserProfileFile(), user);
                 user.setUserProfileImg(uploadedUrl);
                 if (beforeUrl != null && !beforeUrl.isEmpty()) {
                     s3Uploader.deleteFile(beforeUrl);
                 }
             }
+
             user.setUserNick(dto.getUserNick());
             userRepository.save(user);
             log.info("프로필 이미지 변경 성공: {}", dto.getUserName());
         } catch (IOException e) {
-            log.error("S3 프로필 이미지 처리 중 오류 발생: {}", e.getMessage(), e);
-            throw new RuntimeException("프로필 이미지 처리 실패", e);
+            log.error("프로필 이미지 처리 실패: {}", e.getMessage(), e);
+            throw new RuntimeException("프로필 이미지 처리 중 오류 발생", e);
         }
     }
 
