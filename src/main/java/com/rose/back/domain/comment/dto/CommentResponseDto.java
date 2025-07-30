@@ -30,7 +30,11 @@ public class CommentResponseDto {
                 .userStatus(writer.getUserStatus().name())
                 .createdDate(entity.getCreatedDate() != null ? entity.getCreatedDate().toString() : "")
                 .parentId(entity.getParent() != null ? entity.getParent().getId() : null)
-                .parentNickname(entity.getParent() != null ? entity.getParent().getWriter().getUserId() : null)
+                .parentNickname(
+                    entity.getParent() != null && entity.getParent().getWriter() != null
+                        ? entity.getParent().getWriter().getUserNick()
+                        : null
+                )
                 .deleted(entity.isDeleted())
                 .build();
     }
