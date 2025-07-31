@@ -41,4 +41,15 @@ public class ContentEntity extends BaseTimeEntity {
 
     @Column(name = "view_count", nullable = false)
     private Long viewCount = 0L;
+
+    @Column(name = "recommend_count")
+    private Integer recommendCount = 0;
+
+    public void increaseRecommendCount() {
+        this.recommendCount++;
+    }
+
+    public void decreaseRecommendCount() {
+        if (this.recommendCount > 0) this.recommendCount--;
+    }
 }

@@ -8,6 +8,8 @@ import com.rose.back.domain.board.dto.ContentRequestDto;
 import com.rose.back.domain.board.dto.ContentWithWriterDto;
 import com.rose.back.domain.board.service.ContentImageService;
 import com.rose.back.domain.board.service.ContentService;
+import com.rose.back.domain.board.service.RecommendationService;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,7 @@ public class ContentController implements ContentControllerDocs {
 
     private final ContentImageService contentImageService;
     private final ContentService contentService;
+    private final RecommendationService recommendationService;
 
     @GetMapping("/editor")
     public ResponseEntity<MessageResponse> editorPage() {
@@ -72,10 +75,7 @@ public class ContentController implements ContentControllerDocs {
     }
 
     @GetMapping("/content/{boardNo}")
-    public ResponseEntity<ContentResponse> contentPage(
-            @PathVariable("boardNo") Long boardNo,
-            Authentication authentication) {
-
+    public ResponseEntity<ContentResponse> contentPage(@PathVariable("boardNo") Long boardNo, Authentication authentication) {
         String currentUserId = authentication.getName();
         log.info("[GET][/board/content/{}] - 게시글 조회 요청, 사용자: {}", boardNo, currentUserId);
 
@@ -100,6 +100,16 @@ public class ContentController implements ContentControllerDocs {
         String s3Url = contentImageService.saveImageS3(file);
         return ResponseEntity.ok(new ImageUploadResponse(true, true, s3Url));
     }
+
+    @PostMapping("/recommend/{boardNo}")
+    public ResponseEntity<?> toggleRecommend(@PathVariable("boardNo") Long boardNo, Authentication authentication) {
+        String userId = authentication.getName();
+        log.info("[POST][/board/recommend/{}] - 추천 토글 요청, 사용자: {}", boardNo, userId);
+        
+        boolean recommended = recommendationService.toggleRecommendation(boardNo, userId);
+        return ResponseEntity.ok(new MessageResponse(recommended ? "추천 완료" : "추천 취소"));
+    }
+
     public record BoardNoResponse(boolean success, BoardData data) {
         public record BoardData(Long boardNo) {}
     }

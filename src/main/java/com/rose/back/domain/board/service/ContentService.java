@@ -14,6 +14,7 @@ import com.rose.back.domain.board.dto.ContentWithWriterDto;
 import com.rose.back.domain.board.entity.ContentEntity;
 import com.rose.back.domain.board.entity.ContentImageEntity;
 import com.rose.back.domain.board.repository.ContentRepository;
+import com.rose.back.domain.board.repository.RecommendationRepository;
 import com.rose.back.domain.comment.repository.CommentRepository;
 import com.rose.back.domain.board.repository.ContentImageRepository;
 import com.rose.back.domain.user.entity.UserEntity;
@@ -38,6 +39,7 @@ public class ContentService {
     private final UserService userService;
     private final CommentRepository commentRepository;
     private final RedisViewService redisViewService;
+    private final RecommendationRepository recommendationRepository;
 
     @Transactional
     public Long saveContent(ContentRequestDto req) {
@@ -89,9 +91,15 @@ public class ContentService {
         }
 
         long commentCount = commentRepository.countByContentEntity_BoardNo(boardNo);
-        return ContentWithWriterDto.from(content, commentCount);
-    }
+        long likeCount = recommendationRepository.countByBoardNo(boardNo);
 
+        boolean recommended = false;
+        if (currentUserId != null) {
+            recommended = recommendationRepository.findByBoardNoAndUserId(boardNo, currentUserId).isPresent();
+        }
+
+        return ContentWithWriterDto.from(content, commentCount, likeCount, recommended);
+    }
 
     public ContentWithWriterDto selectOneContentDto(Long boardNo) {
         return selectOneContentDto(boardNo, null, false);

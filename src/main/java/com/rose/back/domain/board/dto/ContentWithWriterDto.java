@@ -11,9 +11,11 @@ public record ContentWithWriterDto(
     String boardTag,
     WriterDto writer,
     long commentCount,
+    long likeCount,
+    boolean recommended,
     LocalDateTime createdDate
 ) {
-    public static ContentWithWriterDto from(ContentEntity entity, long commentCount) {
+    public static ContentWithWriterDto from(ContentEntity entity, long commentCount, long likeCount, boolean recommended) {
         return new ContentWithWriterDto(
             entity.getBoardNo(),
             entity.getBoardTitle(),
@@ -21,6 +23,8 @@ public record ContentWithWriterDto(
             entity.getBoardTag(),
             WriterDto.from(entity.getWriter()),
             commentCount,
+            likeCount,
+            recommended,
             entity.getCreatedDate()
         );
     }

@@ -13,7 +13,9 @@ import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
+import org.springframework.security.access.AccessDeniedException;
 
 @Slf4j
 @RestControllerAdvice
@@ -96,6 +98,34 @@ public class GlobalExceptionHandler {
 
         log.warn("JSON parse error @ {}: {}", req.getRequestURI(), ex.getMessage());
         return ResponseEntity.badRequest().body(err);
+    }
+
+    @ExceptionHandler(NoSuchElementException.class)
+    public ResponseEntity<ErrorResponse> handleNoSuchElementException(NoSuchElementException ex, HttpServletRequest req) {
+        ErrorResponse err = ErrorResponse.builder()
+                            .timestamp(now())
+                            .status(HttpStatus.NOT_FOUND.value())
+                            .code("NOT_FOUND")
+                            .message(ex.getMessage())
+                            .path(req.getRequestURI())
+                            .build();
+
+        log.warn("NoSuchElementException @ {}: {}", req.getRequestURI(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(err);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleSpringSecurityAccessDeniedException(AccessDeniedException ex, HttpServletRequest req) {
+        ErrorResponse err = ErrorResponse.builder()
+                                .timestamp(now())
+                                .status(HttpStatus.FORBIDDEN.value())
+                                .code("ACCESS_DENIED")
+                                .message(ex.getMessage())
+                                .path(req.getRequestURI())
+                                .build();
+
+        log.warn("SpringSecurity AccessDeniedException @ {}: {}", req.getRequestURI(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(err);
     }
 
     @ExceptionHandler(IllegalStateException.class)

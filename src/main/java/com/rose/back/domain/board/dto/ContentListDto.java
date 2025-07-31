@@ -13,7 +13,8 @@ public record ContentListDto(
     String writerStatus,
     LocalDateTime createdDate,
     Long viewCount,
-    Long commentCount
+    Long commentCount,
+    Integer recommendCount
 ) {
     public static ContentListDto from(ContentEntity entity, Long commentCount) {
         String writerNick = Optional.ofNullable(entity.getWriter())
@@ -33,7 +34,8 @@ public record ContentListDto(
             writerStatus,
             entity.getCreatedDate(),
             entity.getViewCount(),
-            commentCount
+            commentCount,
+            entity.getRecommendCount()
         );
     }
 }
