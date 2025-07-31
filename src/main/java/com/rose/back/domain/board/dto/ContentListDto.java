@@ -12,6 +12,7 @@ public record ContentListDto(
     String writerNick,
     String writerStatus,
     LocalDateTime createdDate,
+    Long viewCount,
     Long commentCount
 ) {
     public static ContentListDto from(ContentEntity entity, Long commentCount) {
@@ -31,6 +32,7 @@ public record ContentListDto(
             writerNick,
             writerStatus,
             entity.getCreatedDate(),
+            entity.getViewCount(),
             commentCount
         );
     }

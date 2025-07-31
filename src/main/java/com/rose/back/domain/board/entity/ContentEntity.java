@@ -38,4 +38,7 @@ public class ContentEntity extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private UserEntity writer;
+
+    @Column(name = "view_count", nullable = false)
+    private Long viewCount = 0L;
 }

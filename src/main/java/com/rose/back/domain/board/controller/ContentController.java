@@ -72,9 +72,14 @@ public class ContentController implements ContentControllerDocs {
     }
 
     @GetMapping("/content/{boardNo}")
-    public ResponseEntity<ContentResponse> contentPage(@PathVariable("boardNo") Long boardNo) {
-        log.info("[GET][/board/content/{}] - 게시글 조회 요청", boardNo);
-        ContentWithWriterDto dto = contentService.selectOneContentDto(boardNo);
+    public ResponseEntity<ContentResponse> contentPage(
+            @PathVariable("boardNo") Long boardNo,
+            Authentication authentication) {
+
+        String currentUserId = authentication.getName();
+        log.info("[GET][/board/content/{}] - 게시글 조회 요청, 사용자: {}", boardNo, currentUserId);
+
+        ContentWithWriterDto dto = contentService.selectOneContentDto(boardNo, currentUserId, true);
         return ResponseEntity.ok(new ContentResponse(true, dto));
     }
 

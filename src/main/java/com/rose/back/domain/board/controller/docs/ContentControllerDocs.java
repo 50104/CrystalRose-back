@@ -182,7 +182,7 @@ public interface ContentControllerDocs {
             )
         )
     })
-    ResponseEntity<ContentController.ContentResponse> contentPage(@PathVariable("boardNo") Long boardNo);
+    ResponseEntity<ContentController.ContentResponse> contentPage(@PathVariable("boardNo") Long boardNo, Authentication authentication);
 
     @Operation(summary = "게시글 삭제", description = "특정 게시글을 삭제합니다.")
     @CommonErrorResponses

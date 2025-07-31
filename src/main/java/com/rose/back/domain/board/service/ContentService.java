@@ -37,6 +37,7 @@ public class ContentService {
     private final UserRepository userRepository;
     private final UserService userService;
     private final CommentRepository commentRepository;
+    private final RedisViewService redisViewService;
 
     @Transactional
     public Long saveContent(ContentRequestDto req) {
@@ -67,12 +68,33 @@ public class ContentService {
         return contentRepository.findAll();
     }
 
-    public ContentWithWriterDto selectOneContentDto(Long boardNo) { // 상세
+    @Transactional
+    public ContentWithWriterDto selectOneContentDto(Long boardNo, String currentUserId, boolean increaseViewCount) { // 게시글 상세 조회
         ContentEntity content = contentRepository.findByBoardNo(boardNo)
             .orElseThrow(() -> new NoSuchElementException("게시글이 존재하지 않습니다: " + boardNo));
-        long commentCount = commentRepository.countByContentEntity_BoardNo(boardNo);
 
+        if (increaseViewCount && currentUserId != null) {
+            String writerId = Optional.ofNullable(content.getWriter())
+                                      .map(UserEntity::getUserId)
+                                      .orElse(null);
+
+            boolean isWriter = writerId != null && writerId.equals(currentUserId);
+            if (isWriter) {
+                if (!redisViewService.isDuplicateView(currentUserId, boardNo)) {
+                    content.setViewCount(content.getViewCount() + 1);
+                }
+            } else {
+                content.setViewCount(content.getViewCount() + 1); // 타인은 무조건 증가
+            }
+        }
+
+        long commentCount = commentRepository.countByContentEntity_BoardNo(boardNo);
         return ContentWithWriterDto.from(content, commentCount);
+    }
+
+
+    public ContentWithWriterDto selectOneContentDto(Long boardNo) {
+        return selectOneContentDto(boardNo, null, false);
     }
 
     public Page<ContentListDto> selectContentPage(int page, int size) { // 목록
