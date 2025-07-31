@@ -134,4 +134,21 @@ public interface AdminControllerDocs {
                     """)))
     })
     ResponseEntity<WikiDetailResponse> getWikiDetailByAdmin(@PathVariable("id") Long id);
+
+    @Operation(summary = "게시글 고정/해제", description = "특정 게시글을 고정하거나 해제합니다. ADMIN 권한이 필요합니다.")
+    @CommonErrorResponses
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "게시글 고정/해제 성공"),
+        @ApiResponse(responseCode = "409", description = "게시글 고정/해제 실패",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(name = "Conflict", value = """
+                    {
+                      "status": 409,
+                      "error": "CONFLICT",
+                      "message": "게시글 고정/해제에 실패했습니다.",
+                      "path": "/api/v1/admin/board/{id}/fix"
+                    }
+                    """)))
+    })
+    ResponseEntity<?> toggleFixed(@PathVariable Long id);
 }

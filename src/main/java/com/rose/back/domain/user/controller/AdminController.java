@@ -1,6 +1,7 @@
 package com.rose.back.domain.user.controller;
 
 import com.rose.back.common.dto.MessageResponse;
+import com.rose.back.domain.board.service.ContentService;
 import com.rose.back.domain.report.dto.CommentReportResponseDto;
 import com.rose.back.domain.report.dto.ReportResponseDto;
 import com.rose.back.domain.report.service.ReportService;
@@ -28,6 +29,7 @@ public class AdminController implements AdminControllerDocs {
 
     private final AdminService adminService;
     private final ReportService reportService;
+    private final ContentService contentService;
 
     @GetMapping("/wiki/pending")
     @PreAuthorize("hasRole('ADMIN')")
@@ -119,5 +121,13 @@ public class AdminController implements AdminControllerDocs {
         log.info("[GET][/api/v1/admin/wiki/detail/{}] - 관리자 도감 상세 조회 요청", id);
         WikiDetailResponse response = adminService.getWikiDetailByAdmin(id);
         return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/board/{id}/fix")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<MessageResponse> toggleFixed(@PathVariable("id") Long id) {
+        log.info("[PUT][/api/v1/admin/board/{}/fix] - 게시글 고정/해제 요청", id);
+        contentService.toggleFixed(id);
+        return ResponseEntity.ok().build();
     }
 }

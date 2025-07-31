@@ -1,9 +1,8 @@
 package com.rose.back.domain.board.controller;
 
 import com.rose.back.common.dto.MessageResponse;
-import com.rose.back.common.util.PageUtil;
 import com.rose.back.domain.board.controller.docs.ContentControllerDocs;
-import com.rose.back.domain.board.dto.ContentListDto;
+import com.rose.back.domain.board.dto.ContentListResponse;
 import com.rose.back.domain.board.dto.ContentRequestDto;
 import com.rose.back.domain.board.dto.ContentWithWriterDto;
 import com.rose.back.domain.board.service.ContentImageService;
@@ -13,7 +12,6 @@ import com.rose.back.domain.board.service.RecommendationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
@@ -68,10 +66,10 @@ public class ContentController implements ContentControllerDocs {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<?> listPage(@RequestParam(name = "page", defaultValue = "1") int page) {
+    public ResponseEntity<ContentListResponse> listPage(@RequestParam(name = "page", defaultValue = "1") int page) {
         log.info("[GET][/board/list] - 게시글 목록 요청, 페이지: {}", page);
-        Page<ContentListDto> contentPage = contentService.selectContentPage(page, 3);
-        return ResponseEntity.ok(PageUtil.toPageResponse(contentPage));
+        ContentListResponse response = contentService.selectContentPageWithFixed(page, 3);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/content/{boardNo}")

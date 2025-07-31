@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.rose.back.common.dto.MessageResponse;
 import com.rose.back.domain.board.controller.ContentController;
+import com.rose.back.domain.board.dto.ContentListResponse;
 import com.rose.back.domain.board.dto.ContentRequestDto;
 import com.rose.back.global.exception.CommonErrorResponses;
 import com.rose.back.global.exception.ImageUploadErrorResponses;
@@ -157,7 +158,7 @@ public interface ContentControllerDocs {
             )
         )
     })
-    ResponseEntity<?> listPage(@RequestParam(name = "page", defaultValue = "1") int page);
+    ResponseEntity<ContentListResponse> listPage(@RequestParam(name = "page", defaultValue = "1") int page);
 
     @Operation(summary = "게시글 상세 조회", description = "특정 게시글의 상세 정보를 조회합니다.")
     @CommonErrorResponses

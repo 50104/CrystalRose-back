@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.rose.back.domain.board.dto.ContentListDto;
+import com.rose.back.domain.board.dto.ContentListResponse;
 import com.rose.back.domain.board.dto.ContentRequestDto;
 import com.rose.back.domain.board.dto.ContentWithWriterDto;
 import com.rose.back.domain.board.entity.ContentEntity;
@@ -159,5 +160,44 @@ public class ContentService {
         contentRepository.save(content);
 
         contentImageService.updateContentImages(req.getBoardContent(), content);
+    }
+
+    @Transactional
+    public boolean toggleFixed(Long boardId) {
+        ContentEntity content = contentRepository.findById(boardId)
+            .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+
+        boolean newState = !content.isFixed();
+        if (newState) {
+            long fixedCount = contentRepository.countByIsFixedTrue();
+            if (fixedCount >= 10) {
+                throw new IllegalStateException("고정 가능한 게시글은 최대 10개입니다.");
+            }
+        }
+        content.setFixed(newState);
+        return newState;
+    }
+
+    public ContentListResponse selectContentPageWithFixed(int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "boardNo"));
+
+        // 고정 게시글
+        List<ContentListDto> fixedList = contentRepository.findByIsFixedTrueOrderByBoardNoDesc()
+            .stream()
+            .map(entity -> {
+                long commentCount = commentRepository.countByContentEntity_BoardNo(entity.getBoardNo());
+                return ContentListDto.from(entity, commentCount);
+            }).toList();
+
+        // 일반 게시글
+        Page<ContentEntity> contentPage = contentRepository.findByIsFixedFalse(pageable);
+        List<ContentListDto> contentList = contentPage.getContent()
+            .stream()
+            .map(entity -> {
+                long commentCount = commentRepository.countByContentEntity_BoardNo(entity.getBoardNo());
+                return ContentListDto.from(entity, commentCount);
+            }).toList();
+
+        return new ContentListResponse(fixedList, contentList, contentPage.getTotalPages());
     }
 }

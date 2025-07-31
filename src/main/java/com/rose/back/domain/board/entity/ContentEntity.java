@@ -42,6 +42,9 @@ public class ContentEntity extends BaseTimeEntity {
     @Column(name = "view_count", nullable = false)
     private Long viewCount = 0L;
 
+    @Column(nullable = false)
+    private boolean isFixed;
+
     @Column(name = "recommend_count")
     private Integer recommendCount = 0;
 
