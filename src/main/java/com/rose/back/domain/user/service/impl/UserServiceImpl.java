@@ -47,7 +47,6 @@ public class UserServiceImpl implements UserService {
                 .userRole(user.getUserRole())
                 .userNo(user.getUserNo())
                 .userType(user.getUserType())
-                .userPwd(user.getUserPwd())
                 .build();
         return userDto;
     }
@@ -62,34 +61,54 @@ public class UserServiceImpl implements UserService {
         return encoder.matches(userPwd, user.getUserPwd());
     }
 
-    @Override
-    public UserInfoDto updateUser(UserInfoDto request) {
-        UserEntity user = userRepository.findByUserId(request.getUserName());
-        if (user == null) {
-            throw new RuntimeException("존재하지 않는 사용자");
-        }
-        user.setUserNick(request.getUserNick());
-        user.setUserEmail(request.getUserEmail());
-
-        if (request.getUserRole() != null) {
-            user.setUserRole(request.getUserRole());
-        }
-        if (request.getUserType() != null) {
-            user.setUserType(request.getUserType());
-        }
-        if (request.getUserPwd() != null && !request.getUserPwd().isEmpty()) {
-            user.setUserPwd(passwordEncoder.encode(request.getUserPwd()));
-        }
-        userRepository.save(user);
-        return UserInfoDto.builder()
-                .userNick(user.getUserNick())
-                .userEmail(user.getUserEmail())
-                .userName(user.getUserId())
-                .userRole(user.getUserRole())
-                .userNo(user.getUserNo())
-                .userType(user.getUserType())
-                .build();
+@Override
+public UserInfoDto updateUser(UserInfoDto request) {
+    UserEntity user = userRepository.findByUserId(request.getUserName());
+    if (user == null) {
+        throw new RuntimeException("존재하지 않는 사용자");
     }
+
+    // 닉네임이 변경된 경우 && 중복된다면 → 숫자 붙이기
+    String newNick = request.getUserNick();
+    if (newNick != null && !newNick.equals(user.getUserNick())) {
+        user.setUserNick(getAvailableNickExcludingCurrent(newNick, user.getUserNo()));
+    }
+
+    user.setUserEmail(request.getUserEmail());
+
+    if (request.getUserRole() != null) {
+        user.setUserRole(request.getUserRole());
+    }
+    if (request.getUserType() != null) {
+        user.setUserType(request.getUserType());
+    }
+    if (request.getUserPwd() != null && !request.getUserPwd().isEmpty()) {
+        user.setUserPwd(passwordEncoder.encode(request.getUserPwd()));
+    }
+
+    userRepository.save(user);
+
+    return UserInfoDto.builder()
+            .userNick(user.getUserNick())
+            .userEmail(user.getUserEmail())
+            .userName(user.getUserId())
+            .userRole(user.getUserRole())
+            .userNo(user.getUserNo())
+            .userType(user.getUserType())
+            .build();
+}
+
+private String getAvailableNickExcludingCurrent(String baseNick, Long currentUserNo) {
+    String nick = baseNick;
+    int suffix = 1;
+
+    while (userRepository.existsByUserNickExceptUserNo(nick, currentUserNo)) {
+        nick = baseNick + suffix;
+        suffix++;
+    }
+
+    return nick;
+}
 
     @Override
     public void modify(UserInfoDto dto) {

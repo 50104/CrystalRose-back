@@ -151,28 +151,42 @@ public class AuthServiceImpl implements AuthService {
     // 회원가입
     @Override
     public ResponseEntity<? super CommonResponse> join(UserInfoDto dto) {
-        
         try {
             String userId = dto.getUserName();
-            boolean isExistId = userRepository.existsByUserId(userId); // id가 존재하는지 확인
-            if(isExistId) return IdCheckResponse.duplicateId(); // 존재하면 실패
+            boolean isExistId = userRepository.existsByUserId(userId);
+            if (isExistId) return IdCheckResponse.duplicateId();
+
+            // 닉네임 자동 중복 회피 처리
+            String baseNick = dto.getUserNick();
+            String finalNick = getAvailableNick(baseNick);
 
             UserEntity user = UserEntity.builder()
                     .userId(userId)
                     .userPwd(passwordEncoder.encode(dto.getUserPwd()))
                     .userEmail(dto.getUserEmail())
-                    .userNick(dto.getUserNick())
+                    .userNick(finalNick)
                     .userRole("ROLE_USER")
                     .userType("web")
                     .userStatus(UserStatus.ACTIVE)
                     .apDate(LocalDate.now())
                     .build();
+
             userRepository.save(user);
         } catch (Exception e) {
             e.printStackTrace();
             return CommonResponse.databaseError();
         }
         return ResponseEntity.ok(new CommonResponse());
+    }
+
+    private String getAvailableNick(String baseNick) {
+        String nick = baseNick;
+        int suffix = 1;
+        while (userRepository.existsByUserNick(nick)) {
+            nick = baseNick + suffix;
+            suffix++;
+        }
+        return nick;
     }
 
     // 아이디 찾기
