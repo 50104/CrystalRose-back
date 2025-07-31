@@ -34,7 +34,8 @@
       <Filters>
         <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
         <RegexFilter regex=".*Unhandled error @ /: No static resource \..*" onMatch="DENY" onMismatch="NEUTRAL"/>
-        <RegexFilter regex=".*Unhandled error @ /.+\\.ico: No static resource .+\\.ico\\..*" onMatch="DENY" onMismatch="NEUTRAL"/>
+        <RegexFilter regex=".*Unhandled error @ /favicon\\.ico: No static resource favicon\\.ico.*" onMatch="DENY" onMismatch="NEUTRAL"/>
+        <RegexFilter regex=".*Unhandled error @ /.+\\.ico: No static resource .+\\.ico.*" onMatch="DENY" onMismatch="NEUTRAL"/>
       </Filters>
     </RollingFile>
 
