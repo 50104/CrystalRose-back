@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.rose.back.domain.board.dto.ContentListDto;
 import com.rose.back.domain.board.dto.ContentListResponse;
 import com.rose.back.domain.board.dto.ContentRequestDto;
+import com.rose.back.domain.board.dto.ContentSummaryDto;
 import com.rose.back.domain.board.dto.ContentWithWriterDto;
 import com.rose.back.domain.board.entity.ContentEntity;
 import com.rose.back.domain.board.entity.ContentImageEntity;
@@ -199,5 +200,17 @@ public class ContentService {
             }).toList();
 
         return new ContentListResponse(fixedList, contentList, contentPage.getTotalPages());
+    }
+
+    public Optional<ContentSummaryDto> getPreviousPost(Long boardNo) {
+        return contentRepository.findPrevPost(boardNo, PageRequest.of(0, 1)).stream()
+                .findFirst()
+                .map(ContentSummaryDto::from);
+    }
+
+    public Optional<ContentSummaryDto> getNextPost(Long boardNo) {
+        return contentRepository.findNextPost(boardNo, PageRequest.of(0, 1)).stream()
+                .findFirst()
+                .map(ContentSummaryDto::from);
     }
 }

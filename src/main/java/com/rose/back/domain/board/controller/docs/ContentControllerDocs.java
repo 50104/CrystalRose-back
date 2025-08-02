@@ -14,6 +14,7 @@ import com.rose.back.common.dto.MessageResponse;
 import com.rose.back.domain.board.controller.ContentController;
 import com.rose.back.domain.board.dto.ContentListResponse;
 import com.rose.back.domain.board.dto.ContentRequestDto;
+import com.rose.back.domain.board.dto.ContentSummaryDto;
 import com.rose.back.global.exception.CommonErrorResponses;
 import com.rose.back.global.exception.ImageUploadErrorResponses;
 import com.rose.back.global.handler.ErrorResponse;
@@ -235,4 +236,54 @@ public interface ContentControllerDocs {
         )
     })
     ResponseEntity<ContentController.ImageUploadResponse> imageUpload(@RequestParam("file") MultipartFile file) throws IOException;
+
+    @Operation(summary = "이전 게시글 조회", description = "특정 게시글의 이전 게시글 정보를 조회합니다.")
+    @CommonErrorResponses
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "이전 게시글 조회 성공"),
+        @ApiResponse(
+            responseCode = "204",
+            description = "이전 게시글이 없음",
+            content = @Content(
+                schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(
+                    name = "No Content",
+                    value = """
+                    {
+                      "status": 204,
+                      "error": "NO_CONTENT",
+                      "message": "이전 게시글이 없습니다.",
+                      "path": "/api/v1/content/prev/{boardNo}",
+                    }
+                    """
+                )
+            )
+        )
+    })
+    ResponseEntity<ContentSummaryDto> getPrevPost(@PathVariable Long boardNo);
+
+    @Operation(summary = "다음 게시글 조회", description = "특정 게시글의 다음 게시글 정보를 조회합니다.")
+    @CommonErrorResponses
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "다음 게시글 조회 성공"),
+        @ApiResponse(
+            responseCode = "204",
+            description = "다음 게시글이 없음",
+            content = @Content(
+                schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(
+                    name = "No Content",
+                    value = """
+                    {
+                      "status": 204,
+                      "error": "NO_CONTENT",
+                      "message": "다음 게시글이 없습니다.",
+                      "path": "/api/v1/content/next/{boardNo}",
+                    }
+                    """
+                )
+            )
+        )
+    })
+    ResponseEntity<ContentSummaryDto> getNextPost(@PathVariable Long boardNo);
 }

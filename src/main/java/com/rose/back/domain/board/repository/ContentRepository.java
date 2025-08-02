@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.rose.back.domain.board.entity.ContentEntity;
 
@@ -24,4 +25,10 @@ public interface ContentRepository extends JpaRepository<ContentEntity, Long> {
 
     @Query("SELECT c FROM ContentEntity c WHERE c.isFixed = false")
     Page<ContentEntity> findByIsFixedFalse(Pageable pageable);
+
+    @Query("SELECT c FROM ContentEntity c WHERE c.boardNo < :boardNo ORDER BY c.boardNo DESC")
+    List<ContentEntity> findPrevPost(@Param("boardNo") Long boardNo, Pageable pageable);
+
+    @Query("SELECT c FROM ContentEntity c WHERE c.boardNo > :boardNo ORDER BY c.boardNo ASC")
+    List<ContentEntity> findNextPost(@Param("boardNo") Long boardNo, Pageable pageable);
 }
