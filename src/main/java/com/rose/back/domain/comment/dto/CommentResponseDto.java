@@ -18,6 +18,7 @@ public class CommentResponseDto {
     private Long parentId;
     private String parentNickname;
     private boolean deleted;
+    private String parentStatus;
 
     public static CommentResponseDto fromEntity(CommentEntity entity) {
         UserEntity writer = entity.getWriter();
@@ -36,6 +37,11 @@ public class CommentResponseDto {
                         : null
                 )
                 .deleted(entity.isDeleted())
+                .parentStatus(
+                    entity.getParent() != null && entity.getParent().getWriter() != null
+                        ? entity.getParent().getWriter().getUserStatus().name()
+                        : null
+                )
                 .build();
     }
 }
