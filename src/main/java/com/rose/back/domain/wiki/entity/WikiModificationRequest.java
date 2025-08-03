@@ -5,6 +5,8 @@ import com.rose.back.global.entity.BaseTimeEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -87,4 +89,12 @@ public class WikiModificationRequest extends BaseTimeEntity {
     @Column(columnDefinition = "TEXT")
     private String description; // 수정 사유
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private Status status = Status.PENDING;
+
+    public enum Status {
+        PENDING, APPROVED, REJECTED
+    }
 }

@@ -89,15 +89,15 @@ public class AdminService {
         log.info("도감 수정 요청 ID {} 승인 완료 - 원본 도감 ID {} 업데이트 및 요청 삭제", requestId, originalWiki.getId());
     }
 
-    public void rejectModificationRequest(Long requestId) {
+    public void rejectModificationRequest(Long requestId, String reason) {
         WikiModificationRequest request = getModificationRequestOrThrow(requestId);
-        
-        // 거절 완료 시 상태 변경(NONE)
-        WikiEntity originalWiki = request.getOriginalWiki();
-        originalWiki.setModificationStatus(WikiEntity.ModificationStatus.NONE);
-        
-        wikiModificationRequestRepository.delete(request);
-        log.info("도감 수정 요청 ID {} 거부 완료 및 삭제", requestId);
+        request.setStatus(WikiModificationRequest.Status.REJECTED);
+        request.setDescription(reason); // 사유 저장
+
+        WikiEntity original = request.getOriginalWiki();
+        original.setModificationStatus(WikiEntity.ModificationStatus.NONE);
+
+        log.info("도감 수정 요청 ID {} 거부 완료 (사유: {})", requestId, reason);
     }
 
     // 도감 수정 요청 비교
@@ -308,29 +308,28 @@ public class AdminService {
     }
 
     public WikiDetailResponse getWikiDetailByAdmin(Long id) {
-    WikiEntity wiki = getWikiOrThrow(id);
+        WikiEntity wiki = getWikiOrThrow(id);
 
-    return WikiDetailResponse.builder()
-            .id(wiki.getId())
-            .name(wiki.getName())
-            .category(wiki.getCategory())
-            .cultivarCode(wiki.getCultivarCode())
-            .flowerSize(wiki.getFlowerSize())
-            .petalCount(wiki.getPetalCount())
-            .fragrance(wiki.getFragrance())
-            .diseaseResistance(wiki.getDiseaseResistance())
-            .growthType(wiki.getGrowthType())
-            .usageType(wiki.getUsageType())
-            .recommendedPosition(wiki.getRecommendedPosition())
-            .continuousBlooming(wiki.getContinuousBlooming())
-            .multiBlooming(wiki.getMultiBlooming())
-            .growthPower(wiki.getGrowthPower())
-            .coldResistance(wiki.getColdResistance())
-            .imageUrl(wiki.getImageUrl())
-            .status(wiki.getStatus().name())
-            .modificationStatus(wiki.getModificationStatus().name())
-            .createdDate(wiki.getCreatedDate())
-            .build();
-}
-
+        return WikiDetailResponse.builder()
+                .id(wiki.getId())
+                .name(wiki.getName())
+                .category(wiki.getCategory())
+                .cultivarCode(wiki.getCultivarCode())
+                .flowerSize(wiki.getFlowerSize())
+                .petalCount(wiki.getPetalCount())
+                .fragrance(wiki.getFragrance())
+                .diseaseResistance(wiki.getDiseaseResistance())
+                .growthType(wiki.getGrowthType())
+                .usageType(wiki.getUsageType())
+                .recommendedPosition(wiki.getRecommendedPosition())
+                .continuousBlooming(wiki.getContinuousBlooming())
+                .multiBlooming(wiki.getMultiBlooming())
+                .growthPower(wiki.getGrowthPower())
+                .coldResistance(wiki.getColdResistance())
+                .imageUrl(wiki.getImageUrl())
+                .status(wiki.getStatus().name())
+                .modificationStatus(wiki.getModificationStatus().name())
+                .createdDate(wiki.getCreatedDate())
+                .build();
+    }
 }

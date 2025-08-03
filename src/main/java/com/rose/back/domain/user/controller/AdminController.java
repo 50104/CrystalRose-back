@@ -86,10 +86,10 @@ public class AdminController implements AdminControllerDocs {
 
     @PatchMapping("/wiki/modifications/{id}/reject")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<MessageResponse> rejectModificationRequest(@PathVariable("id") Long id) {
-        log.info("[PATCH][/api/v1/admin/wiki/modifications/{}/reject] - 도감 수정 요청 거부", id);
-        adminService.rejectModificationRequest(id);
-        return ResponseEntity.ok(new MessageResponse("도감 수정 요청이 거부되었습니다."));
+    public ResponseEntity<MessageResponse> rejectModificationRequest(@PathVariable("id") Long id, @RequestBody WikiRejectRequest request) {
+        log.info("[PATCH][/api/v1/admin/wiki/modifications/{}/reject] - 도감 수정 요청 거절", id);
+        adminService.rejectModificationRequest(id, request.reason());
+        return ResponseEntity.ok(new MessageResponse("도감 수정 요청이 거절되었습니다."));
     }
 
     @GetMapping("/wiki/{requestId}/original")
@@ -130,4 +130,6 @@ public class AdminController implements AdminControllerDocs {
         contentService.toggleFixed(id);
         return ResponseEntity.ok().build();
     }
+
+    public record WikiRejectRequest(String reason) {}
 }
