@@ -14,6 +14,7 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -37,7 +38,7 @@ public class StompHandler implements ChannelInterceptor {
 
         // WebSocket 연결 요청 시 토큰 검증 및 세션 정보 설정
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
-            log.info("CONNECT 요청: {}", accessor.getSessionId());
+            log.info("[STOMP] CONNECT 요청: sessionId={}", accessor.getSessionId());
 
             String authorizationHeader = accessor.getFirstNativeHeader("Authorization");
             if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
@@ -49,15 +50,13 @@ public class StompHandler implements ChannelInterceptor {
                 throw new AuthenticationServiceException("유효하지 않은 토큰입니다.");
             }
 
-            log.info("토큰 검증 완료: {}", token);
-
             String userId = jwtProvider.getUserId(token);
             String userRole = jwtProvider.getUserRole(token);
             String userNick = jwtProvider.getUserNick(token);
-
-            log.info("유저 정보: ID={}, 닉네임={}, 역할={}", userId, userNick, userRole);
-
             String roomId = accessor.getFirstNativeHeader("roomId");
+
+            log.info("[STOMP] 토큰 검증 성공 - userId={}, userNick={}, userRole={}, roomId={}", userId, userNick, userRole, roomId);
+
             if (roomId == null) {
                 throw new IllegalArgumentException("roomId 누락");
             }
@@ -66,26 +65,28 @@ public class StompHandler implements ChannelInterceptor {
             redisTemplate.opsForSet().add("chat:room:" + roomId + ":members", userId);
             redisTemplate.expire("chat:room:" + roomId + ":members", Duration.ofMinutes(10));
 
-            // 세션에 유저 정보 저장
-            accessor.getSessionAttributes().put("userId", userId);
-            accessor.getSessionAttributes().put("roomId", roomId);
+            // 세션에 저장
+            Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
+            sessionAttributes.put("userId", userId);
+            sessionAttributes.put("roomId", roomId);
+
+            log.info("[STOMP] 세션 저장 완료 - sessionId={}, sessionAttributes={}", accessor.getSessionId(), sessionAttributes);
         }
 
-        // 메시지 구독 요청 시 권한 확인
         if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
             String sessionId = accessor.getSessionId();
             String destination = accessor.getDestination();
 
-            log.info("SUBSCRIBE 요청: sessionId={}, destination={}", sessionId, destination);
+            log.info("[STOMP] SUBSCRIBE 요청: sessionId={}, destination={}", sessionId, destination);
 
             String userId = (String) accessor.getSessionAttributes().get("userId");
             if (userId == null) {
-                log.warn("세션에 유저 정보 없음 - sessionId={}", sessionId);
+                log.warn("[STOMP] 세션에 userId가 없습니다 - sessionId={}, sessionAttributes={}",
+                        sessionId, accessor.getSessionAttributes());
                 throw new AuthenticationServiceException("세션에 유저 정보가 없습니다.");
             }
 
             if (destination == null || !destination.matches("^/api/v1/chat/topic/\\d+$")) {
-                log.warn("유효하지 않은 destination: {}", destination);
                 throw new IllegalArgumentException("destination 형식이 잘못되었습니다.");
             }
 
@@ -95,7 +96,7 @@ public class StompHandler implements ChannelInterceptor {
             try {
                 Long roomId = Long.parseLong(roomIdStr);
                 if (!chatService.isRoomParticipant(userId, roomId)) {
-                    log.warn("구독 권한 없음: userId={}, roomId={}", userId, roomId);
+                    log.warn("[STOMP] 구독 권한 없음 - userId={}, roomId={}", userId, roomId);
                     throw new AuthenticationServiceException("해당 방에 참여 권한이 없습니다.");
                 }
             } catch (NumberFormatException e) {
@@ -103,6 +104,7 @@ public class StompHandler implements ChannelInterceptor {
                 throw new IllegalArgumentException("roomId가 유효한 숫자가 아닙니다.");
             }
         }
+
         return message;
     }
 }
