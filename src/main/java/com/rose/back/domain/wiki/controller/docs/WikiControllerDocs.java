@@ -1,5 +1,6 @@
 package com.rose.back.domain.wiki.controller.docs;
 
+import com.rose.back.domain.wiki.dto.WikiModificationRequestDto;
 import com.rose.back.domain.wiki.dto.WikiRequest;
 import com.rose.back.domain.wiki.dto.WikiResponse;
 import com.rose.back.global.exception.CommonErrorResponses;
@@ -83,4 +84,24 @@ public interface WikiControllerDocs {
                                     """))),
     })
     ResponseEntity<List<WikiResponse>> getWikiList();
+
+    @Operation(summary = "거절된 도감 수정 요청 조회", description = "거절된 도감 수정 요청의 정보를 조회합니다.")
+    @CommonErrorResponses
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "거절된 도감 수정 요청 정보 조회 성공",
+                    content = @Content(mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = WikiModificationRequestDto.class)))),
+            @ApiResponse(responseCode = "409", description = "거절된 도감 수정 요청 정보 조회 실패 - 도감이 존재하지 않음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(name = "Not Found", value = """
+                                    {
+                                      "status": 409,
+                                      "error": "CONFLICT",
+                                      "message": "해당 도감을 찾을 수 없습니다.",
+                                      "path": "/api/v1/wiki/modification/rejected"
+                                    }
+                                    """))),
+    })
+    ResponseEntity<WikiResponse> getWikiDetail(@RequestBody(description = "조회할 도감 ID", required = true,
+            content = @Content(schema = @Schema(type = "integer"))) Long id);
 }

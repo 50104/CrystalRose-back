@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.rose.back.domain.wiki.dto.WikiModificationRequestDto;
 import com.rose.back.domain.wiki.dto.WikiRequest;
 import com.rose.back.domain.wiki.dto.WikiResponse;
 import com.rose.back.domain.wiki.entity.WikiEntity;
@@ -133,5 +134,38 @@ public class WikiService {
             log.warn("ID {}에 해당하는 승인된 도감 정보를 찾을 수 없습니다.", id);
             throw new RuntimeException("승인된 도감 정보를 찾을 수 없습니다. ID: " + id);
         }
+    }
+
+    public List<WikiModificationRequestDto> getRejectedModificationRequests(Long userId) {
+        return wikiModificationRequestRepository.findAllByRequesterUserNoAndStatus(userId, WikiModificationRequest.Status.REJECTED)
+            .stream()
+            .map(this::toModificationRequestDto)
+            .toList();
+    }
+
+    private WikiModificationRequestDto toModificationRequestDto(WikiModificationRequest request) {
+        return WikiModificationRequestDto.builder()
+            .id(request.getId())
+            .originalWikiId(request.getOriginalWiki().getId())
+            .requesterNick(request.getRequester().getUserNick())
+            .name(request.getName())
+            .originalName(request.getOriginalWiki().getName())
+            .category(request.getCategory())
+            .cultivarCode(request.getCultivarCode())
+            .flowerSize(request.getFlowerSize())
+            .petalCount(request.getPetalCount())
+            .fragrance(request.getFragrance())
+            .diseaseResistance(request.getDiseaseResistance())
+            .growthType(request.getGrowthType())
+            .usageType(request.getUsageType())
+            .recommendedPosition(request.getRecommendedPosition())
+            .continuousBlooming(request.getContinuousBlooming())
+            .multiBlooming(request.getMultiBlooming())
+            .growthPower(request.getGrowthPower())
+            .coldResistance(request.getColdResistance())
+            .imageUrl(request.getImageUrl())
+            .description(request.getDescription())
+            .createdDate(request.getCreatedDate())
+            .build();
     }
 }

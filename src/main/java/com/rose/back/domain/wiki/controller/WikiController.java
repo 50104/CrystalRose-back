@@ -1,11 +1,13 @@
 package com.rose.back.domain.wiki.controller;
 
 import com.rose.back.common.dto.MessageResponse;
+import com.rose.back.domain.wiki.dto.WikiModificationRequestDto;
 import com.rose.back.domain.wiki.dto.WikiRequest;
 import com.rose.back.domain.wiki.dto.WikiResponse;
 import com.rose.back.domain.wiki.service.WikiImageService;
 import com.rose.back.domain.wiki.service.WikiService;
 import com.rose.back.domain.user.entity.UserEntity;
+import com.rose.back.domain.auth.oauth2.CustomUserDetails;
 import com.rose.back.domain.auth.repository.AuthRepository;
 
 import jakarta.validation.Valid;
@@ -13,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -88,6 +92,14 @@ public class WikiController {
         log.info("[GET][/api/v1/wiki/detail/{}] - 도감 상세 정보 조회 요청", id);
         WikiResponse wikiDetail = wikiService.getApprovedWikiDetail(id);
         return ResponseEntity.ok(wikiDetail);
+    }
+
+    @GetMapping("/modification/rejected")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<WikiModificationRequestDto>> getRejectedModifications(@AuthenticationPrincipal CustomUserDetails user) {
+        log.info("[GET][/api/v1/wiki/modification/rejected] - 거절된 도감 수정 요청 조회");
+        Long userNo = user.getUserNo();
+        return ResponseEntity.ok(wikiService.getRejectedModificationRequests(userNo));
     }
 
     public record ImageUploadResponse(boolean uploaded, String url, String error) {}
