@@ -2,11 +2,12 @@ package com.rose.back.domain.wiki.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
-import com.rose.back.domain.wiki.dto.WikiModificationRequestDto;
+import com.rose.back.domain.wiki.dto.WikiModificationListDto;
 import com.rose.back.domain.wiki.dto.WikiModificationResubmitDto;
 import com.rose.back.domain.wiki.dto.WikiRequest;
 import com.rose.back.domain.wiki.dto.WikiResponse;
@@ -139,66 +140,12 @@ public class WikiService {
         }
     }
 
-    public List<WikiModificationRequestDto> getRejectedModificationRequests(Long userId) {
-        return wikiModificationRequestRepository.findAllByRequesterUserNoAndStatus(userId, WikiModificationRequest.Status.REJECTED)
-            .stream()
-            .map(this::toModificationRequestDto)
-            .toList();
-    }
-
-    private WikiModificationRequestDto toModificationRequestDto(WikiModificationRequest request) {
-        return WikiModificationRequestDto.builder()
-            .id(request.getId())
-            .originalWikiId(request.getOriginalWiki().getId())
-            .requesterNick(request.getRequester().getUserNick())
-            .name(request.getName())
-            .originalName(request.getOriginalWiki().getName())
-            .category(request.getCategory())
-            .cultivarCode(request.getCultivarCode())
-            .flowerSize(request.getFlowerSize())
-            .petalCount(request.getPetalCount())
-            .fragrance(request.getFragrance())
-            .diseaseResistance(request.getDiseaseResistance())
-            .growthType(request.getGrowthType())
-            .usageType(request.getUsageType())
-            .recommendedPosition(request.getRecommendedPosition())
-            .continuousBlooming(request.getContinuousBlooming())
-            .multiBlooming(request.getMultiBlooming())
-            .growthPower(request.getGrowthPower())
-            .coldResistance(request.getColdResistance())
-            .imageUrl(request.getImageUrl())
-            .description(request.getDescription())
-            .createdDate(request.getCreatedDate())
-            .build();
-    }
-
     @Transactional
-    public WikiModificationResubmitDto getResubmitFormData(Long requestId, Long userId) {
-        WikiModificationRequest request = wikiModificationRequestRepository.findById(requestId)
-            .orElseThrow(() -> new IllegalArgumentException("수정 요청이 존재하지 않습니다."));
-
-        if (!request.getRequester().getUserNo().equals(userId)) {
-            throw new AccessDeniedException("본인의 요청만 조회할 수 있습니다.");
-        }
-
-        return WikiModificationResubmitDto.builder()
-            .name(request.getName())
-            .category(request.getCategory())
-            .cultivarCode(request.getCultivarCode())
-            .flowerSize(request.getFlowerSize())
-            .petalCount(request.getPetalCount())
-            .fragrance(request.getFragrance())
-            .diseaseResistance(request.getDiseaseResistance())
-            .growthType(request.getGrowthType())
-            .usageType(request.getUsageType())
-            .recommendedPosition(request.getRecommendedPosition())
-            .imageUrl(request.getImageUrl())
-            .continuousBlooming(request.getContinuousBlooming())
-            .multiBlooming(request.getMultiBlooming())
-            .growthPower(request.getGrowthPower())
-            .coldResistance(request.getColdResistance())
-            .description(request.getDescription())
-            .build();
+    public List<WikiModificationListDto> getUserModifications(Long userId) {
+        List<WikiModificationRequest> list = wikiModificationRequestRepository.findByRequesterUserNo(userId);
+        return list.stream()
+                .map(WikiModificationListDto::from)
+                .collect(Collectors.toList());
     }
 
     @Transactional

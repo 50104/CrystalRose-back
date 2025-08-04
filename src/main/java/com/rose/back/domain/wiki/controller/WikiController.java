@@ -1,7 +1,7 @@
 package com.rose.back.domain.wiki.controller;
 
 import com.rose.back.common.dto.MessageResponse;
-import com.rose.back.domain.wiki.dto.WikiModificationRequestDto;
+import com.rose.back.domain.wiki.dto.WikiModificationListDto;
 import com.rose.back.domain.wiki.dto.WikiModificationResubmitDto;
 import com.rose.back.domain.wiki.dto.WikiRequest;
 import com.rose.back.domain.wiki.dto.WikiResponse;
@@ -16,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -95,19 +94,11 @@ public class WikiController {
         return ResponseEntity.ok(wikiDetail);
     }
 
-    @GetMapping("/modification/rejected")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<WikiModificationRequestDto>> getRejectedModifications(@AuthenticationPrincipal CustomUserDetails user) {
-        log.info("[GET][/api/v1/wiki/modification/rejected] - 거절된 도감 수정 요청 조회");
-        Long userNo = user.getUserNo();
-        return ResponseEntity.ok(wikiService.getRejectedModificationRequests(userNo));
-    }
-
-    @GetMapping("/user/modification/{id}/resubmit")
-    public ResponseEntity<WikiModificationResubmitDto> getResubmitData(@PathVariable("id") Long id, @AuthenticationPrincipal CustomUserDetails user) {
-        log.info("[GET][/api/v1/wiki/user/modification/{}/resubmit] - 보완 제출 폼 조회 요청", id);
-        WikiModificationResubmitDto dto = wikiService.getResubmitFormData(id, user.getUserNo());
-        return ResponseEntity.ok(dto);
+    @GetMapping("/user/modification/list")
+    public ResponseEntity<List<WikiModificationListDto>> getUserModifications(@AuthenticationPrincipal CustomUserDetails user) {
+        log.info("[GET][/api/v1/wiki/user/modification/list] - 사용자 도감 수정 요청 목록 조회");
+        List<WikiModificationListDto> dtoList = wikiService.getUserModifications(user.getUserNo());
+        return ResponseEntity.ok(dtoList);
     }
 
     @PatchMapping("/user/modification/{id}/resubmit")

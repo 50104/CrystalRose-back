@@ -11,4 +11,6 @@ import com.rose.back.domain.wiki.entity.WikiModificationRequest;
 public interface WikiModificationRequestRepository extends JpaRepository<WikiModificationRequest, Long> {
 
   List<WikiModificationRequest> findAllByRequesterUserNoAndStatus(Long userNo, WikiModificationRequest.Status status);
+
+  List<WikiModificationRequest> findByRequesterUserNo(Long userNo);
 }
