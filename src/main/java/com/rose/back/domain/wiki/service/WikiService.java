@@ -200,4 +200,36 @@ public class WikiService {
             .description(request.getDescription())
             .build();
     }
+
+    @Transactional
+    public void resubmitModificationRequest(Long requestId, Long userId, WikiModificationResubmitDto dto) {
+        WikiModificationRequest request = wikiModificationRequestRepository.findById(requestId)
+            .orElseThrow(() -> new IllegalArgumentException("해당 수정 요청이 존재하지 않습니다."));
+
+        if (!request.getRequester().getUserNo().equals(userId)) {
+            throw new AccessDeniedException("본인의 요청만 수정할 수 있습니다.");
+        }
+        if (request.getStatus() != Status.REJECTED) {
+            throw new IllegalStateException("거절된 요청만 다시 제출할 수 있습니다.");
+        }
+
+        request.setName(dto.getName());
+        request.setCategory(dto.getCategory());
+        request.setCultivarCode(dto.getCultivarCode());
+        request.setFlowerSize(dto.getFlowerSize());
+        request.setPetalCount(dto.getPetalCount());
+        request.setFragrance(dto.getFragrance());
+        request.setDiseaseResistance(dto.getDiseaseResistance());
+        request.setGrowthType(dto.getGrowthType());
+        request.setUsageType(dto.getUsageType());
+        request.setRecommendedPosition(dto.getRecommendedPosition());
+        request.setContinuousBlooming(dto.getContinuousBlooming());
+        request.setMultiBlooming(dto.getMultiBlooming());
+        request.setGrowthPower(dto.getGrowthPower());
+        request.setColdResistance(dto.getColdResistance());
+        request.setImageUrl(dto.getImageUrl());
+        request.setDescription(dto.getDescription());
+
+        request.setStatus(Status.PENDING);
+    }
 }

@@ -110,5 +110,12 @@ public class WikiController {
         return ResponseEntity.ok(dto);
     }
 
+    @PatchMapping("/user/modification/{id}/resubmit")
+    public ResponseEntity<MessageResponse> resubmit(@PathVariable("id") Long id, @RequestBody WikiModificationResubmitDto dto, @AuthenticationPrincipal CustomUserDetails user) {
+        log.info("[PATCH][/api/v1/wiki/user/modification/{}/resubmit] - 도감 보완 제출 요청", id);
+        wikiService.resubmitModificationRequest(id, user.getUserNo(), dto);
+        return ResponseEntity.ok(new MessageResponse("도감 보완 제출 완료"));
+    }
+
     public record ImageUploadResponse(boolean uploaded, String url, String error) {}
 }

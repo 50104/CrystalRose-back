@@ -1,5 +1,6 @@
 package com.rose.back.domain.wiki.controller.docs;
 
+import com.rose.back.common.dto.MessageResponse;
 import com.rose.back.domain.auth.oauth2.CustomUserDetails;
 import com.rose.back.domain.wiki.dto.WikiModificationRequestDto;
 import com.rose.back.domain.wiki.dto.WikiModificationResubmitDto;
@@ -19,6 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -129,4 +131,25 @@ public interface WikiControllerDocs {
             content = @Content(schema = @Schema(type = "integer"))) Long id,
             @RequestBody(description = "인증된 사용자 정보", required = true,
                     content = @Content(schema = @Schema(implementation = CustomUserDetails.class))) CustomUserDetails user);
+
+    @Operation(summary = "도감 보완 제출 요청", description = "거절된 도감 수정 요청에 대해 보완 제출을 요청합니다.")
+    @CommonErrorResponses
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "도감 보완 제출 요청 성공",
+                    content = @Content(schema = @Schema(implementation = MessageResponse.class))),
+            @ApiResponse(responseCode = "409", description = "도감 보완 제출 요청 실패",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(name = "Conflict", value = """
+                                    {
+                                      "status": 409,
+                                      "error": "CONFLICT",
+                                      "message": "도감 보완 제출 요청에 실패했습니다.",
+                                      "path": "/api/v1/wiki/user/modification/{id}/resubmit"
+                                    }
+                                    """))),
+    })
+    ResponseEntity<MessageResponse> resubmit(@PathVariable("id") Long id,
+                                              @RequestBody(description = "보완 제출할 도감 수정 요청 정보", required = true,
+                                                      content = @Content(schema = @Schema(implementation = WikiModificationResubmitDto.class))) WikiModificationResubmitDto dto,
+                                              @AuthenticationPrincipal CustomUserDetails user);
 }
