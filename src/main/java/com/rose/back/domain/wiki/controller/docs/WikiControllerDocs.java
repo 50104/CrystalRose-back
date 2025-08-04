@@ -1,6 +1,8 @@
 package com.rose.back.domain.wiki.controller.docs;
 
+import com.rose.back.domain.auth.oauth2.CustomUserDetails;
 import com.rose.back.domain.wiki.dto.WikiModificationRequestDto;
+import com.rose.back.domain.wiki.dto.WikiModificationResubmitDto;
 import com.rose.back.domain.wiki.dto.WikiRequest;
 import com.rose.back.domain.wiki.dto.WikiResponse;
 import com.rose.back.global.exception.CommonErrorResponses;
@@ -17,6 +19,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -104,4 +107,26 @@ public interface WikiControllerDocs {
     })
     ResponseEntity<WikiResponse> getWikiDetail(@RequestBody(description = "조회할 도감 ID", required = true,
             content = @Content(schema = @Schema(type = "integer"))) Long id);
+
+    @Operation(summary = "도감 수정 요청 거절 조회", description = "도감 수정 요청이 거절된 경우, 거절 사유와 함께 수정 요청 정보를 조회합니다.")
+    @CommonErrorResponses
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "도감 수정 요청 거절 정보 조회 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = WikiModificationResubmitDto.class))),
+            @ApiResponse(responseCode = "409", description = "도감 수정 요청 거절 정보 조회 실패 - 도감이 존재하지 않음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(name = "Not Found", value = """
+                                    {
+                                      "status": 409,
+                                      "error": "CONFLICT",
+                                      "message": "해당 도감을 찾을 수 없습니다.",
+                                      "path": "/api/v1/wiki/modification/rejected"
+                                    }
+                                    """))),
+    })
+    ResponseEntity<WikiModificationResubmitDto> getResubmitData(@RequestBody(description = "조회할 도감 ID", required = true,
+            content = @Content(schema = @Schema(type = "integer"))) Long id,
+            @RequestBody(description = "인증된 사용자 정보", required = true,
+                    content = @Content(schema = @Schema(implementation = CustomUserDetails.class))) CustomUserDetails user);
 }

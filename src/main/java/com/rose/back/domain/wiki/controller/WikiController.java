@@ -2,6 +2,7 @@ package com.rose.back.domain.wiki.controller;
 
 import com.rose.back.common.dto.MessageResponse;
 import com.rose.back.domain.wiki.dto.WikiModificationRequestDto;
+import com.rose.back.domain.wiki.dto.WikiModificationResubmitDto;
 import com.rose.back.domain.wiki.dto.WikiRequest;
 import com.rose.back.domain.wiki.dto.WikiResponse;
 import com.rose.back.domain.wiki.service.WikiImageService;
@@ -100,6 +101,13 @@ public class WikiController {
         log.info("[GET][/api/v1/wiki/modification/rejected] - 거절된 도감 수정 요청 조회");
         Long userNo = user.getUserNo();
         return ResponseEntity.ok(wikiService.getRejectedModificationRequests(userNo));
+    }
+
+    @GetMapping("/user/modification/{id}/resubmit")
+    public ResponseEntity<WikiModificationResubmitDto> getResubmitData(@PathVariable("id") Long id, @AuthenticationPrincipal CustomUserDetails user) {
+        log.info("[GET][/api/v1/wiki/user/modification/{}/resubmit] - 보완 제출 폼 조회 요청", id);
+        WikiModificationResubmitDto dto = wikiService.getResubmitFormData(id, user.getUserNo());
+        return ResponseEntity.ok(dto);
     }
 
     public record ImageUploadResponse(boolean uploaded, String url, String error) {}

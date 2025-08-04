@@ -3,13 +3,16 @@ package com.rose.back.domain.wiki.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import com.rose.back.domain.wiki.dto.WikiModificationRequestDto;
+import com.rose.back.domain.wiki.dto.WikiModificationResubmitDto;
 import com.rose.back.domain.wiki.dto.WikiRequest;
 import com.rose.back.domain.wiki.dto.WikiResponse;
 import com.rose.back.domain.wiki.entity.WikiEntity;
 import com.rose.back.domain.wiki.entity.WikiModificationRequest;
+import com.rose.back.domain.wiki.entity.WikiModificationRequest.Status;
 import com.rose.back.domain.wiki.repository.WikiRepository;
 import com.rose.back.domain.wiki.repository.WikiModificationRequestRepository;
 import com.rose.back.domain.user.entity.UserEntity;
@@ -166,6 +169,35 @@ public class WikiService {
             .imageUrl(request.getImageUrl())
             .description(request.getDescription())
             .createdDate(request.getCreatedDate())
+            .build();
+    }
+
+    @Transactional
+    public WikiModificationResubmitDto getResubmitFormData(Long requestId, Long userId) {
+        WikiModificationRequest request = wikiModificationRequestRepository.findById(requestId)
+            .orElseThrow(() -> new IllegalArgumentException("수정 요청이 존재하지 않습니다."));
+
+        if (!request.getRequester().getUserNo().equals(userId)) {
+            throw new AccessDeniedException("본인의 요청만 조회할 수 있습니다.");
+        }
+
+        return WikiModificationResubmitDto.builder()
+            .name(request.getName())
+            .category(request.getCategory())
+            .cultivarCode(request.getCultivarCode())
+            .flowerSize(request.getFlowerSize())
+            .petalCount(request.getPetalCount())
+            .fragrance(request.getFragrance())
+            .diseaseResistance(request.getDiseaseResistance())
+            .growthType(request.getGrowthType())
+            .usageType(request.getUsageType())
+            .recommendedPosition(request.getRecommendedPosition())
+            .imageUrl(request.getImageUrl())
+            .continuousBlooming(request.getContinuousBlooming())
+            .multiBlooming(request.getMultiBlooming())
+            .growthPower(request.getGrowthPower())
+            .coldResistance(request.getColdResistance())
+            .description(request.getDescription())
             .build();
     }
 }
