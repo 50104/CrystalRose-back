@@ -132,6 +132,26 @@ public interface WikiControllerDocs {
             @RequestBody(description = "인증된 사용자 정보", required = true,
                     content = @Content(schema = @Schema(implementation = CustomUserDetails.class))) CustomUserDetails user);
 
+    @Operation(summary = "거절된 도감 수정 요청 조회", description = "거절된 도감 수정 요청의 상세 정보를 조회합니다.")
+    @CommonErrorResponses
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "거절된 도감 수정 요청 정보 조회 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = WikiModificationResubmitDto.class))),
+            @ApiResponse(responseCode = "409", description = "거절된 도감 수정 요청 정보 조회 실패 - 요청이 존재하지 않음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(name = "Not Found", value = """
+                                    {
+                                      "status": 409,
+                                      "error": "CONFLICT",
+                                      "message": "해당 수정 요청을 찾을 수 없습니다.",
+                                      "path": "/api/v1/wiki/user/modification/{id}"
+                                    }
+                                    """))),
+    })
+    ResponseEntity<WikiModificationResubmitDto> getRejectedModification(@PathVariable("id") Long id,
+                                                                        @AuthenticationPrincipal CustomUserDetails user);
+
     @Operation(summary = "도감 보완 제출 요청", description = "거절된 도감 수정 요청에 대해 보완 제출을 요청합니다.")
     @CommonErrorResponses
     @ApiResponses(value = {

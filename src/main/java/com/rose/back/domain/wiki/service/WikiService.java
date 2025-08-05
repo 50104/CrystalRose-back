@@ -149,6 +149,20 @@ public class WikiService {
     }
 
     @Transactional
+    public WikiModificationResubmitDto getRejectedModification(Long requestId, Long userId) {
+        WikiModificationRequest request = wikiModificationRequestRepository.findById(requestId)
+            .orElseThrow(() -> new IllegalArgumentException("해당 수정 요청이 존재하지 않습니다."));
+
+        if (!request.getRequester().getUserNo().equals(userId)) {
+            throw new AccessDeniedException("본인의 요청만 조회할 수 있습니다.");
+        }
+        if (request.getStatus() != Status.REJECTED) {
+            throw new IllegalStateException("거절된 요청만 보완할 수 있습니다.");
+        }
+        return WikiModificationResubmitDto.from(request);
+    }
+
+    @Transactional
     public void resubmitModificationRequest(Long requestId, Long userId, WikiModificationResubmitDto dto) {
         WikiModificationRequest request = wikiModificationRequestRepository.findById(requestId)
             .orElseThrow(() -> new IllegalArgumentException("해당 수정 요청이 존재하지 않습니다."));

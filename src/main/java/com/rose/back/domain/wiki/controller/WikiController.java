@@ -5,6 +5,7 @@ import com.rose.back.domain.wiki.dto.WikiModificationListDto;
 import com.rose.back.domain.wiki.dto.WikiModificationResubmitDto;
 import com.rose.back.domain.wiki.dto.WikiRequest;
 import com.rose.back.domain.wiki.dto.WikiResponse;
+import com.rose.back.domain.wiki.entity.WikiModificationRequest;
 import com.rose.back.domain.wiki.service.WikiImageService;
 import com.rose.back.domain.wiki.service.WikiService;
 import com.rose.back.domain.user.entity.UserEntity;
@@ -99,6 +100,13 @@ public class WikiController {
         log.info("[GET][/api/v1/wiki/user/modification/list] - 사용자 도감 수정 요청 목록 조회");
         List<WikiModificationListDto> dtoList = wikiService.getUserModifications(user.getUserNo());
         return ResponseEntity.ok(dtoList);
+    }
+
+    @GetMapping("/user/modification/{id}")
+    public ResponseEntity<WikiModificationResubmitDto> getRejectedModification(@PathVariable("id") Long id, @AuthenticationPrincipal CustomUserDetails user) {
+        log.info("[GET][/api/v1/wiki/user/modification/{}] - 거절된 도감 수정 요청 조회", id);
+        WikiModificationResubmitDto dto = wikiService.getRejectedModification(id, user.getUserNo());
+        return ResponseEntity.ok(dto);
     }
 
     @PatchMapping("/user/modification/{id}/resubmit")

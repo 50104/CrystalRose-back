@@ -1,5 +1,7 @@
 package com.rose.back.domain.wiki.dto;
 
+import com.rose.back.domain.wiki.entity.WikiModificationRequest;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,4 +30,25 @@ public class WikiModificationResubmitDto {
     private String coldResistance;
     private String imageUrl;
     private String description; // 수정 사유 재작성
+
+    public static WikiModificationResubmitDto from(WikiModificationRequest entity) {
+        return WikiModificationResubmitDto.builder()
+                .name(entity.getName())
+                .category(entity.getCategory())
+                .cultivarCode(entity.getCultivarCode())
+                .flowerSize(entity.getFlowerSize())
+                .petalCount(entity.getPetalCount())
+                .fragrance(entity.getFragrance())
+                .diseaseResistance(entity.getDiseaseResistance())
+                .growthType(entity.getGrowthType())
+                .usageType(entity.getUsageType())
+                .recommendedPosition(entity.getRecommendedPosition())
+                .continuousBlooming(entity.getContinuousBlooming())
+                .multiBlooming(entity.getMultiBlooming())
+                .growthPower(entity.getGrowthPower())
+                .coldResistance(entity.getColdResistance())
+                .imageUrl(entity.getImageUrl())
+                .description(entity.getDescription())
+                .build();
+    }
 }
