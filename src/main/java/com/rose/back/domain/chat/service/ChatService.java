@@ -92,19 +92,15 @@ public class ChatService {
 
   public void createGroupRoom(String chatRoomName) {
     UserEntity userEntity = getCurrentUser();
-    // 채팅방 생성
-    ChatRoom chatRoom = ChatRoom.builder()
+
+    ChatRoom chatRoom = ChatRoom.builder() // 채팅방 생성
       .roomName(chatRoomName)
       .isGroupChat("Y")
       .build();
     chatRoomRepository.save(chatRoom);
 
-    // 채팅 잠여자로 개설자 추가
-    ChatParticipant chatParticipant = ChatParticipant.builder()
-      .chatRoom(chatRoom)
-      .userEntity(userEntity)
-      .build();
-    chatParticipantRepository.save(chatParticipant);  
+    // 참여자 추가
+    addParticipantToRoom(chatRoom, userEntity);
   }
 
   public List<ChatRoomListResDto> getGroupChatRooms(){
@@ -138,12 +134,17 @@ public class ChatService {
 
   // ChatParticipant 객체 생성 후 저장
   public void addParticipantToRoom(ChatRoom chatRoom, UserEntity userEntity) {
+    String nickname = Optional.ofNullable(userEntity.getUserNick())
+                              .filter(nick -> !nick.isBlank())
+                              .orElse(userEntity.getUserId());
+
     ChatParticipant chatParticipant = ChatParticipant.builder()
       .chatRoom(chatRoom)
       .userEntity(userEntity)
-      .displayName(userEntity.getUserNick())
+      .displayName(nickname)
       .build();
-    chatParticipantRepository.save(chatParticipant);  
+
+    chatParticipantRepository.save(chatParticipant);
   }
 
   // 참여자가 아닌 경우 조회 불가
