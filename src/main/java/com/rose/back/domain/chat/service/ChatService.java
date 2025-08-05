@@ -103,17 +103,19 @@ public class ChatService {
     addParticipantToRoom(chatRoom, userEntity);
   }
 
-  public List<ChatRoomListResDto> getGroupChatRooms(){
+  public List<ChatRoomListResDto> getGroupChatRooms() {
     List<ChatRoom> chatRooms = chatRoomRepository.findByIsGroupChat("Y");
     List<ChatRoomListResDto> dtos = new ArrayList<>();
-    for(ChatRoom c : chatRooms) {
-      ChatRoomListResDto dto = ChatRoomListResDto
-        .builder()
+
+    for (ChatRoom c : chatRooms) {
+      ChatRoomListResDto dto = ChatRoomListResDto.builder()
         .roomId(c.getId())
         .roomName(c.getRoomName())
+        .participantCount(c.getChatParticipants() != null ? c.getChatParticipants().size() : 0)
         .build();
         dtos.add(dto);
     }
+
     return dtos;
   }
 
