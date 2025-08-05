@@ -18,7 +18,7 @@
     <!-- Error -->
     <RollingFile name="ErrorFile"
                 fileName="${LOG_PATH}/error.log"
-                filePattern="${LOG_PATH}/error-%d{yyyy-MM-dd}.%i.log.gz"
+                filePattern="${LOG_PATH}/archive/%d{yyyy-MM-dd}/error-%d{yyyy-MM-dd}.%i.log.gz"
                 append="true">
       <PatternLayout pattern="${DEFAULT_PATTERN}" charset="UTF-8"/>
       <Policies>
@@ -26,7 +26,7 @@
         <SizeBasedTriggeringPolicy size="10MB"/>
       </Policies>
       <DefaultRolloverStrategy max="10">
-        <Delete basePath="${LOG_PATH}" maxDepth="1">
+        <Delete basePath="${LOG_PATH}/archive" maxDepth="2">
           <IfLastModified age="7d"/>
           <IfAccumulatedFileCount exceeds="10"/>
         </Delete>
@@ -42,7 +42,7 @@
     <!-- Access -->
     <RollingFile name="AccessFile"
                 fileName="${LOG_PATH}/access.log"
-                filePattern="${LOG_PATH}/access-%d{yyyy-MM-dd}.%i.log.gz"
+                filePattern="${LOG_PATH}/archive/%d{yyyy-MM-dd}/access-%d{yyyy-MM-dd}.%i.log.gz"
                 append="true">
       <PatternLayout pattern="${DEFAULT_PATTERN}" charset="UTF-8"/>
       <Policies>
@@ -50,7 +50,7 @@
         <SizeBasedTriggeringPolicy size="10MB"/>
       </Policies>
       <DefaultRolloverStrategy max="10">
-        <Delete basePath="${LOG_PATH}" maxDepth="1">
+        <Delete basePath="${LOG_PATH}/archive" maxDepth="2">
           <IfLastModified age="7d"/>
           <IfAccumulatedFileCount exceeds="10"/>
         </Delete>
@@ -63,7 +63,7 @@
     <!-- SQL -->
     <RollingFile name="SqlFile"
                 fileName="${LOG_PATH}/sql.log"
-                filePattern="${LOG_PATH}/sql-%d{yyyy-MM-dd}.%i.log.gz"
+                filePattern="${LOG_PATH}/archive/%d{yyyy-MM-dd}/sql-%d{yyyy-MM-dd}.%i.log.gz"
                 append="true">
       <PatternLayout pattern="${DEFAULT_PATTERN}" charset="UTF-8"/>
       <Policies>
@@ -71,7 +71,7 @@
         <SizeBasedTriggeringPolicy size="10MB"/>
       </Policies>
       <DefaultRolloverStrategy max="10">
-        <Delete basePath="${LOG_PATH}" maxDepth="1">
+        <Delete basePath="${LOG_PATH}/archive" maxDepth="2">
           <IfLastModified age="7d"/>
           <IfAccumulatedFileCount exceeds="10"/>
         </Delete>
@@ -84,7 +84,7 @@
     <!-- WebSocket -->
     <RollingFile name="WebSocketFile"
                 fileName="${LOG_PATH}/websocket.log"
-                filePattern="${LOG_PATH}/websocket-%d{yyyy-MM-dd}.%i.log.gz"
+                filePattern="${LOG_PATH}/archive/%d{yyyy-MM-dd}/websocket-%d{yyyy-MM-dd}.%i.log.gz"
                 append="true">
       <PatternLayout pattern="${DEFAULT_PATTERN}" charset="UTF-8"/>
       <Policies>
@@ -92,7 +92,7 @@
         <SizeBasedTriggeringPolicy size="10MB"/>
       </Policies>
       <DefaultRolloverStrategy max="10">
-        <Delete basePath="${LOG_PATH}" maxDepth="1">
+        <Delete basePath="${LOG_PATH}/archive" maxDepth="2">
           <IfLastModified age="7d"/>
           <IfAccumulatedFileCount exceeds="10"/>
         </Delete>
@@ -102,9 +102,10 @@
       </Filters>
     </RollingFile>
 
+    <!-- Debug -->
     <RollingFile name="DebugFile"
                 fileName="${LOG_PATH}/debug.log"
-                filePattern="${LOG_PATH}/debug-%d{yyyy-MM-dd}.%i.log.gz"
+                filePattern="${LOG_PATH}/archive/%d{yyyy-MM-dd}/debug-%d{yyyy-MM-dd}.%i.log.gz"
                 append="true">
       <PatternLayout pattern="${DEFAULT_PATTERN}" charset="UTF-8"/>
       <Policies>
@@ -112,7 +113,7 @@
         <SizeBasedTriggeringPolicy size="10MB"/>
       </Policies>
       <DefaultRolloverStrategy max="10">
-        <Delete basePath="${LOG_PATH}" maxDepth="1">
+        <Delete basePath="${LOG_PATH}/archive" maxDepth="2">
           <IfLastModified age="7d"/>
           <IfAccumulatedFileCount exceeds="10"/>
         </Delete>
