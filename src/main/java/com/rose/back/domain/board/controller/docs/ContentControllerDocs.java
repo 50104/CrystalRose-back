@@ -159,7 +159,7 @@ public interface ContentControllerDocs {
             )
         )
     })
-    ResponseEntity<ContentListResponse> listPage(@RequestParam(name = "page", defaultValue = "1") int page);
+    ResponseEntity<ContentListResponse> listPage(@RequestParam(name = "page", defaultValue = "1") int page, @RequestParam(name = "size", defaultValue = "3") int size, Authentication authentication);
 
     @Operation(summary = "게시글 상세 조회", description = "특정 게시글의 상세 정보를 조회합니다.")
     @CommonErrorResponses

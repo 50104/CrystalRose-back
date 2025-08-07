@@ -18,6 +18,7 @@ import com.rose.back.domain.board.entity.ContentImageEntity;
 import com.rose.back.domain.board.repository.ContentRepository;
 import com.rose.back.domain.board.repository.RecommendationRepository;
 import com.rose.back.domain.comment.repository.CommentRepository;
+import com.rose.back.domain.report.repository.UserBlockRepository;
 import com.rose.back.domain.board.repository.ContentImageRepository;
 import com.rose.back.domain.user.entity.UserEntity;
 import com.rose.back.domain.user.repository.UserRepository;
@@ -26,6 +27,7 @@ import com.rose.back.infra.S3.ImageUrlExtractor;
 import com.rose.back.infra.S3.S3Uploader;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -33,6 +35,7 @@ import java.util.*;
 public class ContentService {
 
     private final ContentRepository contentRepository;
+    private final UserBlockRepository userBlockRepository;
     private final ContentImageService contentImageService;
     private final ContentImageRepository contentImageRepository;
     private final ImageUrlExtractor imageUrlExtractor;
@@ -72,16 +75,19 @@ public class ContentService {
         return contentRepository.findAll();
     }
 
+    // 게시글 상세 조회
     @Transactional
-    public ContentWithWriterDto selectOneContentDto(Long boardNo, String currentUserId, boolean increaseViewCount) { // 게시글 상세 조회
+    public ContentWithWriterDto selectOneContentDto(Long boardNo, String currentUserId, boolean increaseViewCount) {
         ContentEntity content = contentRepository.findByBoardNo(boardNo)
             .orElseThrow(() -> new NoSuchElementException("게시글이 존재하지 않습니다: " + boardNo));
 
-        if (increaseViewCount && currentUserId != null) {
-            String writerId = Optional.ofNullable(content.getWriter())
-                                      .map(UserEntity::getUserId)
-                                      .orElse(null);
+        List<UserEntity> blockedUsers = userBlockRepository.findAllBlockedByUserId(currentUserId);
+        if (blockedUsers.contains(content.getWriter())) {
+            throw new AccessDeniedException("차단한 사용자의 게시글입니다.");
+        }
 
+        if (increaseViewCount && currentUserId != null) {
+            String writerId = Optional.ofNullable(content.getWriter()).map(UserEntity::getUserId).orElse(null);
             boolean isWriter = writerId != null && writerId.equals(currentUserId);
             if (isWriter) {
                 if (!redisViewService.isDuplicateView(currentUserId, boardNo)) {
@@ -94,11 +100,8 @@ public class ContentService {
 
         long commentCount = commentRepository.countByContentEntity_BoardNo(boardNo);
         long likeCount = recommendationRepository.countByBoardNo(boardNo);
-
-        boolean recommended = false;
-        if (currentUserId != null) {
-            recommended = recommendationRepository.findByBoardNoAndUserId(boardNo, currentUserId).isPresent();
-        }
+        boolean recommended = currentUserId != null &&
+            recommendationRepository.findByBoardNoAndUserId(boardNo, currentUserId).isPresent();
 
         return ContentWithWriterDto.from(content, commentCount, likeCount, recommended);
     }
@@ -107,14 +110,19 @@ public class ContentService {
         return selectOneContentDto(boardNo, null, false);
     }
 
-    public Page<ContentListDto> selectContentPage(int page, int size) { // 목록
+    public Page<ContentListDto> selectContentPage(int page, int size, String currentUserId) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "boardNo"));
+        List<UserEntity> blockedUsers = userBlockRepository.findAllBlockedByUserId(currentUserId);
 
-        return contentRepository.findAll(pageable)
-            .map(entity -> {
-                long commentCount = commentRepository.countByContentEntity_BoardNo(entity.getBoardNo());
-                return ContentListDto.from(entity, commentCount);
-            });
+        Page<ContentEntity> all = contentRepository.findAll(pageable);
+        List<ContentListDto> filtered = all.stream()
+            .filter(content -> !blockedUsers.contains(content.getWriter()))
+            .map(content -> {
+                long commentCount = commentRepository.countByContentEntity_BoardNo(content.getBoardNo());
+                return ContentListDto.from(content, commentCount);
+            }).toList();
+
+        return new PageImpl<>(filtered, pageable, filtered.size());
     }
 
     @Transactional
@@ -179,25 +187,37 @@ public class ContentService {
         return newState;
     }
 
-    public ContentListResponse selectContentPageWithFixed(int page, int size) {
+    public ContentListResponse selectContentPageWithFixed(int page, int size, String userId) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "boardNo"));
 
-        // 고정 게시글
-        List<ContentListDto> fixedList = contentRepository.findByIsFixedTrueOrderByBoardNoDesc()
-            .stream()
-            .map(entity -> {
-                long commentCount = commentRepository.countByContentEntity_BoardNo(entity.getBoardNo());
-                return ContentListDto.from(entity, commentCount);
-            }).toList();
+        // 차단한 사용자 번호 리스트
+        Set<Long> blockedUserNos = (userId != null)
+            ? userBlockRepository.findAllBlockedByUserId(userId).stream()
+                .map(UserEntity::getUserNo)
+                .collect(Collectors.toSet())
+            : Set.of(); // 비로그인 사용자는 차단 목록 없음
+        log.info("차단 대상 userNos = {}", blockedUserNos); 
 
-        // 일반 게시글
+        // 고정 게시글 조회 후 차단 사용자 필터링
+        List<ContentListDto> fixedList = contentRepository.findByIsFixedTrueOrderByBoardNoDesc().stream()
+            .filter(content -> content.getWriter() != null &&
+                              !blockedUserNos.contains(content.getWriter().getUserNo()))
+            .map(content -> {
+                long commentCount = commentRepository.countByContentEntity_BoardNo(content.getBoardNo());
+                return ContentListDto.from(content, commentCount);
+            })
+            .toList();
+
+        // 일반 게시글 조회 후 차단 사용자 필터링
         Page<ContentEntity> contentPage = contentRepository.findByIsFixedFalse(pageable);
-        List<ContentListDto> contentList = contentPage.getContent()
-            .stream()
-            .map(entity -> {
-                long commentCount = commentRepository.countByContentEntity_BoardNo(entity.getBoardNo());
-                return ContentListDto.from(entity, commentCount);
-            }).toList();
+        List<ContentListDto> contentList = contentPage.getContent().stream()
+            .filter(content -> content.getWriter() != null &&
+                              !blockedUserNos.contains(content.getWriter().getUserNo()))
+            .map(content -> {
+                long commentCount = commentRepository.countByContentEntity_BoardNo(content.getBoardNo());
+                return ContentListDto.from(content, commentCount);
+            })
+            .toList();
 
         return new ContentListResponse(fixedList, contentList, contentPage.getTotalPages());
     }

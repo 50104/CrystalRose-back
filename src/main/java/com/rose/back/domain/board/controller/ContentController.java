@@ -1,6 +1,7 @@
 package com.rose.back.domain.board.controller;
 
 import com.rose.back.common.dto.MessageResponse;
+import com.rose.back.domain.auth.oauth2.CustomUserDetails;
 import com.rose.back.domain.board.controller.docs.ContentControllerDocs;
 import com.rose.back.domain.board.dto.ContentListResponse;
 import com.rose.back.domain.board.dto.ContentRequestDto;
@@ -14,6 +15,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -67,9 +69,14 @@ public class ContentController implements ContentControllerDocs {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<ContentListResponse> listPage(@RequestParam(name = "page", defaultValue = "1") int page) {
-        log.info("[GET][/api/v1/board/list] - 게시글 목록 요청, 페이지: {}", page);
-        ContentListResponse response = contentService.selectContentPageWithFixed(page, 3);
+    public ResponseEntity<ContentListResponse> listPage(@RequestParam(name = "page", defaultValue = "1") int page, @RequestParam(name = "size", defaultValue = "3") int size, Authentication authentication) {
+        String currentUserId = null;
+
+        if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails customUserDetails) {
+            currentUserId = customUserDetails.getUsername();
+        }
+
+        ContentListResponse response = contentService.selectContentPageWithFixed(page, size, currentUserId);
         return ResponseEntity.ok(response);
     }
 

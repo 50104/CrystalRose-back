@@ -59,7 +59,6 @@ public class JWTFilter extends OncePerRequestFilter {
         "/api/v1/auth/**",
         "/actuator/health",
         "/api/v1/wiki/list",
-        "/api/v1/board/list",
         "/api/v1/wiki/detail/**"
     );
 
@@ -77,7 +76,7 @@ public class JWTFilter extends OncePerRequestFilter {
     }
 
     private boolean isOptionalAuthPath(String uri) {
-        return uri.startsWith("/api/calendar/data");
+        return uri.startsWith("/api/calendar/data") || uri.startsWith("/api/v1/board/list");
     }
 
     @Override
