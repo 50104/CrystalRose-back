@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,9 +24,10 @@ public class CommentController implements CommentControllerDocs {
     private final CommentService commentService;
 
     @GetMapping("/{boardNo}/comments/list")
-    public ResponseEntity<List<CommentResponseDto>> getComments(@PathVariable("boardNo") Long boardNo) {
+    public ResponseEntity<List<CommentResponseDto>> getComments(@PathVariable("boardNo") Long boardNo, Authentication authentication) {
         log.info("[GET][/board/{}/comments/list] - 댓글 목록 조회 요청", boardNo);
-        List<CommentResponseDto> comments = commentService.getComments(boardNo);
+        String currentUserId = authentication.getName();
+        List<CommentResponseDto> comments = commentService.getComments(boardNo, currentUserId);
         return ResponseEntity.ok(comments);
     }
 

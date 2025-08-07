@@ -1,5 +1,8 @@
 package com.rose.back.domain.comment.dto;
 
+import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.rose.back.domain.comment.entity.CommentEntity;
 import com.rose.back.domain.user.entity.UserEntity;
 import lombok.Builder;
@@ -19,9 +22,12 @@ public class CommentResponseDto {
     private String parentNickname;
     private boolean deleted;
     private String parentStatus;
+    @JsonProperty("isBlocked")
+    private boolean isBlocked;
 
-    public static CommentResponseDto fromEntity(CommentEntity entity) {
+    public static CommentResponseDto fromEntity(CommentEntity entity, Set<Long> blockedUserNos) {
         UserEntity writer = entity.getWriter();
+        boolean isBlocked = writer != null && blockedUserNos.contains(writer.getUserNo());
 
         return CommentResponseDto.builder()
                 .id(entity.getId())
@@ -42,6 +48,7 @@ public class CommentResponseDto {
                         ? entity.getParent().getWriter().getUserStatus().name()
                         : null
                 )
+                .isBlocked(isBlocked)
                 .build();
     }
 }

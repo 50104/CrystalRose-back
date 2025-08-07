@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -45,7 +46,7 @@ public interface CommentControllerDocs {
             )
         )
     })
-    ResponseEntity<List<CommentResponseDto>> getComments(@PathVariable("boardNo") Long boardNo);
+    ResponseEntity<List<CommentResponseDto>> getComments(@PathVariable("boardNo") Long boardNo, Authentication authentication);
 
     @Operation(summary = "댓글 등록", description = "특정 게시글에 댓글을 등록합니다.")
     @CommonErrorResponses

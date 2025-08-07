@@ -1,6 +1,7 @@
 package com.rose.back.domain.comment.service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -12,42 +13,34 @@ import com.rose.back.domain.comment.dto.CommentRequestDto;
 import com.rose.back.domain.comment.dto.CommentResponseDto;
 import com.rose.back.domain.comment.entity.CommentEntity;
 import com.rose.back.domain.comment.repository.CommentRepository;
+import com.rose.back.domain.report.repository.UserBlockRepository;
 import com.rose.back.domain.user.entity.UserEntity;
 import com.rose.back.domain.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CommentService {
 
     private final CommentRepository commentRepository;
     private final ContentRepository contentRepository;
     private final UserRepository userRepository;
+    private final UserBlockRepository userBlockRepository;
 
     @Transactional(readOnly = true)
-    public List<CommentResponseDto> getComments(Long boardNo) {
-        List<CommentEntity> comments = commentRepository.findByContentEntityBoardNo(boardNo);
-        return comments.stream()
-                .map(comment -> {
-                    if (comment.isDeleted()) {
-                        return CommentResponseDto.builder()
-                                .id(comment.getId())
-                                .userId(comment.getWriter().getUserId())
-                                .userNick(comment.getWriter().getUserNick())
-                                .createdDate(comment.getCreatedDate().toString())
-                                .parentId(comment.getParent() != null ? comment.getParent().getId() : null)
-                                .parentNickname(comment.getParent() != null ? comment.getParent().getWriter().getUserId() : null)
-                                .deleted(true)
-                                .content(null)
-                                .build();
-                    } else {
-                        return CommentResponseDto.fromEntity(comment);
-                    }
-                })
-                .collect(Collectors.toList());
+    public List<CommentResponseDto> getComments(Long boardNo, String currentUserId) {
+        Set<Long> blockedUserNos = (currentUserId != null)
+            ? userBlockRepository.findAllBlockedByUserId(currentUserId).stream()
+                .map(UserEntity::getUserNo)
+                .collect(Collectors.toSet())
+            : Set.of();
+            
+        return commentRepository.findByContentEntityBoardNo(boardNo).stream()
+            .map(comment -> CommentResponseDto.fromEntity(comment, blockedUserNos))
+            .toList();
     }
 
     @Transactional
