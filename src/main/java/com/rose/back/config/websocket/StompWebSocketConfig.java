@@ -45,6 +45,7 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
       .taskExecutor()
       .corePoolSize(10) // 기본 스레드 풀 크기
       .maxPoolSize(20) // 최대 스레드 풀 크기
+      .queueCapacity(1000) // 큐 용량
       .keepAliveSeconds(60); // 스레드 유지 시간
   }
 
@@ -54,6 +55,7 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
       .taskExecutor()
       .corePoolSize(10)
       .maxPoolSize(20)
+      .queueCapacity(1000)
       .keepAliveSeconds(60);
   }
 }
