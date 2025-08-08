@@ -81,11 +81,6 @@ public class ContentService {
         ContentEntity content = contentRepository.findByBoardNo(boardNo)
             .orElseThrow(() -> new NoSuchElementException("게시글이 존재하지 않습니다: " + boardNo));
 
-        List<UserEntity> blockedUsers = userBlockRepository.findAllBlockedByUserId(currentUserId);
-        if (blockedUsers.contains(content.getWriter())) {
-            throw new AccessDeniedException("차단한 사용자의 게시글입니다.");
-        }
-
         if (increaseViewCount && currentUserId != null) {
             String writerId = Optional.ofNullable(content.getWriter()).map(UserEntity::getUserId).orElse(null);
             boolean isWriter = writerId != null && writerId.equals(currentUserId);
@@ -112,18 +107,26 @@ public class ContentService {
 
     public Page<ContentListDto> selectContentPage(int page, int size, String currentUserId) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "boardNo"));
+        
+        // 차단 유저 목록 가져오기
         List<UserEntity> blockedUsers = userBlockRepository.findAllBlockedByUserId(currentUserId);
+        Set<Long> blockedUserNos = blockedUsers.stream().map(UserEntity::getUserNo).collect(Collectors.toSet());
 
         Page<ContentEntity> all = contentRepository.findAll(pageable);
-        List<ContentListDto> filtered = all.stream()
-            .filter(content -> !blockedUsers.contains(content.getWriter()))
-            .map(content -> {
-                long commentCount = commentRepository.countByContentEntity_BoardNo(content.getBoardNo());
-                return ContentListDto.from(content, commentCount);
-            }).toList();
+        List<ContentEntity> contentEntities = all.getContent();
 
-        return new PageImpl<>(filtered, pageable, filtered.size());
+        List<ContentListDto> result = contentEntities.stream()
+            .map(content -> {
+                boolean isBlocked = content.getWriter() != null &&
+                                    blockedUserNos.contains(content.getWriter().getUserNo());
+                long commentCount = commentRepository.countByContentEntity_BoardNo(content.getBoardNo());
+                return ContentListDto.from(content, commentCount, isBlocked);
+            })
+            .toList();
+
+        return new PageImpl<>(result, pageable, all.getTotalElements());
     }
+
 
     @Transactional
     public void deleteOneContent(Long boardNo, String username) {
@@ -190,32 +193,28 @@ public class ContentService {
     public ContentListResponse selectContentPageWithFixed(int page, int size, String userId) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "boardNo"));
 
-        // 차단한 사용자 번호 리스트
         Set<Long> blockedUserNos = (userId != null)
             ? userBlockRepository.findAllBlockedByUserId(userId).stream()
                 .map(UserEntity::getUserNo)
                 .collect(Collectors.toSet())
-            : Set.of(); // 비로그인 사용자는 차단 목록 없음
-        log.info("차단 대상 userNos = {}", blockedUserNos); 
+            : Set.of();
 
-        // 고정 게시글 조회 후 차단 사용자 필터링
+        log.info("차단 대상 userNos = {}", blockedUserNos);
+
         List<ContentListDto> fixedList = contentRepository.findByIsFixedTrueOrderByBoardNoDesc().stream()
-            .filter(content -> content.getWriter() != null &&
-                              !blockedUserNos.contains(content.getWriter().getUserNo()))
             .map(content -> {
+                boolean isBlocked = content.getWriter() != null && blockedUserNos.contains(content.getWriter().getUserNo());
                 long commentCount = commentRepository.countByContentEntity_BoardNo(content.getBoardNo());
-                return ContentListDto.from(content, commentCount);
+                return ContentListDto.from(content, commentCount, isBlocked);
             })
             .toList();
 
-        // 일반 게시글 조회 후 차단 사용자 필터링
         Page<ContentEntity> contentPage = contentRepository.findByIsFixedFalse(pageable);
         List<ContentListDto> contentList = contentPage.getContent().stream()
-            .filter(content -> content.getWriter() != null &&
-                              !blockedUserNos.contains(content.getWriter().getUserNo()))
             .map(content -> {
+                boolean isBlocked = content.getWriter() != null && blockedUserNos.contains(content.getWriter().getUserNo());
                 long commentCount = commentRepository.countByContentEntity_BoardNo(content.getBoardNo());
-                return ContentListDto.from(content, commentCount);
+                return ContentListDto.from(content, commentCount, isBlocked);
             })
             .toList();
 

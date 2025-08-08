@@ -173,7 +173,7 @@ public class DiaryService {
     }
 
     @Transactional
-    public void forceDeleteDiary(Long diaryId) {
+    public void forceDeleteDiary(Long diaryId) { // dd
         Map<String, Object> diary = diaryRepository.findRawDiary(diaryId);
         if (diary == null || diary.isEmpty()) {
             throw new EntityNotFoundException("해당 다이어리가 존재하지 않습니다.");

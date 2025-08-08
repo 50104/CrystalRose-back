@@ -15,16 +15,17 @@ public record ContentListDto(
     Long viewCount,
     Long commentCount,
     Integer recommendCount,
-    boolean isFixed
+    boolean isFixed,
+    boolean isBlockedWriter
 ) {
-    public static ContentListDto from(ContentEntity entity, Long commentCount) {
+    public static ContentListDto from(ContentEntity entity, Long commentCount, boolean isBlockedWriter) {
         String writerNick = Optional.ofNullable(entity.getWriter())
                 .map(writer -> writer.getUserNick())
                 .orElse("탈퇴한 사용자");
 
         String writerStatus = Optional.ofNullable(entity.getWriter())
                 .map(writer -> writer.getUserStatus())
-                .map(status -> status.name())
+                .map(Enum::name)
                 .orElse("DELETED");
 
         return new ContentListDto(
@@ -37,7 +38,8 @@ public record ContentListDto(
             entity.getViewCount(),
             commentCount,
             entity.getRecommendCount(),
-            entity.isFixed()
+            entity.isFixed(),
+            isBlockedWriter
         );
     }
 }
