@@ -31,4 +31,7 @@ public interface ContentRepository extends JpaRepository<ContentEntity, Long> {
 
     @Query("SELECT c FROM ContentEntity c WHERE c.boardNo > :boardNo ORDER BY c.boardNo ASC")
     List<ContentEntity> findNextPost(@Param("boardNo") Long boardNo, Pageable pageable);
+
+    @Query(value = "select c from ContentEntity c left join fetch c.writer", countQuery = "select count(c) from ContentEntity c")
+    Page<ContentEntity> findPageWithWriter(Pageable pageable);
 }

@@ -107,26 +107,39 @@ public class ContentService {
 
     public Page<ContentListDto> selectContentPage(int page, int size, String currentUserId) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "boardNo"));
-        
-        // 차단 유저 목록 가져오기
+
+        // 차단 유저 번호추출
         List<UserEntity> blockedUsers = userBlockRepository.findAllBlockedByUserId(currentUserId);
         Set<Long> blockedUserNos = blockedUsers.stream().map(UserEntity::getUserNo).collect(Collectors.toSet());
 
-        Page<ContentEntity> all = contentRepository.findAll(pageable);
-        List<ContentEntity> contentEntities = all.getContent();
+        // 한 번에 Page 조회
+        Page<ContentEntity> pageEntities = contentRepository.findPageWithWriter(pageable);
+        List<ContentEntity> contents = pageEntities.getContent();
 
-        List<ContentListDto> result = contentEntities.stream()
+        // 빈 페이지 에러 방지
+        if (contents.isEmpty()) {
+            return new PageImpl<>(Collections.emptyList(), pageable, pageEntities.getTotalElements());
+        }
+
+        List<Long> boardNos = contents.stream().map(ContentEntity::getBoardNo).toList();
+
+        // 댓글 수 일괄 조회
+        Map<Long, Long> commentCountMap = new HashMap<>();
+        for (Object[] row : commentRepository.countCommentsByBoardNos(boardNos)) {
+            commentCountMap.put((Long) row[0], (Long) row[1]);
+        }
+
+        List<ContentListDto> dtoList = contents.stream()
             .map(content -> {
                 boolean isBlocked = content.getWriter() != null &&
                                     blockedUserNos.contains(content.getWriter().getUserNo());
-                long commentCount = commentRepository.countByContentEntity_BoardNo(content.getBoardNo());
+                long commentCount = commentCountMap.getOrDefault(content.getBoardNo(), 0L);
                 return ContentListDto.from(content, commentCount, isBlocked);
             })
             .toList();
 
-        return new PageImpl<>(result, pageable, all.getTotalElements());
+        return new PageImpl<>(dtoList, pageable, pageEntities.getTotalElements());
     }
-
 
     @Transactional
     public void deleteOneContent(Long boardNo, String username) {
