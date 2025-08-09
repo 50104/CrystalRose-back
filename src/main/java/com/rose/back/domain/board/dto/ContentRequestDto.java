@@ -6,10 +6,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
 public class ContentRequestDto{
     @NotBlank(message = "게시물 제목은 필수입니다") 
@@ -27,4 +29,11 @@ public class ContentRequestDto{
     private String boardTag;
 
     private List<MultipartFile> images;
+
+    public ContentRequestDto(String boardTitle, String boardContent, String boardTag, String userId, String image) {
+        this.boardTitle = boardTitle;
+        this.boardContent = boardContent;
+        this.boardTag = boardTag;
+        this.userId = userId;
+    }
 }

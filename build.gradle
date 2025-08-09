@@ -55,8 +55,6 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	runtimeOnly 'com.mysql:mysql-connector-j'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
 	testAnnotationProcessor 'org.projectlombok:lombok'
@@ -74,6 +72,12 @@ dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+  // 테스트 코드
+  testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+  testImplementation 'org.mockito:mockito-junit-jupiter:5.10.0'
+  testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
 }
 
 // log4j2 사용을 위해 Logback 제거
