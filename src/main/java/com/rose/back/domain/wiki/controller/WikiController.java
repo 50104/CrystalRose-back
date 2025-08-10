@@ -1,6 +1,8 @@
 package com.rose.back.domain.wiki.controller;
 
 import com.rose.back.common.dto.MessageResponse;
+import com.rose.back.domain.wiki.dto.WikiModificationComparisonDto;
+import com.rose.back.domain.wiki.dto.WikiModificationDetailDto;
 import com.rose.back.domain.wiki.dto.WikiModificationListDto;
 import com.rose.back.domain.wiki.dto.WikiModificationResubmitDto;
 import com.rose.back.domain.wiki.dto.WikiRequest;
@@ -138,6 +140,15 @@ public class WikiController {
         
         Page<WikiResponse> result = wikiService.getMyRejectedWikis(principal.getUserNo(), pageable);
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/user/modify/detail/{id}")
+    public ResponseEntity<WikiModificationDetailDto> getUserModificationDetail(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails user) {
+        log.info("[GET][/api/v1/wiki/user/modify/detail/{}] - 사용자 도감 수정 요청 상세 조회", id);
+        WikiModificationDetailDto detail = wikiService.getUserModificationDetail(id, user.getUserNo());
+        return ResponseEntity.ok(detail);
     }
 
     public record ImageUploadResponse(boolean uploaded, String url, String error) {}

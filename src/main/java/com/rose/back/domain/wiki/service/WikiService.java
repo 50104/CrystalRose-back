@@ -11,7 +11,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.rose.back.domain.wiki.dto.WikiModificationComparisonDto;
+import com.rose.back.domain.wiki.dto.WikiModificationDetailDto;
 import com.rose.back.domain.wiki.dto.WikiModificationListDto;
 import com.rose.back.domain.wiki.dto.WikiModificationResubmitDto;
 import com.rose.back.domain.wiki.dto.WikiRequest;
@@ -24,7 +27,6 @@ import com.rose.back.domain.wiki.repository.WikiModificationRequestRepository;
 import com.rose.back.domain.user.entity.UserEntity;
 
 import jakarta.annotation.Nullable;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -221,5 +223,16 @@ public class WikiService {
         
         Page<WikiEntity> page = wikiRepository.findByCreatedByAndStatusIn(userNo, rejectedStatus, pageable);
         return page.map(WikiResponse::from);
+    }
+
+    @Transactional(readOnly = true)
+    public WikiModificationDetailDto getUserModificationDetail(Long modificationId, Long userId) {
+        WikiModificationRequest request = wikiModificationRequestRepository.findById(modificationId)
+            .orElseThrow(() -> new IllegalArgumentException("해당 수정 요청이 존재하지 않습니다."));
+
+        if (!request.getRequester().getUserNo().equals(userId)) {
+            throw new AccessDeniedException("본인의 요청만 수정할 수 있습니다.");
+        }
+        return WikiModificationDetailDto.from(request);
     }
 }
