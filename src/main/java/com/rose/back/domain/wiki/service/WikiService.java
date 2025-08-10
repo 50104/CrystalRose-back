@@ -137,7 +137,7 @@ public class WikiService {
     }
 
     public WikiResponse getApprovedWikiDetail(Long id) {
-        Optional<WikiEntity> wikiOptional = wikiRepository.findByIdAndStatus(id, WikiEntity.Status.APPROVED);
+        Optional<WikiEntity> wikiOptional = wikiRepository.findById(id);
         
         if (wikiOptional.isPresent()) {
             WikiEntity wikiEntity = wikiOptional.get();
