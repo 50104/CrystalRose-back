@@ -1,5 +1,7 @@
 package com.rose.back.domain.wiki.dto;
 
+import java.time.LocalDateTime;
+
 import com.rose.back.domain.wiki.entity.WikiEntity;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,6 +29,7 @@ public class WikiResponse {
     private String modificationStatus; // 수정 상태
     private String rejectionReason; // 거절 사유
     private Long createdBy; // 작성자
+    private LocalDateTime createdDate;
 
     public static WikiResponse from(WikiEntity wiki) {
         return WikiResponse.builder()
@@ -50,6 +53,7 @@ public class WikiResponse {
             .modificationStatus(wiki.getModificationStatus() != null ? wiki.getModificationStatus().name() : null)
             .rejectionReason(wiki.getRejectionReason())
             .createdBy(wiki.getCreatedBy())
+            .createdDate(wiki.getCreatedDate())
             .build();
     }
 }
