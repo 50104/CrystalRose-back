@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.rose.back.domain.report.dto.CommentReportResponseDto;
 import com.rose.back.domain.report.entity.CommentReport;
@@ -22,7 +23,6 @@ import com.rose.back.domain.wiki.dto.WikiDetailResponse;
 import com.rose.back.domain.wiki.dto.WikiModificationComparisonDto;
 
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;

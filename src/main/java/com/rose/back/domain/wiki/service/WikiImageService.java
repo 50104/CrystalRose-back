@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.rose.back.common.util.ImageValidator;
 import com.rose.back.domain.wiki.entity.WikiEntity;
@@ -15,7 +16,6 @@ import com.rose.back.infra.S3.ImageTempEntity;
 import com.rose.back.infra.S3.ImageTempRepository;
 import com.rose.back.infra.S3.S3Uploader;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
