@@ -1,10 +1,15 @@
 package com.rose.back.domain.wiki.service;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.rose.back.domain.wiki.dto.WikiModificationListDto;
@@ -18,6 +23,7 @@ import com.rose.back.domain.wiki.repository.WikiRepository;
 import com.rose.back.domain.wiki.repository.WikiModificationRequestRepository;
 import com.rose.back.domain.user.entity.UserEntity;
 
+import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +39,7 @@ public class WikiService {
     private final WikiModificationRequestRepository wikiModificationRequestRepository;
 
     public void registerWiki(WikiRequest dto) {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         try {
             WikiEntity wiki = WikiEntity.builder()
                 .name(dto.getName())
@@ -52,6 +59,7 @@ public class WikiService {
                 .coldResistance(defaultValue(dto.getColdResistance(), "-"))
                 .status(WikiEntity.Status.PENDING)
                 .modificationStatus(WikiEntity.ModificationStatus.NONE)
+                .createdBy(Long.parseLong(userId))
                 .build();
 
             wikiRepository.save(wiki);
@@ -192,5 +200,19 @@ public class WikiService {
         request.setDescription(dto.getDescription());
 
         request.setStatus(Status.PENDING);
+    }
+
+    public Page<WikiResponse> getMyWikis(
+        Long userNo,
+        @Nullable List<String> statusStrings,
+        Pageable pageable
+    ) {
+        Collection<WikiEntity.Status> statuses = Collections.singletonList(WikiEntity.Status.PENDING);
+
+        Page<WikiEntity> page = (statuses == null || statuses.isEmpty())
+            ? wikiRepository.findByCreatedBy(userNo, pageable)
+            : wikiRepository.findByCreatedByAndStatusIn(userNo, statuses, pageable);
+
+        return page.map(WikiResponse::from);
     }
 }

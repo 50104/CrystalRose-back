@@ -5,7 +5,6 @@ import com.rose.back.domain.wiki.dto.WikiModificationListDto;
 import com.rose.back.domain.wiki.dto.WikiModificationResubmitDto;
 import com.rose.back.domain.wiki.dto.WikiRequest;
 import com.rose.back.domain.wiki.dto.WikiResponse;
-import com.rose.back.domain.wiki.entity.WikiModificationRequest;
 import com.rose.back.domain.wiki.service.WikiImageService;
 import com.rose.back.domain.wiki.service.WikiService;
 import com.rose.back.domain.user.entity.UserEntity;
@@ -16,6 +15,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -114,6 +114,19 @@ public class WikiController {
         log.info("[PATCH][/api/v1/wiki/user/modification/{}/resubmit] - 도감 보완 제출 요청", id);
         wikiService.resubmitModificationRequest(id, user.getUserNo(), dto);
         return ResponseEntity.ok(new MessageResponse("도감 보완 제출 완료"));
+    }
+
+    @GetMapping("/user/list")
+    public ResponseEntity<Page<WikiResponse>> getMyWikis(
+        @AuthenticationPrincipal CustomUserDetails principal, 
+        @RequestParam(value = "status", required = false) List<String> statusStrings, 
+        Pageable pageable
+    ) {
+        log.info("[GET][/api/v1/wiki/user/list] - 신청한 도감 목록 조회 요청");
+        Long userId = principal.getUserNo();
+        
+        Page<WikiResponse> result = wikiService.getMyWikis(userId, statusStrings, pageable);
+        return ResponseEntity.ok(result);
     }
 
     public record ImageUploadResponse(boolean uploaded, String url, String error) {}

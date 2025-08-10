@@ -67,6 +67,9 @@ public class WikiEntity extends BaseTimeEntity {
     @Column(name = "modification_status")
     private ModificationStatus modificationStatus;
 
+    @Column(name = "created_by", nullable = false)
+    private Long createdBy; // 작성자 ID
+
     public enum Status {
         PENDING, APPROVED, REJECTED, DELETED
     }

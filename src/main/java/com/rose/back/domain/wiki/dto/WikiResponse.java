@@ -25,6 +25,7 @@ public class WikiResponse {
     private String coldResistance;
     private String status; // 도감 전체 상태
     private String modificationStatus; // 수정 상태
+    private Long createdBy; // 작성자
 
     public static WikiResponse from(WikiEntity wiki) {
         return WikiResponse.builder()
@@ -46,6 +47,7 @@ public class WikiResponse {
             .coldResistance(wiki.getColdResistance())
             .status(wiki.getStatus() != null ? wiki.getStatus().name() : null)
             .modificationStatus(wiki.getModificationStatus() != null ? wiki.getModificationStatus().name() : null)
+            .createdBy(wiki.getCreatedBy())
             .build();
     }
 }
