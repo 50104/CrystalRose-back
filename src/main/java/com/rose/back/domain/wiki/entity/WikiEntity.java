@@ -70,6 +70,9 @@ public class WikiEntity extends BaseTimeEntity {
     @Column(name = "created_by", nullable = false)
     private Long createdBy; // 작성자 ID
 
+    @Column(name = "rejection_reason", length = 1000)
+    private String rejectionReason; // 거절사유
+
     public enum Status {
         PENDING, APPROVED, REJECTED, DELETED
     }

@@ -129,5 +129,16 @@ public class WikiController {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping("/user/rejected")
+    public ResponseEntity<Page<WikiResponse>> getMyRejectedWikis(
+        @AuthenticationPrincipal CustomUserDetails principal, 
+        Pageable pageable
+    ) {
+        log.info("[GET][/api/v1/wiki/user/rejected] - 거절된 도감 목록 조회 요청");
+        
+        Page<WikiResponse> result = wikiService.getMyRejectedWikis(principal.getUserNo(), pageable);
+        return ResponseEntity.ok(result);
+    }
+
     public record ImageUploadResponse(boolean uploaded, String url, String error) {}
 }

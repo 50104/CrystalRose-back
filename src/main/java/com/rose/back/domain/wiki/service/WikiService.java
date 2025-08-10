@@ -215,4 +215,11 @@ public class WikiService {
 
         return page.map(WikiResponse::from);
     }
+    
+    public Page<WikiResponse> getMyRejectedWikis(Long userNo, Pageable pageable) {
+        Collection<WikiEntity.Status> rejectedStatus = Collections.singletonList(WikiEntity.Status.REJECTED);
+        
+        Page<WikiEntity> page = wikiRepository.findByCreatedByAndStatusIn(userNo, rejectedStatus, pageable);
+        return page.map(WikiResponse::from);
+    }
 }
