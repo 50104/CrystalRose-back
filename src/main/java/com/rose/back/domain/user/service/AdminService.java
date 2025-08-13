@@ -12,6 +12,7 @@ import com.rose.back.domain.report.entity.CommentReport;
 import com.rose.back.domain.report.repository.CommentReportRepository;
 import com.rose.back.domain.user.dto.AdminResponse;
 import com.rose.back.domain.user.entity.UserEntity;
+import com.rose.back.domain.board.entity.ContentEntity;
 import com.rose.back.domain.comment.entity.CommentEntity;
 import com.rose.back.domain.wiki.entity.WikiEntity;
 import com.rose.back.domain.wiki.entity.WikiModificationRequest;
@@ -227,6 +228,15 @@ public class AdminService {
     
     private Optional<CommentReportResponseDto> toResponseSafe(CommentReport report) {
         try {
+            Long commentId = Optional.ofNullable(report.getTargetComment())
+                .map(CommentEntity::getId)
+                .orElse(null);
+
+            Long contentId = Optional.ofNullable(report.getTargetComment())
+                .map(CommentEntity::getContentEntity)
+                .map(ContentEntity::getBoardNo)
+                .orElse(null);
+
             return Optional.of(new CommentReportResponseDto(
                 report.getId(),
                 Optional.ofNullable(report.getReporter())
@@ -240,7 +250,9 @@ public class AdminService {
                     .map(CommentEntity::getContent)
                     .orElse("댓글이 삭제됨"),
                 report.getReason(),
-                report.getReportedAt()
+                report.getReportedAt(),
+                commentId,
+                contentId
             ));
         } catch (Exception e) {
             log.error("Report 변환 중 예외 발생: reportId={}, message={}", report.getId(), e.getMessage(), e);

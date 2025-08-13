@@ -8,5 +8,7 @@ public record CommentReportResponseDto(
     String reportedUserNickname,
     String commentContent,
     String reason,
-    LocalDateTime reportedAt
+    LocalDateTime reportedAt,
+    Long commentId,
+    Long contentId
 ) {}
