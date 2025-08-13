@@ -6,6 +6,7 @@ import com.rose.back.domain.report.entity.Report;
 
 public record ReportResponseDto(
     Long reportId,
+    String postTitle,  
     String postContent,
     String reason,
     String reporterNickname,
@@ -15,6 +16,7 @@ public record ReportResponseDto(
     public static ReportResponseDto from(Report report) {
         return new ReportResponseDto(
             report.getId(),
+            report.getTargetPost().getBoardTitle(),
             report.getTargetPost().getBoardContent(),
             report.getReason(),
             report.getReporter().getUserNick(),
