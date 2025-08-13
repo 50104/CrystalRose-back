@@ -43,13 +43,13 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String userId = oAuth2User.getUsername();
         Long userNo = userRepository.findByUserId(userId).getUserNo();
 
-        String refresh = jwtProvider.create("refresh", userId, userNick, userRole, 24 * 60 * 60 * 1000L, userNo);
+        String refresh = jwtProvider.create("refresh", userId, userNick, userRole, 7 * 24 * 60 * 60 * 1000L, userNo); // 7일
         refreshTokenService.delete(userId);
-        refreshTokenService.save(userId, refresh, 24 * 60 * 60 * 1000L);
+        refreshTokenService.save(userId, refresh, 7 * 24 * 60 * 60 * 1000L);
 
         // refresh 토큰만 쿠키에 저장
         Cookie cookie = new Cookie("refresh", refresh);
-        cookie.setMaxAge(24 * 60 * 60);
+        cookie.setMaxAge(7 * 24 * 60 * 60);
         cookie.setHttpOnly(true);
         
         // 환경에 따른 쿠키 설정

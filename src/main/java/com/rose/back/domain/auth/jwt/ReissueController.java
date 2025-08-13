@@ -1,18 +1,20 @@
 package com.rose.back.domain.auth.jwt;
 
 import io.jsonwebtoken.ExpiredJwtException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rose.back.domain.auth.service.RefreshTokenService;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -22,8 +24,8 @@ public class ReissueController implements ReissueControllerDocs {
     private final JwtTokenProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
 
-    private static final long ACCESS_EXP_TIME = 30 * 60 * 1000L; // 30분
-    private static final long REFRESH_EXP_TIME = 24 * 60 * 60 * 1000L; // 1일
+    private static final long ACCESS_EXP_TIME = 15 * 60 * 1000L;  // 15분
+    private static final long REFRESH_EXP_TIME = 14L * 24 * 60 * 60 * 1000L; // 14일
 
     public ReissueController(JwtTokenProvider jwtProvider, RefreshTokenService refreshTokenService) {
         this.jwtProvider = jwtProvider;
@@ -33,79 +35,79 @@ public class ReissueController implements ReissueControllerDocs {
     @PostMapping("/reissue")
     @Transactional
     public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
-        log.info("Reissue started");
+        // 쿠키에서 refresh 추출
+        String refresh = Arrays.stream(Objects.requireNonNullElse(request.getCookies(), new jakarta.servlet.http.Cookie[0]))
+                .filter(c -> "refresh".equals(c.getName()))
+                .map(jakarta.servlet.http.Cookie::getValue)
+                .findFirst().orElse(null);
 
-        // refresh token 확인
-        String refresh = null;
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("refresh")) {
-                    refresh = cookie.getValue();
-                }
-            }
-        } else {
-            return ResponseEntity.badRequest().body(Map.of("error", "no cookies"));
-        }
         if (refresh == null) {
-            return ResponseEntity.badRequest().body(Map.of("error", "refresh null"));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "refresh cookie missing"));
         }
 
-        // 토큰 유효성 검증
+        // 만료/위조/카테고리 검증
         try {
             jwtProvider.validateExpiration(refresh);
         } catch (ExpiredJwtException e) {
-            log.info("Refresh expired");
-            return ResponseEntity.badRequest().body(Map.of("error", "refresh expired"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "refresh expired"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "refresh invalid"));
         }
 
-        // 카테고리 확인
         if (!"refresh".equals(jwtProvider.getCategory(refresh))) {
-            log.info("Invalid refresh category");
-            return ResponseEntity.badRequest().body(Map.of("error", "invalid refresh category"));
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "invalid category"));
         }
 
-        // 사용자 정보
+        // 사용자 정보 추출
         String userId = jwtProvider.getUserId(refresh);
         String userNick = jwtProvider.getUserNick(refresh);
         String userRole = jwtProvider.getUserRole(refresh);
         Long userNo = jwtProvider.getUserNo(refresh);
 
-        // Redis에서 유효한지 검증
+        // Redis 허용 검증
         if (!refreshTokenService.isValid(userId, refresh)) {
-            log.warn("Refresh not in Redis");
-            return ResponseEntity.badRequest().body(Map.of("error", "invalid refresh redis"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "refresh not allowed"));
         }
 
-        // 새 토큰 생성
+        // 새 access/refresh 발급
         String newAccess = jwtProvider.create("access", userId, userNick, userRole, ACCESS_EXP_TIME, userNo);
         String newRefresh = jwtProvider.create("refresh", userId, userNick, userRole, REFRESH_EXP_TIME, userNo);
 
-        // Redis 갱신
         refreshTokenService.delete(userId);
         refreshTokenService.save(userId, newRefresh, REFRESH_EXP_TIME);
 
-        // 쿠키 생성 및 추가
-        Cookie refreshCookie = new Cookie("refresh", newRefresh);
-        refreshCookie.setHttpOnly(true);
-        refreshCookie.setPath("/");
-        refreshCookie.setMaxAge((int) (REFRESH_EXP_TIME / 1000));
+        // Refresh 쿠키 갱신
+        boolean secure = isHttps(request);
+        addRefreshSetCookieHeader(response, newRefresh, (int) (REFRESH_EXP_TIME / 1000), secure);
 
-        // HTTPS 요청일 경우에만 Secure, SameSite=None 설정
-        boolean isHttps = request.getRequestURL().toString().startsWith("https://");
-        boolean isLocal = request.getRequestURL().toString().contains("localhost");
-        if (isHttps && !isLocal) {
-            refreshCookie.setSecure(true);
-            refreshCookie.setAttribute("SameSite", "None");
-        } else {
-            refreshCookie.setSecure(false);
-        }
-        response.addCookie(refreshCookie);
+        // Access 토큰 헤더 + JSON 동시 제공
+        response.setHeader("Authorization", "Bearer " + newAccess);
+        response.setHeader("Cache-Control", "no-store");
+        response.setHeader("Pragma", "no-cache");
 
         log.info("Reissue success for userId={}", userId);
         log.info("access token 재발급 성공: {}", newAccess);
         log.info("refresh token 재발급 성공: {}", newRefresh);
-
         return ResponseEntity.ok(Map.of("accessToken", newAccess));
+    }
+
+    private boolean isHttps(HttpServletRequest request) {
+        String xfProto = request.getHeader("X-Forwarded-Proto");
+        if (xfProto != null) {
+            return "https".equalsIgnoreCase(xfProto);
+        }
+        return request.isSecure() || request.getRequestURL().toString().startsWith("https://");
+    }
+
+    private void addRefreshSetCookieHeader(HttpServletResponse response, String value, int maxAgeSeconds, boolean secure) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("refresh=").append(value)
+          .append("; Path=/auth/refresh")
+          .append("; HttpOnly")
+          .append("; Max-Age=").append(maxAgeSeconds);
+        if (secure) {
+            sb.append("; Secure").append("; SameSite=None");
+        }
+        response.addHeader("Set-Cookie", sb.toString());
     }
 }

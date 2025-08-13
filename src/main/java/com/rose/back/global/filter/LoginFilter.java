@@ -2,9 +2,13 @@ package com.rose.back.global.filter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.DisabledException;
@@ -13,87 +17,88 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rose.back.domain.auth.jwt.JwtTokenProvider;
 import com.rose.back.domain.auth.oauth2.CustomUserDetails;
 import com.rose.back.domain.auth.service.RefreshTokenService;
 import com.rose.back.domain.user.entity.UserEntity;
 import com.rose.back.domain.user.entity.UserEntity.UserStatus;
 import com.rose.back.domain.user.repository.UserRepository;
-
-import java.io.IOException;
-import java.util.stream.Collectors;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
-    
+
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
     private final ObjectMapper objectMapper;
 
-    public LoginFilter(AuthenticationManager authenticationManager, JwtTokenProvider jwtProvider, RefreshTokenService refreshTokenService, UserRepository userRepository, ObjectMapper objectMapper) {
-        this.userRepository = userRepository;
+    private static final long ACCESS_EXP_TIME = 15 * 60 * 1000L; // 15분
+    private static final long REFRESH_EXP_TIME = 14L * 24 * 60 * 60 * 1000L; // 14일
+
+    public LoginFilter(AuthenticationManager authenticationManager,
+                        JwtTokenProvider jwtProvider,
+                        RefreshTokenService refreshTokenService,
+                        UserRepository userRepository,
+                        ObjectMapper objectMapper) {
         this.authenticationManager = authenticationManager;
+        this.userRepository = userRepository;
         this.jwtProvider = jwtProvider;
-        this.objectMapper = objectMapper;
         this.refreshTokenService = refreshTokenService;
-        
+        this.objectMapper = objectMapper;
+
         this.setFilterProcessesUrl("/api/v1/auth/login");
         this.setUsernameParameter("userId");
         this.setPasswordParameter("userPwd");
     }
 
-    // 로그인 요청
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException { 
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
+            throws AuthenticationException {
+
         String userId = obtainUsername(request);
         String userPwd = obtainPassword(request);
-        
-        log.info("Attempting authentication for user: {}", userId);
-        log.info("Content-Type: {}", request.getContentType());
-        
-        if (userId == null && "application/json".equals(request.getContentType())) {
-            try {
+
+        try {
+            if ((userId == null || userPwd == null) &&
+                "application/json".equalsIgnoreCase(Objects.toString(request.getContentType(), ""))) {
                 String body = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
-                log.info("Request body: {}", body);
-                
                 LoginRequest loginRequest = objectMapper.readValue(body, LoginRequest.class);
                 userId = loginRequest.getUserId();
                 userPwd = loginRequest.getUserPwd();
-                log.info("Parsed from JSON - userId: {}, userPwd: {}", userId, userPwd != null ? "***" : "null");
-            } catch (Exception e) {
-                log.error("Error parsing JSON request", e);
-                throw new AuthenticationException("Invalid JSON request") {};
             }
+        } catch (Exception e) {
+            throw new AuthenticationException("Invalid JSON request") {};
         }
-        
+
         if (userId == null || userPwd == null) {
-            log.error("Username or password is null - userId: {}, userPwd: {}", userId, userPwd != null ? "***" : "null");
             throw new AuthenticationException("Username and password are required") {};
         }
-        
-        UserEntity user = userRepository.findByUserId(userId); // 탈퇴 예약된 계정인지 확인
+
+        // 계정 상태 확인
+        UserEntity user = userRepository.findByUserId(userId);
         if (user != null) {
             if (user.getUserStatus() == UserStatus.DELETED) {
                 throw new DisabledException("삭제된 계정입니다.");
             }
             if (user.getUserStatus() == UserStatus.WITHDRAWAL_PENDING) {
-                log.info("탈퇴 예약 계정입니다: {}", userId);
                 request.setAttribute("withdrawalPending", true);
                 response.setHeader("withdrawal", "true");
             }
         }
 
-        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(userId, userPwd); 
+        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(userId, userPwd);
         return authenticationManager.authenticate(token);
     }
 
-    //로그인 성공 시 수행할 작업
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) {
+    protected void successfulAuthentication(HttpServletRequest request,
+                                            HttpServletResponse response,
+                                            FilterChain chain,
+                                            Authentication authentication)
+            throws IOException, ServletException {
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         String userId = authentication.getName();
@@ -101,60 +106,66 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String userNick = userDetails.getUserNick();
         Long userNo = userDetails.getUserNo();
 
-        String access = jwtProvider.create("access", userId, userNick, userRole, 30 * 60 * 1000L, userNo); // 30분
-        String refresh = jwtProvider.create("refresh", userId, userNick, userRole, 24 * 60 * 60 * 1000L, userNo); // 1일
+        String access = jwtProvider.create("access", userId, userNick, userRole, ACCESS_EXP_TIME, userNo);
+        String refresh = jwtProvider.create("refresh", userId, userNick, userRole, REFRESH_EXP_TIME, userNo);
 
+        // Refresh 회전 대비 저장
         refreshTokenService.delete(userId);
-        refreshTokenService.save(userId, refresh, 24 * 60 * 60 * 1000L);
+        refreshTokenService.save(userId, refresh, REFRESH_EXP_TIME);
 
+        // Refresh 쿠키 추가(경로 최소화)
+        boolean secure = isHttps(request);
+        addRefreshSetCookieHeader(response, refresh, (int) (REFRESH_EXP_TIME / 1000), secure);
+
+        // Access는 헤더 + JSON 동시 제공
         response.setHeader("Authorization", "Bearer " + access);
         if (Boolean.TRUE.equals(request.getAttribute("withdrawalPending"))) {
             response.setHeader("withdrawal", "true");
         }
-        response.addCookie(createCookie(request, "refresh", refresh));
 
         response.setStatus(HttpStatus.OK.value());
-        log.info("Authentication successful for user: {}", userId);
+        response.setHeader("Cache-Control", "no-store");
+        response.setHeader("Pragma", "no-cache");
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().write("{\"accessToken\":\"" + access + "\"}");
     }
 
-    //로그인 실패
     @Override
-    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
+    protected void unsuccessfulAuthentication(HttpServletRequest request,
+                                              HttpServletResponse response,
+                                              AuthenticationException failed)
+            throws IOException, ServletException {
         String msg = failed.getMessage();
-        log.info("Authentication failed: {}", msg);
-
         response.setCharacterEncoding("UTF-8");
         response.setContentType("application/json");
 
         if ("탈퇴 요청된 계정입니다.".equals(msg)) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN); // 403
-            response.getWriter().write("탈퇴 요청된 계정입니다.");
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("{\"error\":\"withdrawal\"}");
             return;
         }
-
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 일반 로그인 실패
-        response.getWriter().write("아이디 또는 비밀번호 오류입니다.");
-        log.info("Authentication failed: {}", failed.getMessage());
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.getWriter().write("{\"error\":\"invalid_credentials\"}");
     }
-    
-    private Cookie createCookie(HttpServletRequest request, String key, String value) {
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(24*60*60);
-        cookie.setHttpOnly(true);
-        
-        // 환경에 따른 쿠키 설정
-        String requestUrl = request.getRequestURL().toString();
-        boolean isHttps = requestUrl.startsWith("https://");
-        
-        if (isHttps) {
-            cookie.setSecure(true);
-            cookie.setAttribute("SameSite", "None");
-        } else {
-            cookie.setSecure(false);
+
+    private boolean isHttps(HttpServletRequest request) {
+        String xfProto = request.getHeader("X-Forwarded-Proto");
+        if (xfProto != null) {
+            return "https".equalsIgnoreCase(xfProto);
         }
-        
-        cookie.setPath("/");
-        return cookie;
+        return request.isSecure() || request.getRequestURL().toString().startsWith("https://");
+    }
+
+    private void addRefreshSetCookieHeader(HttpServletResponse response, String value, int maxAgeSeconds, boolean secure) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("refresh=").append(value)
+          .append("; Path=/auth/refresh")
+          .append("; HttpOnly")
+          .append("; Max-Age=").append(maxAgeSeconds);
+        if (secure) {
+            sb.append("; Secure").append("; SameSite=None");
+        }
+        response.addHeader("Set-Cookie", sb.toString());
     }
 
     @Override
@@ -166,27 +177,14 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     protected String obtainUsername(HttpServletRequest request) {
         return request.getParameter("userId");
     }
-}
 
-class LoginRequest {
-    private String userId;
-    private String userPwd;
-    
-    public LoginRequest() {}
-    
-    public String getUserId() {
-        return userId;
-    }
-    
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-    
-    public String getUserPwd() {
-        return userPwd;
-    }
-    
-    public void setUserPwd(String userPwd) {
-        this.userPwd = userPwd;
+    // 요청 JSON 바인딩용 DTO
+    static class LoginRequest {
+        private String userId;
+        private String userPwd;
+        public String getUserId() { return userId; }
+        public void setUserId(String userId) { this.userId = userId; }
+        public String getUserPwd() { return userPwd; }
+        public void setUserPwd(String userPwd) { this.userPwd = userPwd; }
     }
 }
