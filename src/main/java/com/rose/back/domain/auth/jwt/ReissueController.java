@@ -102,7 +102,7 @@ public class ReissueController implements ReissueControllerDocs {
     private void addRefreshSetCookieHeader(HttpServletResponse response, String value, int maxAgeSeconds, boolean secure) {
         StringBuilder sb = new StringBuilder();
         sb.append("refresh=").append(value)
-          .append("; Path=/auth/refresh")
+          .append("; Path=/")
           .append("; HttpOnly")
           .append("; Max-Age=").append(maxAgeSeconds);
         if (secure) {
