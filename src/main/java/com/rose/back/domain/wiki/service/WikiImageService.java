@@ -99,4 +99,18 @@ public class WikiImageService {
         tempRepository.findByFileUrl(newFileUrl).ifPresent(tempRepository::delete);
         wiki.setImageUrl(newFileUrl);
     }
+
+    @Transactional
+    public void deleteByWiki(WikiEntity wiki) {
+        List<WikiImageEntity> images = wikiImageRepository.findByWiki(wiki);
+
+        for (WikiImageEntity image : images) {
+            s3Uploader.deleteFile(image.getFileUrl());
+            tempRepository.findByFileUrl(image.getFileUrl()).ifPresent(tempRepository::delete);
+            log.info("위키 이미지 삭제 완료: id={}, url={}", image.getId(), image.getFileUrl());
+        }
+
+        wikiImageRepository.deleteAll(images);
+        wiki.setImageUrl(null);
+    }
 }

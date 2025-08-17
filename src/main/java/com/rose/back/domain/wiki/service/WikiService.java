@@ -14,7 +14,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.rose.back.domain.wiki.dto.WikiModificationComparisonDto;
 import com.rose.back.domain.wiki.dto.WikiModificationDetailDto;
 import com.rose.back.domain.wiki.dto.WikiModificationListDto;
 import com.rose.back.domain.wiki.dto.WikiModificationResubmitDto;
@@ -239,5 +238,24 @@ public class WikiService {
             throw new AccessDeniedException("본인의 요청만 수정할 수 있습니다.");
         }
         return WikiModificationDetailDto.from(request);
+    }
+
+    @Transactional
+    public void cancelMyWiki(Long wikiId, Long userNo) {
+        WikiEntity wiki = wikiRepository.findById(wikiId)
+            .orElseThrow(() -> new IllegalArgumentException("해당 도감을 찾을 수 없습니다."));
+
+        if (!wiki.getCreatedBy().equals(userNo)) {
+            throw new AccessDeniedException("본인이 제출한 도감만 취소할 수 있습니다.");
+        }
+
+        if (wiki.getStatus() != WikiEntity.Status.PENDING) {
+            throw new IllegalArgumentException("승인 대기 상태의 도감만 취소할 수 있습니다.");
+        }
+
+        wikiImageService.deleteByWiki(wiki);
+        wikiRepository.delete(wiki);
+
+        log.info("도감 제출 삭제 완료 - wikiId: {}, userNo: {}", wikiId, userNo);
     }
 }

@@ -1,7 +1,6 @@
 package com.rose.back.domain.wiki.controller;
 
 import com.rose.back.common.dto.MessageResponse;
-import com.rose.back.domain.wiki.dto.WikiModificationComparisonDto;
 import com.rose.back.domain.wiki.dto.WikiModificationDetailDto;
 import com.rose.back.domain.wiki.dto.WikiModificationListDto;
 import com.rose.back.domain.wiki.dto.WikiModificationResubmitDto;
@@ -119,11 +118,7 @@ public class WikiController {
     }
 
     @GetMapping("/user/list")
-    public ResponseEntity<Page<WikiResponse>> getMyWikis(
-        @AuthenticationPrincipal CustomUserDetails principal, 
-        @RequestParam(value = "status", required = false) List<String> statusStrings, 
-        Pageable pageable
-    ) {
+    public ResponseEntity<Page<WikiResponse>> getMyWikis(@AuthenticationPrincipal CustomUserDetails principal, @RequestParam(value = "status", required = false) List<String> statusStrings, Pageable pageable) {
         log.info("[GET][/api/v1/wiki/user/list] - 신청한 도감 목록 조회 요청");
         Long userId = principal.getUserNo();
         
@@ -132,10 +127,7 @@ public class WikiController {
     }
 
     @GetMapping("/user/rejected")
-    public ResponseEntity<Page<WikiResponse>> getMyRejectedWikis(
-        @AuthenticationPrincipal CustomUserDetails principal, 
-        Pageable pageable
-    ) {
+    public ResponseEntity<Page<WikiResponse>> getMyRejectedWikis(@AuthenticationPrincipal CustomUserDetails principal, Pageable pageable) {
         log.info("[GET][/api/v1/wiki/user/rejected] - 거절된 도감 목록 조회 요청");
         
         Page<WikiResponse> result = wikiService.getMyRejectedWikis(principal.getUserNo(), pageable);
@@ -143,12 +135,18 @@ public class WikiController {
     }
 
     @GetMapping("/user/modify/detail/{id}")
-    public ResponseEntity<WikiModificationDetailDto> getUserModificationDetail(
-            @PathVariable Long id,
-            @AuthenticationPrincipal CustomUserDetails user) {
+    public ResponseEntity<WikiModificationDetailDto> getUserModificationDetail(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails user) {
         log.info("[GET][/api/v1/wiki/user/modify/detail/{}] - 사용자 도감 수정 요청 상세 조회", id);
         WikiModificationDetailDto detail = wikiService.getUserModificationDetail(id, user.getUserNo());
         return ResponseEntity.ok(detail);
+    }
+
+    @DeleteMapping("/user/{id}")
+    public ResponseEntity<MessageResponse> cancelMyWiki(@PathVariable("id") Long id, @AuthenticationPrincipal CustomUserDetails user) {
+        log.info("[DELETE][/api/v1/wiki/user/{}] - 도감 제출 취소 요청", id);
+
+        wikiService.cancelMyWiki(id, user.getUserNo());
+        return ResponseEntity.ok(new MessageResponse("도감 제출이 취소되었습니다."));
     }
 
     public record ImageUploadResponse(boolean uploaded, String url, String error) {}
