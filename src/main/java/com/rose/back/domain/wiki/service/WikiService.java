@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ import com.rose.back.domain.wiki.entity.WikiModificationRequest;
 import com.rose.back.domain.wiki.entity.WikiModificationRequest.Status;
 import com.rose.back.domain.wiki.repository.WikiRepository;
 import com.rose.back.domain.wiki.repository.WikiModificationRequestRepository;
+import com.rose.back.domain.auth.oauth2.CustomUserDetails;
 import com.rose.back.domain.user.entity.UserEntity;
 
 import jakarta.annotation.Nullable;
@@ -41,7 +43,10 @@ public class WikiService {
     private final WikiModificationRequestRepository wikiModificationRequestRepository;
 
     public void registerWiki(WikiRequest dto) {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Long userNo = userDetails.getUserNo();
+        
         try {
             WikiEntity wiki = WikiEntity.builder()
                 .name(dto.getName())
@@ -61,7 +66,7 @@ public class WikiService {
                 .coldResistance(defaultValue(dto.getColdResistance(), "-"))
                 .status(WikiEntity.Status.PENDING)
                 .modificationStatus(WikiEntity.ModificationStatus.NONE)
-                .createdBy(Long.parseLong(userId))
+                .createdBy(userNo)
                 .build();
 
             wikiRepository.save(wiki);
