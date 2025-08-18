@@ -179,7 +179,7 @@ public class WebSecurityConfig {
                 .requestMatchers("/api/v1/wiki/detail/**").permitAll() // 위키 상세 조회 API 허용 (숫자 ID만)
                 .requestMatchers("/static/**", "/images/**", "/upload/**").permitAll() // 정적 리소스 허용
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**", "/favicon.ico").permitAll() // Swagger UI 허용
-                .requestMatchers("/actuator/health").permitAll() // API 헬스 체크
+                .requestMatchers("/actuator/health", "/actuator/prometheus").permitAll() // API 헬스 체크, 모니터링
                 .requestMatchers("/doc/**", "/web/**", "/remote/login").permitAll()
                 .requestMatchers("/api/v1/user/**").hasRole("USER") // 특정 URL 패턴에 대한 접근 권한 설정 (USER 역할 필요)
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN") // 특정 URL 패턴에 대한 접근 권한 설정 (ADMIN 역할 필요)
