@@ -67,6 +67,11 @@ jobs:
           scp -i private_key.pem -o StrictHostKeyChecking=no ./infra/docker-compose.monitoring.yml \
           ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/ubuntu/docker-compose.monitoring.yml
 
+      - name: Copy grafana.ini to EC2
+        run: |
+          scp -i private_key.pem -o StrictHostKeyChecking=no ./infra/grafana.ini \
+          ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/ubuntu/data/grafana.ini
+
       - name: Deploy via SSH
         env:
           APPLICATION_YML: ${{ secrets.APPLICATION_YML }}

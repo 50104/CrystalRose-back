@@ -22,6 +22,7 @@ services:
     ports:
       - "3100:3000"
     volumes:
+      - /home/ubuntu/data/grafana.ini:/etc/grafana/grafana.ini
       - /home/ubuntu/data/grafana:/var/lib/grafana
     environment:
       - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
