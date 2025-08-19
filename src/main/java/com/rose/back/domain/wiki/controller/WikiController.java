@@ -137,6 +137,7 @@ public class WikiController {
     @GetMapping("/user/modify/detail/{id}")
     public ResponseEntity<WikiModificationDetailDto> getUserModificationDetail(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails user) {
         log.info("[GET][/api/v1/wiki/user/modify/detail/{}] - 사용자 도감 수정 요청 상세 조회", id);
+        
         WikiModificationDetailDto detail = wikiService.getUserModificationDetail(id, user.getUserNo());
         return ResponseEntity.ok(detail);
     }
@@ -147,6 +148,14 @@ public class WikiController {
 
         wikiService.cancelMyWiki(id, user.getUserNo());
         return ResponseEntity.ok(new MessageResponse("도감 제출이 취소되었습니다."));
+    }
+
+    @DeleteMapping("/user/modification/{id}/cancel")
+    public ResponseEntity<MessageResponse> cancelUserModification(@PathVariable("id") Long id, @AuthenticationPrincipal CustomUserDetails user) {
+        log.info("[DELETE][/api/v1/wiki/user/modification/{}/cancel] - 사용자 도감 수정 요청 취소", id);
+        
+        wikiService.cancelUserModification(id, user.getUserNo());
+        return ResponseEntity.ok(new MessageResponse("도감 수정 요청이 취소되었습니다."));
     }
 
     public record ImageUploadResponse(boolean uploaded, String url, String error) {}

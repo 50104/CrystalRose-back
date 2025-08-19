@@ -258,4 +258,28 @@ public class WikiService {
 
         log.info("도감 제출 삭제 완료 - wikiId: {}, userNo: {}", wikiId, userNo);
     }
+
+    @Transactional
+    public void cancelUserModification(Long requestId, Long userNo) {
+        WikiModificationRequest request = wikiModificationRequestRepository.findById(requestId)
+            .orElseThrow(() -> new IllegalArgumentException("해당 수정 요청이 존재하지 않습니다."));
+
+        // 본인 요청 검증
+        if (!request.getRequester().getUserNo().equals(userNo)) {
+            throw new AccessDeniedException("본인의 수정 요청만 취소할 수 있습니다.");
+        }
+
+        // 진행 중(PENDING) 상태만 취소 가능하도록 제한
+        if (request.getStatus() != WikiModificationRequest.Status.PENDING) {
+            throw new IllegalArgumentException("승인 대기 중인 수정 요청만 취소할 수 있습니다.");
+        }
+
+        wikiModificationRequestRepository.delete(request);
+
+        // 원본 WikiEntity의 상태 되돌리기
+        WikiEntity originalWiki = request.getOriginalWiki();
+        originalWiki.setModificationStatus(WikiEntity.ModificationStatus.NONE);
+
+        log.info("수정 요청 취소 완료 - requestId: {}, userNo: {}", requestId, userNo);
+    }
 }
