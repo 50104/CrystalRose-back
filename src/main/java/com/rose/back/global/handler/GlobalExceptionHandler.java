@@ -50,6 +50,11 @@ public class GlobalExceptionHandler {
         String uri = req.getRequestURI();
         String message = ex.getMessage();
 
+        if (uri.startsWith("/actuator/")) {
+            log.debug("Skip exception handling for actuator endpoint: {}", uri);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
         if (uri.contains("/xhr") || uri.contains("/info") || uri.contains("/websocket")) {
             log.debug("Skip exception handling for SockJS fallback: {}", uri);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
