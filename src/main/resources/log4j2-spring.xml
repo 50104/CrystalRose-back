@@ -57,9 +57,8 @@
       </DefaultRolloverStrategy>
       <Filters>
         <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
-        <RegexFilter regex=".*토큰 검사 대상: /(appsettings(\.Production)?\.json|robots\.txt|sitemap\.xml).*" onMatch="DENY" onMismatch="NEUTRAL"/>
-        <RegexFilter regex=".*JWT 필터 실행 URI: /(appsettings(\.Production)?\.json|robots\.txt|sitemap\.xml).*" onMatch="DENY" onMismatch="NEUTRAL"/>
-        <RegexFilter regex=".*토큰 검사 제외: /(favicon\.ico|/).*" onMatch="DENY" onMismatch="NEUTRAL"/>
+        <RegexFilter regex=".*(robots\.txt|sitemap\.xml).*" onMatch="DENY" onMismatch="NEUTRAL"/>
+        <RegexFilter regex=".*토큰 검사 제외: /(favicon\.ico)$" onMatch="DENY" onMismatch="NEUTRAL"/>
         <RegexFilter regex=".*토큰 검사 제외: /$" onMatch="DENY" onMismatch="NEUTRAL"/>
       </Filters>
     </RollingFile>
