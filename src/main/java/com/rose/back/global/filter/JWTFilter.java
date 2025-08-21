@@ -59,7 +59,12 @@ public class JWTFilter extends OncePerRequestFilter {
         "/api/v1/auth/**",
         "/actuator/**",
         "/api/v1/wiki/list",
-        "/api/v1/wiki/detail/**"
+        "/api/v1/wiki/detail/**",
+        "/monitor/grafana/**",
+        "/monitor/prometheus/**",
+        "/query",
+        "/login",
+        "/api/v1/query/**"
     );
 
     @Override

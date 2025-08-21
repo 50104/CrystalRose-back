@@ -25,9 +25,6 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
       - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
-      - GF_SERVER_DOMAIN=api.dodorose.com
-      - GF_SERVER_PROTOCOL=http
-      - GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s/monitor/grafana/
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
     depends_on:
       - prometheus
