@@ -316,6 +316,11 @@ public class AdminService {
     public void deleteWikiByAdmin(Long wikiId) {
         WikiEntity wiki = wikiRepository.findById(wikiId)
             .orElseThrow(() -> new EntityNotFoundException("도감을 찾을 수 없습니다."));
+
+        if (wiki.getModificationStatus() == WikiEntity.ModificationStatus.PENDING) {
+            throw new IllegalStateException("수정 검토중인 도감은 삭제할 수 없습니다.");
+        }
+
         wiki.setStatus(WikiEntity.Status.DELETED);
     }
 
