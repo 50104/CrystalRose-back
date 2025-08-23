@@ -55,6 +55,15 @@ public class GlobalExceptionHandler {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
 
+        if (uri.startsWith("/monitor/prometheus/") || uri.startsWith("/monitor/grafana/")) {
+            log.debug("Skip exception handling for monitoring endpoints: {}", uri);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        if (uri.contains("/query") || uri.contains("/login")) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
         if (uri.contains("/xhr") || uri.contains("/info") || uri.contains("/websocket")) {
             log.debug("Skip exception handling for SockJS fallback: {}", uri);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
