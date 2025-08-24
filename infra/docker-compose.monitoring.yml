@@ -10,13 +10,17 @@ services:
     volumes:
       - /home/ubuntu/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - /home/ubuntu/data/prometheus:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.external-url=https://api.dodorose.com/monitor/prometheus'
+      - '--web.route-prefix=/'
     networks:
       - monitoring
 
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
-    user: "1000:1000"
     restart: always
     ports:
       - "3100:3000"
@@ -25,7 +29,10 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
       - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
-      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      - GF_SERVER_ROOT_URL=https://api.dodorose.com/monitor/grafana
+      - GF_SERVER_DOMAIN=api.dodorose.com
+      - GF_SECURITY_COOKIE_SECURE=true
+      - GF_SECURITY_COOKIE_SAMESITE=lax
     depends_on:
       - prometheus
     networks:
