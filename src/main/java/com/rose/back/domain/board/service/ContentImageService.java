@@ -9,6 +9,7 @@ import com.rose.back.infra.S3.ImageTempEntity;
 import com.rose.back.infra.S3.ImageTempRepository;
 import com.rose.back.infra.S3.ImageUrlExtractor;
 import com.rose.back.infra.S3.S3Uploader;
+import com.rose.back.infra.S3.S3PresignedService;
 import com.rose.back.infra.S3.ImageTempEntity.DomainType;
 
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ContentImageService {
   
     private final S3Uploader s3Uploader;
+    private final S3PresignedService s3PresignedService;
     private final ContentImageRepository contentImageRepository;
     private final ImageTempRepository imageTempRepository;
     private final ContentRepository contentRepository;
@@ -47,6 +49,24 @@ public class ContentImageService {
         return fileUrl;
     }
 
+    @Transactional
+    public void savePreSignedImageToTemp(String fileUrl, String key) {
+        log.info("Pre-signed URL로 업로드된 이미지 임시 저장: fileUrl={}, key={}", fileUrl, key);
+        
+        imageTempRepository.save(ImageTempEntity.builder()
+                .fileUrl(fileUrl)
+                .s3Key(key)    
+                .domainType(DomainType.BOARD)
+                .uploadedAt(new Date())
+                .build());
+    }
+
+    public void deletePreSignedImage(String fileUrl) {
+        String key = s3PresignedService.extractKeyFromUrl(fileUrl);
+        s3PresignedService.deleteFile(key);
+        log.info("Pre-signed URL 이미지 삭제 완료: fileUrl={}, key={}", fileUrl, key);
+    }
+
     // 전체 이미지 리스트 처리
     @Transactional
     public void saveImagesForBoard(Long boardNo, List<MultipartFile> files) throws IOException {
@@ -62,9 +82,11 @@ public class ContentImageService {
         ContentEntity content = contentRepository.findById(boardNo)
             .orElseThrow(() -> new NoSuchElementException("게시글이 존재하지 않음: " + boardNo));
 
+        String key = fileUrl.replace("https://dodorose.com/", "");
         ContentImageEntity image = ContentImageEntity.builder()
             .originalFileName(file.getOriginalFilename())
-            .storedFileName(fileUrl.replace("https://dodorose.com/", ""))
+            .storedFileName(key)
+            .s3Key(key)   
             .fileUrl(fileUrl)
             .content(content)
             .build();
@@ -83,7 +105,11 @@ public class ContentImageService {
     public void updateContentImages(String htmlContent, ContentEntity content) {
         List<ContentImageEntity> oldImages = contentImageRepository.findByContent(content);
         for (ContentImageEntity image : oldImages) {
-            s3Uploader.deleteFile(image.getFileUrl());
+            if (image.getFileUrl().contains("dodorose.com")) {
+                deletePreSignedImage(image.getFileUrl());
+            } else {
+                s3Uploader.deleteFile(image.getFileUrl());
+            }
         }
         contentImageRepository.deleteAll(oldImages);
 
@@ -96,9 +122,11 @@ public class ContentImageService {
     @Transactional
     public void saveImageAndDeleteTemp(String fileUrl, ContentEntity content) {
         if (!contentImageRepository.existsByFileUrl(fileUrl)) {
+            String key = s3PresignedService.extractKeyFromUrl(fileUrl);
             contentImageRepository.save(ContentImageEntity.builder()
                 .fileUrl(fileUrl)
-                .storedFileName(fileUrl.replace("https://dodorose.com/", ""))
+                .storedFileName(key)
+                .s3Key(key)
                 .content(content)
                 .build());
         }

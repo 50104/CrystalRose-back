@@ -14,7 +14,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.amazonaws.services.kms.model.NotFoundException;
 import com.rose.back.domain.diary.dto.DiaryRequest;
 import com.rose.back.domain.diary.dto.DiaryResponse;
 import com.rose.back.domain.diary.dto.DiaryWithCareResponse;
@@ -23,7 +22,6 @@ import com.rose.back.domain.diary.entity.DiaryEntity;
 import com.rose.back.domain.diary.repository.CareLogRepository;
 import com.rose.back.domain.diary.repository.DiaryImageRepository;
 import com.rose.back.domain.diary.repository.DiaryRepository;
-import com.rose.back.domain.rose.dto.RoseRequest;
 import com.rose.back.domain.rose.entity.RoseEntity;
 import com.rose.back.domain.rose.service.RoseService;
 import com.rose.back.infra.S3.ImageTempRepository;
@@ -185,7 +183,7 @@ public class DiaryService {
     @Transactional
     public void updateDiary(Long userId, Long diaryId, DiaryRequest request) {
         DiaryEntity diary = diaryRepository.findWithRoseById(diaryId)
-            .orElseThrow(() -> new NotFoundException("다이어리를 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException("다이어리를 찾을 수 없습니다."));
 
         if (!diary.getRoseEntity().getUserId().equals(userId)) {
             throw new AccessDeniedException("본인의 다이어리만 수정할 수 있습니다.");
@@ -204,7 +202,7 @@ public class DiaryService {
     @Transactional(readOnly = true)
     public DiaryResponse getDiary(Long diaryId, Long userId) {
         DiaryEntity diary = diaryRepository.findWithRoseById(diaryId)
-            .orElseThrow(() -> new NotFoundException("다이어리를 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException("다이어리를 찾을 수 없습니다."));
 
         if (!diary.getRoseEntity().getUserId().equals(userId)) {
             throw new AccessDeniedException("조회 권한이 없습니다.");
