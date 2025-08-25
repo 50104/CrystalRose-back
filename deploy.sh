@@ -139,8 +139,24 @@ echo "[DEBUG] Nginx 포트: $NGINX_PORT"
 echo "[DEBUG] 활성 컨테이너: $ACTIVE_CONTAINER"
 
 curl -f http://127.0.0.1:${NGINX_PORT}/actuator/health || {
-    echo "[ERROR] 최종 헬스체크 실패 - 서비스 불일치!"
-    exit 1
+  echo "[ERROR] 최종 헬스체크 실패 - 서비스 불일치!"
+  exit 1
 }
 
+echo "[INFO] 모니터링 스택 확인"
+if ! docker ps | grep -q prometheus; then
+  echo "[INFO] Prometheus 시작"
+  sudo docker-compose -f /home/ubuntu/CrystalRose-back/infra/docker-compose.monitoring.yml up -d prometheus
+fi
+
+if ! docker ps | grep -q grafana; then
+  echo "[INFO] Grafana 시작"
+  sudo docker-compose -f /home/ubuntu/CrystalRose-back/infra/docker-compose.monitoring.yml up -d grafana
+fi
+
 echo "[SUCCESS] 배포 완료: ${AFTER_COLOR} 컨테이너 실행 중 (port: ${AFTER_PORT})"
+echo "[INFO] 모니터링 URL:"
+echo "  - Prometheus: https://api.dodorose.com/monitor/prometheus/"
+echo "  - Grafana: https://api.dodorose.com/monitor/grafana/"
+echo "  - Health Check: https://api.dodorose.com/actuator/health"
+echo "  - Metrics: https://api.dodorose.com/actuator/prometheus"
