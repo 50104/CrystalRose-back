@@ -36,6 +36,7 @@
         <RegexFilter regex=".*Unhandled error @ /: No static resource \..*" onMatch="DENY" onMismatch="NEUTRAL"/>
         <RegexFilter regex=".*Unhandled error @ /favicon\\.ico: No static resource favicon\\.ico.*" onMatch="DENY" onMismatch="NEUTRAL"/>
         <RegexFilter regex=".*Unhandled error @ /.+\\.ico: No static resource .+\\.ico.*" onMatch="DENY" onMismatch="NEUTRAL"/>
+        <RegexFilter regex=".*Unhandled error @ (/favicon\\.ico$|/robots\\.txt$|/sitemap\\.xml$|/)$" onMatch="DENY" onMismatch="NEUTRAL"/>
       </Filters>
     </RollingFile>
 
@@ -57,9 +58,9 @@
       </DefaultRolloverStrategy>
       <Filters>
         <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
-        <RegexFilter regex=".*(robots\.txt|sitemap\.xml).*" onMatch="DENY" onMismatch="NEUTRAL"/>
-        <RegexFilter regex=".*토큰 검사 제외: /(favicon\.ico)$" onMatch="DENY" onMismatch="NEUTRAL"/>
-        <RegexFilter regex=".*토큰 검사 제외: /$" onMatch="DENY" onMismatch="NEUTRAL"/>
+        <RegexFilter regex=".*(?:/favicon\.ico|/robots\.txt|/)(?:$|\s|\?).*" onMatch="DENY" onMismatch="NEUTRAL"/>
+        <RegexFilter regex=".*JWTFilter.*토큰 검사 제외: /(?:favicon\.ico)?(?:\s.*)?$" onMatch="DENY" onMismatch="NEUTRAL"/>
+
       </Filters>
     </RollingFile>
 
