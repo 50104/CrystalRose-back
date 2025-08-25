@@ -182,6 +182,7 @@ public class WebSecurityConfig {
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**", "/favicon.ico").permitAll() // Swagger UI 허용
                 .requestMatchers("/actuator/**").permitAll() // API 헬스 체크, 모니터링
                 .requestMatchers("/doc/**", "/web/**", "/remote/login").permitAll()
+                .requestMatchers("/api/v1/s3/**").authenticated() // S3 관련 API는 인증된 사용자만 접근 가능
                 .requestMatchers("/api/v1/user/**").hasRole("USER") // 특정 URL 패턴에 대한 접근 권한 설정 (USER 역할 필요)
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN") // 특정 URL 패턴에 대한 접근 권한 설정 (ADMIN 역할 필요)
                 .requestMatchers("/api/v1/auth/withdraw/**").authenticated()
