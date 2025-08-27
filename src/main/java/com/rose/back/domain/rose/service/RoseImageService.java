@@ -14,6 +14,7 @@ import com.rose.back.domain.rose.entity.RoseImageEntity;
 import com.rose.back.domain.rose.repository.RoseImageRepository;
 import com.rose.back.infra.S3.ImageTempEntity;
 import com.rose.back.infra.S3.ImageTempRepository;
+import com.rose.back.infra.S3.S3PresignedService;
 import com.rose.back.infra.S3.S3Uploader;
 
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class RoseImageService {
 
+    private final S3PresignedService s3PresignedService;
     private final S3Uploader s3Uploader;
     private final ImageTempRepository tempRepository;
     private final RoseImageRepository roseImageRepository;
@@ -43,20 +45,24 @@ public class RoseImageService {
     @Transactional
     public void saveImageEntityAndDeleteTemp(String fileUrl, String originalFileName, RoseEntity rose) {
         if (!roseImageRepository.existsByFileUrl(fileUrl)) {
+            String s3Key = s3PresignedService.extractKeyFromUrl(fileUrl);
+            
             RoseImageEntity saved = roseImageRepository.save(RoseImageEntity.builder()
                 .fileUrl(fileUrl)
+                .s3Key(s3Key)
                 .storedFileName(fileUrl.replace("https://dodorose.com/", ""))
                 .originalFileName(originalFileName)
                 .rose(rose)
                 .build());
-            log.info("RoseImageEntity 저장 완료: id={}, url={}", saved.getId(), saved.getFileUrl());
+            log.info("RoseImageEntity 저장 완료: id={}, url={}, s3Key={}", saved.getId(), saved.getFileUrl(), saved.getS3Key());
         }
         tempRepository.findByFileUrl(fileUrl).ifPresent(tempRepository::delete);
     }
 
     @Transactional
     public void deleteImageAndUnbind(String imageUrl, RoseEntity rose) {
-        s3Uploader.deleteFile(imageUrl);
+        String s3Key = s3PresignedService.extractKeyFromUrl(imageUrl);
+        s3PresignedService.deleteFile(s3Key);
         roseImageRepository.deleteByRoseId(rose.getId());
         tempRepository.findByFileUrl(imageUrl).ifPresent(tempRepository::delete);
     }
@@ -75,16 +81,21 @@ public class RoseImageService {
                 return;
             }
 
-            s3Uploader.deleteFile(current.getFileUrl());
+            String oldS3Key = s3PresignedService.extractKeyFromUrl(current.getFileUrl());
+            s3PresignedService.deleteFile(oldS3Key);
 
+            String newS3Key = s3PresignedService.extractKeyFromUrl(newFileUrl);
             current.setFileUrl(newFileUrl);
+            current.setS3Key(newS3Key);
             current.setStoredFileName(newFileUrl.replace("https://dodorose.com/", ""));
             current.setOriginalFileName(null);
             log.info("기존 RoseImageEntity 수정 완료 (id 유지): {}", current.getId());
 
         } else {
+            String s3Key = s3PresignedService.extractKeyFromUrl(newFileUrl);
             RoseImageEntity saved = roseImageRepository.save(RoseImageEntity.builder()
                 .fileUrl(newFileUrl)
+                .s3Key(s3Key)
                 .storedFileName(newFileUrl.replace("https://dodorose.com/", ""))
                 .originalFileName(null)
                 .rose(rose)
