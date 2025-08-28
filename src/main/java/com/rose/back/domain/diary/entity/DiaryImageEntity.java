@@ -32,6 +32,9 @@ public class DiaryImageEntity extends BaseTimeEntity {
     @Column(length = 255, name = "file_url")
     private String fileUrl;
 
+    @Column(length = 255, name = "s3_key")
+    private String s3Key;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "diary_no")
     private DiaryEntity diary;
