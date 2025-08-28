@@ -135,7 +135,7 @@ public class WikiController {
     }
 
     @GetMapping("/user/modify/detail/{id}")
-    public ResponseEntity<WikiModificationDetailDto> getUserModificationDetail(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails user) {
+    public ResponseEntity<WikiModificationDetailDto> getUserModificationDetail(@PathVariable("id") Long id, @AuthenticationPrincipal CustomUserDetails user) {
         log.info("[GET][/api/v1/wiki/user/modify/detail/{}] - 사용자 도감 수정 요청 상세 조회", id);
         
         WikiModificationDetailDto detail = wikiService.getUserModificationDetail(id, user.getUserNo());
