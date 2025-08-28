@@ -126,8 +126,14 @@ public class UserServiceImpl implements UserService {
                 userImageService.deleteImageAndUnbind(beforeUrl, user);
             } else if (dto.getUserProfileFile() != null && !dto.getUserProfileFile().isEmpty()) {
                 String uploadedUrl = userImageService.uploadImage(dto.getUserProfileFile(), user);
+                userImageService.saveImageEntityAndDeleteTemp(uploadedUrl, dto.getUserProfileFile().getOriginalFilename(), user);
                 user.setUserProfileImg(uploadedUrl);
                 if (beforeUrl != null && !beforeUrl.isEmpty()) {
+                    s3Uploader.deleteFile(beforeUrl);
+                }
+            } else if (dto.getUserProfileImg() != null && !dto.getUserProfileImg().isEmpty()) {
+                userImageService.updateImageChanged(dto.getUserProfileImg(), user);
+                if (beforeUrl != null && !beforeUrl.isEmpty() && !beforeUrl.equals(dto.getUserProfileImg())) {
                     s3Uploader.deleteFile(beforeUrl);
                 }
             }

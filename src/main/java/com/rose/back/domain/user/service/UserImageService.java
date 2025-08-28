@@ -14,6 +14,7 @@ import com.rose.back.domain.user.entity.UserImageEntity;
 import com.rose.back.domain.user.repository.UserImageRepository;
 import com.rose.back.infra.S3.ImageTempEntity;
 import com.rose.back.infra.S3.ImageTempRepository;
+import com.rose.back.infra.S3.S3PresignedService;
 import com.rose.back.infra.S3.S3Uploader;
 
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 public class UserImageService {
 
     private final S3Uploader s3Uploader;
+    private final S3PresignedService s3PresignedService;
     private final ImageTempRepository tempRepository;
     private final UserImageRepository userImageRepository;
 
@@ -44,20 +46,24 @@ public class UserImageService {
     @Transactional
     public void saveImageEntityAndDeleteTemp(String fileUrl, String originalFileName, UserEntity user) {
         if (!userImageRepository.existsByFileUrl(fileUrl)) {
+            String s3Key = s3PresignedService.extractKeyFromUrl(fileUrl);
+            
             UserImageEntity saved = userImageRepository.save(UserImageEntity.builder()
                 .fileUrl(fileUrl)
+                .s3Key(s3Key)
                 .storedFileName(fileUrl.replace("https://dodorose.com/", ""))
                 .originalFileName(originalFileName)
                 .user(user)
                 .build());
-            log.info("UserImageEntity 저장 완료: id={}, url={}", saved.getId(), saved.getFileUrl());
+            log.info("UserImageEntity 저장 완료: id={}, url={}, s3Key={}", saved.getId(), saved.getFileUrl(), saved.getS3Key());
         }
         tempRepository.findByFileUrl(fileUrl).ifPresent(tempRepository::delete);
     }
 
     @Transactional
     public void deleteImageAndUnbind(String imageUrl, UserEntity user) {
-        s3Uploader.deleteFile(imageUrl);
+        String s3Key = s3PresignedService.extractKeyFromUrl(imageUrl);
+        s3PresignedService.deleteFile(s3Key);
         userImageRepository.deleteByUserUserNo(user.getUserNo());
         tempRepository.findByFileUrl(imageUrl).ifPresent(tempRepository::delete);
         user.setUserProfileImg(null);
@@ -73,18 +79,25 @@ public class UserImageService {
             UserImageEntity current = existingImages.get(0);
             if (current.getFileUrl().equals(newFileUrl)) {
                 log.info("이미지 변경 없음: {}", newFileUrl);
+                tempRepository.findByFileUrl(newFileUrl).ifPresent(tempRepository::delete);
+                user.setUserProfileImg(newFileUrl);
                 return;
             }
 
-            s3Uploader.deleteFile(current.getFileUrl());
+            String oldS3Key = s3PresignedService.extractKeyFromUrl(current.getFileUrl());
+            s3PresignedService.deleteFile(oldS3Key);
 
+            String newS3Key = s3PresignedService.extractKeyFromUrl(newFileUrl);
             current.setFileUrl(newFileUrl);
+            current.setS3Key(newS3Key);
             current.setStoredFileName(newFileUrl.replace("https://dodorose.com/", ""));
             current.setOriginalFileName(null);
             log.info("기존 UserImageEntity 수정 완료 (id 유지): {}", current.getId());
         } else {
+            String s3Key = s3PresignedService.extractKeyFromUrl(newFileUrl);
             UserImageEntity saved = userImageRepository.save(UserImageEntity.builder()
                 .fileUrl(newFileUrl)
+                .s3Key(s3Key)
                 .storedFileName(newFileUrl.replace("https://dodorose.com/", ""))
                 .originalFileName(null)
                 .user(user)
