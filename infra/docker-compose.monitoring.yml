@@ -8,15 +8,17 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - /home/ubuntu/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - /home/ubuntu/prometheus:/etc/prometheus
       - /home/ubuntu/data/prometheus:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
       - '--web.external-url=https://api.dodorose.com/monitor/prometheus'
       - '--web.route-prefix=/'
+      - '--web.enable-lifecycle'
     networks:
       - monitoring
+      - backend
 
   grafana:
     image: grafana/grafana:latest
@@ -37,6 +39,7 @@ services:
       - prometheus
     networks:
       - monitoring
+      - backend
 
 volumes:
   prometheus-data:
@@ -45,3 +48,5 @@ volumes:
 networks:
   monitoring:
     driver: bridge
+  backend:
+    external: true

@@ -55,6 +55,11 @@ jobs:
           scp -i private_key.pem -o StrictHostKeyChecking=no ./deploy.sh \
           ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/ubuntu/CrystalRose-back/deploy.sh
 
+      - name: Copy monitoring.sh to EC2
+        run: |
+          scp -i private_key.pem -o StrictHostKeyChecking=no ./monitoring.sh \
+          ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/ubuntu/CrystalRose-back/monitoring.sh
+
       - name: Copy Prometheus Config to EC2
         run: |
           echo "$APROMETHEUS_YML" > aprometheus.yml

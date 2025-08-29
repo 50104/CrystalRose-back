@@ -126,12 +126,32 @@ echo "[INFO] Nginx Reload"
 sudo systemctl reload nginx
 sleep 2
 
+echo "[INFO] 모니터링 설정 업데이트"
+if [[ "$AFTER_COLOR" == "blue" ]]; then
+  TARGET="app-blue:4000"
+else
+  TARGET="app-green:4001"
+fi
+
+MONITORING_SCRIPT="/home/ubuntu/CrystalRose-back/monitoring.sh"
+if [[ -f "$MONITORING_SCRIPT" ]]; then
+  chmod +x "$MONITORING_SCRIPT"
+  if "$MONITORING_SCRIPT" update "$TARGET" "$AFTER_COLOR"; then
+    echo "[SUCCESS] 모니터링 업데이트 성공"
+  else
+    echo "[ERROR] 모니터링 업데이트 실패"
+    echo "[INFO] 수동 확인: $MONITORING_SCRIPT check"
+  fi
+else
+  echo "[WARN] 모니터링 스크립트 없음: $MONITORING_SCRIPT"
+fi
+
 echo "[INFO] 이전 컨테이너(${BEFORE_COLOR}) 종료"
 sudo docker-compose -p $BEFORE_COLOR \
   -f /home/ubuntu/CrystalRose-back/docker-compose.${BEFORE_COLOR}.yml \
   --env-file /home/ubuntu/.env down
 
-echo "[INFO] 최종 확인: Nginx 설정과 컨테이너 상태"
+echo "[INFO] 최종 확인"
 NGINX_PORT=$(grep -oP '127.0.0.1:\K[0-9]+' /etc/nginx/conf.d/service-url.inc)
 ACTIVE_CONTAINER=$(sudo docker ps --format "table {{.Names}}\t{{.Ports}}" | grep app- | head -1)
 
@@ -143,15 +163,12 @@ curl -f http://127.0.0.1:${NGINX_PORT}/actuator/health || {
   exit 1
 }
 
-echo "[INFO] 모니터링 스택 확인"
-if ! docker ps | grep -q prometheus; then
-  echo "[INFO] Prometheus 시작"
-  sudo docker-compose -f /home/ubuntu/CrystalRose-back/infra/docker-compose.monitoring.yml up -d prometheus
-fi
-
-if ! docker ps | grep -q grafana; then
-  echo "[INFO] Grafana 시작"
-  sudo docker-compose -f /home/ubuntu/CrystalRose-back/infra/docker-compose.monitoring.yml up -d grafana
+echo "[INFO] 최종 모니터링 상태 확인"
+if [[ -f "$MONITORING_SCRIPT" ]]; then
+  "$MONITORING_SCRIPT" check
+else
+  echo "[INFO] 기본 모니터링 확인"
+  docker ps | grep -E '(prometheus|grafana)' && echo "컨테이너 실행 중" || echo "컨테이너 확인 필요"
 fi
 
 echo "[SUCCESS] 배포 완료: ${AFTER_COLOR} 컨테이너 실행 중 (port: ${AFTER_PORT})"
