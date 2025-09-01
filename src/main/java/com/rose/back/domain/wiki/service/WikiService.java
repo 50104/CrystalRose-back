@@ -8,10 +8,12 @@ import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.rose.back.domain.wiki.dto.WikiModificationDetailDto;
@@ -83,20 +85,45 @@ public class WikiService {
         return (value == null || value.trim().isEmpty()) ? fallback : value;
     }
 
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void submitModificationRequest(Long wikiId, WikiRequest dto, UserEntity requester) {
-        log.info("도감 수정 요청 처리 시작 - wikiId: {}, requester: {}", wikiId, requester.getUserId());
+        log.info("도감 수정 요청 처리 시작 - wikiId: {}, requester: {}", wikiId, requester.getUserNick());
         
-        WikiEntity originalWiki = wikiRepository.findById(wikiId)
-            .orElseThrow(() -> new RuntimeException("수정할 도감 정보를 찾을 수 없습니다. ID: " + wikiId));
-        
-        // 이미 수정 요청이 진행 중인지 확인
-        if (originalWiki.getModificationStatus() == WikiEntity.ModificationStatus.PENDING) {
-            throw new RuntimeException("이미 수정 요청이 진행 중인 도감입니다. ID: " + wikiId);
-        }
-        
-        log.info("원본 도감 조회 완료 - 도감명: {}", originalWiki.getName());
+        try {
+            WikiEntity originalWiki = wikiRepository.findById(wikiId)
+                .orElseThrow(() -> new RuntimeException("수정할 도감 정보를 찾을 수 없습니다. ID: " + wikiId));
+            validateModificationRequest(originalWiki, wikiId); // 최신 상태 기반 검증
 
-        WikiModificationRequest request = WikiModificationRequest.builder()
+            log.info("원본 도감 조회 완료 (버전: {}) - 도감명: {}", originalWiki.getVersion(), originalWiki.getName());
+
+            // 수정 요청 생성 및 저장
+            WikiModificationRequest request = createModificationRequest(originalWiki, dto, requester);
+            WikiModificationRequest savedRequest = wikiModificationRequestRepository.save(request);
+            
+            // 원본 도감 상태 변경(낙관적 락 적용)
+            originalWiki.setModificationStatus(WikiEntity.ModificationStatus.PENDING);
+            wikiRepository.save(originalWiki); // 버전 충돌 시 OptimisticLockingFailureException 발생
+            
+            log.info("수정 요청 저장 완료 - ID: {}, 새 버전: {}", savedRequest.getId(), originalWiki.getVersion() + 1);
+            log.info("도감 ID {} 수정 요청 제출 완료 - 관리자 승인 대기 중. 요청자: {}", wikiId, requester.getUserNick());
+            
+        } catch (ObjectOptimisticLockingFailureException e) {
+            log.warn("낙관적 락 충돌 발생 - wikiId: {}, requester: {}", wikiId, requester.getUserNick());
+            throw new IllegalStateException("동시 수정이 감지되었습니다. 잠시 후 다시 시도해주세요.");
+        } catch (Exception e) {
+            log.error("수정 요청 처리 중 예외 발생: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
+    
+    private void validateModificationRequest(WikiEntity originalWiki, Long wikiId) {
+        if (originalWiki.getModificationStatus() == WikiEntity.ModificationStatus.PENDING) {
+            throw new IllegalStateException("이미 수정 요청이 진행 중인 도감입니다. ID: " + wikiId);
+        }
+    }
+    
+    private WikiModificationRequest createModificationRequest(WikiEntity originalWiki, WikiRequest dto, UserEntity requester) {
+        return WikiModificationRequest.builder()
             .originalWiki(originalWiki)
             .requester(requester)
             .name(dto.getName())
@@ -114,25 +141,8 @@ public class WikiService {
             .growthPower(dto.getGrowthPower())
             .coldResistance(dto.getColdResistance())
             .imageUrl(dto.getImageUrl())
-            .description(dto.getDescription()) // 수정 사유
+            .description(dto.getDescription())
             .build();
-        
-        log.info("수정 요청 객체 생성 완료 - 수정 사유: {}", dto.getDescription());
-
-        try {
-            WikiModificationRequest savedRequest = wikiModificationRequestRepository.save(request);
-            
-            // 원본 도감 수정 상태 변경(PENDING)
-            originalWiki.setModificationStatus(WikiEntity.ModificationStatus.PENDING);
-            wikiRepository.save(originalWiki);
-            
-            log.info("수정 요청 저장 완료 - ID: {}", savedRequest.getId());
-        } catch (Exception e) {
-            log.error("수정 요청 저장 실패 - 오류: {}", e.getMessage(), e);
-            throw new RuntimeException("수정 요청 저장에 실패했습니다.", e);
-        }
-
-        log.info("도감 ID {} 수정 요청 제출 완료 - 관리자 승인 대기 중. 요청자: {}", wikiId, requester.getUserNick());
     }
 
     public List<WikiResponse> getApprovedWikiList() {

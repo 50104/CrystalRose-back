@@ -17,6 +17,10 @@ public class WikiEntity extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    @Column(name = "version")
+    private Long version = 0L;
+
     private String name; // 품종명
 
     private String category; // 품종 카테고리

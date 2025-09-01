@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -144,11 +145,25 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ErrorResponse> handleIllegalStateException(IllegalStateException ex, HttpServletRequest req) {
+
+        String userMessage = ex.getMessage();
+        String code = "CONFLICT";
+
+        if (req.getRequestURI().contains("/wiki/")) {
+            if (userMessage.contains("이미 수정 요청이 진행 중")) {
+                userMessage = "이미 다른 사용자가 이 도감을 수정 중입니다. 잠시 후 다시 시도해주세요.";
+                code = "WIKI_MODIFICATION_IN_PROGRESS";
+            } else if (userMessage.contains("동시 수정이 감지되었습니다")) {
+                userMessage = "동시 수정이 감지되었습니다. 잠시 후 다시 시도해주세요.";
+                code = "WIKI_CONCURRENT_MODIFICATION";
+            }
+        }
+
         ErrorResponse err = ErrorResponse.builder()
                             .timestamp(now())
                             .status(HttpStatus.CONFLICT.value())
-                            .code("CONFLICT")
-                            .message(ex.getMessage())
+                            .code(code)
+                            .message(userMessage)
                             .path(req.getRequestURI())
                             .build();
 
@@ -158,6 +173,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ErrorResponse> handleResponseStatusException(ResponseStatusException ex, HttpServletRequest req) {
+
         ErrorResponse err = ErrorResponse.builder()
                             .timestamp(now())
                             .status(ex.getStatusCode().value())
@@ -168,5 +184,20 @@ public class GlobalExceptionHandler {
 
         log.warn("ResponseStatusException @ {}: {}", req.getRequestURI(), ex.getReason());
         return ResponseEntity.status(ex.getStatusCode()).body(err);
+    }
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<ErrorResponse> handleOptimisticLockingFailure(ObjectOptimisticLockingFailureException ex, HttpServletRequest req) {
+        log.warn("낙관적 락 충돌 발생: {}", ex.getMessage());
+        
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                                      .timestamp(now())
+                                      .status(HttpStatus.CONFLICT.value())
+                                      .code("OPTIMISTIC_LOCK_FAILURE")
+                                      .message("동시 수정이 감지되었습니다. 잠시 후 다시 시도해주세요.")
+                                      .path(req.getRequestURI())
+                                      .build();
+            
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 }
