@@ -55,7 +55,7 @@ public class S3PresignedService {
 
         PresignedPutObjectRequest presigned = presigner.presignPutObject(p -> p
                 .putObjectRequest(putObjectRequest)
-                .signatureDuration(Duration.ofMinutes(10))
+                .signatureDuration(Duration.ofMinutes(5))
         );
 
         log.info("Presigned 생성: key={}, url={}", key, presigned.url().toString());
@@ -75,7 +75,7 @@ public class S3PresignedService {
 
         PresignedPutObjectRequest presigned = presigner.presignPutObject(p -> p
                 .putObjectRequest(putObjectRequest)
-                .signatureDuration(Duration.ofMinutes(10))
+                .signatureDuration(Duration.ofMinutes(5))
         );
 
         log.info("프로필 Presigned 생성: key={}, url={}", key, presigned.url().toString());
