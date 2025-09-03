@@ -19,7 +19,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "board_recommendation", uniqueConstraints = @UniqueConstraint(columnNames = {"boardNo", "userId"}))
+@Table(name = "board_recommendation", 
+      uniqueConstraints = @UniqueConstraint(columnNames = {"boardNo", "userId"}))
 public class RecommendationEntity {
     
     @Id

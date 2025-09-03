@@ -3,6 +3,7 @@ package com.rose.back.domain.board.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -34,4 +35,12 @@ public interface ContentRepository extends JpaRepository<ContentEntity, Long> {
 
     @Query(value = "select c from ContentEntity c left join fetch c.writer", countQuery = "select count(c) from ContentEntity c")
     Page<ContentEntity> findPageWithWriter(Pageable pageable);
+
+    @Query("UPDATE ContentEntity c SET c.recommendCount = c.recommendCount + 1 WHERE c.boardNo = :boardNo")
+    @Modifying
+    int incrementRecommendCount(@Param("boardNo") Long boardNo); // 추천 수 증가
+
+    @Query("UPDATE ContentEntity c SET c.recommendCount = c.recommendCount - 1 WHERE c.boardNo = :boardNo AND c.recommendCount > 0")
+    @Modifying
+    int decrementRecommendCount(@Param("boardNo") Long boardNo); // 추천 수 감소
 }
