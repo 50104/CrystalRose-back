@@ -151,10 +151,10 @@ public class GlobalExceptionHandler {
 
         if (req.getRequestURI().contains("/wiki/")) {
             if (userMessage.contains("이미 수정 요청이 진행 중")) {
-                userMessage = "이미 다른 사용자가 이 도감을 수정 중입니다. 잠시 후 다시 시도해주세요.";
+                userMessage = "이미 다른 사용자가 이 도감을 수정 중입니다.\n" + "잠시 후 다시 시도해주세요.";
                 code = "WIKI_MODIFICATION_IN_PROGRESS";
             } else if (userMessage.contains("동시 수정이 감지되었습니다")) {
-                userMessage = "동시 수정이 감지되었습니다. 잠시 후 다시 시도해주세요.";
+                userMessage = "동시 수정이 감지되었습니다.\n" + "잠시 후 다시 시도해주세요.";
                 code = "WIKI_CONCURRENT_MODIFICATION";
             }
         }

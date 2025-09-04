@@ -69,17 +69,10 @@ public class WikiController {
             log.warn("인증되지 않은 사용자의 수정 요청: userId={}", userId);
             return ResponseEntity.badRequest().body(new MessageResponse("인증된 사용자가 아닙니다."));
         }
-        
         log.info("요청자 정보 - userNo: {}, userNick: {}", requester.getUserNo(), requester.getUserNick());
         
-        try {
-            wikiService.submitModificationRequest(id, dto, requester);
-            log.info("수정 요청 처리 완료");
-            return ResponseEntity.ok(new MessageResponse("도감 수정 요청이 제출되었습니다. 관리자 승인 후 반영됩니다."));
-        } catch (Exception e) {
-            log.error("수정 요청 처리 중 오류 발생: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(new MessageResponse("수정 요청 처리 중 오류가 발생했습니다."));
-        }
+        wikiService.submitModificationRequest(id, dto, requester);
+        return ResponseEntity.ok(new MessageResponse("도감 수정 요청이 제출되었습니다. 관리자 승인 후 반영됩니다."));
     }
 
     @GetMapping("/list")
