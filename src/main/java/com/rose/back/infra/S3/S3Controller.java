@@ -30,23 +30,20 @@ public class S3Controller implements S3ControllerDocs {
             @AuthenticationPrincipal CustomUserDetails user) {
         log.info("Pre-signed URL 요청: fileName={}, contentType={}, domainType={}, folderName={}, user={}", fileName, contentType, domainType, folderName, user.getUsername());
 
-        if (!s3PresignedService.isValidFileType(contentType, domainType)) {
-            log.warn("지원하지 않는 파일 형식: {} for domain: {}", contentType, domainType);
-            return ResponseEntity.badRequest().build();
-        }
-        
-        if (fileName == null || fileName.trim().isEmpty()) {
-            log.warn("파일명이 비어있음");
-            return ResponseEntity.badRequest().build();
-        }
-
         try {
+            if (!s3PresignedService.isValidFileType(contentType, domainType)) {
+                log.warn("지원하지 않는 파일 형식: {} for domain: {}", contentType, domainType);
+                return ResponseEntity.badRequest().build();
+            }
+            if (fileName == null || fileName.trim().isEmpty()) {
+                log.warn("파일명이 비어있음");
+                return ResponseEntity.badRequest().build();
+            }
             String targetFolder = s3PresignedService.generateFolderPath(domainType, folderName, user.getUsername());
             PreSignedUrlResponse response = s3PresignedService.generatePreSignedUrl(fileName, contentType, targetFolder);
             
             log.info("Pre-signed URL 발급 성공: key={}", response.getKey());
             return ResponseEntity.ok(response);
-            
         } catch (Exception e) {
             log.error("Pre-signed URL 발급 실패", e);
             return ResponseEntity.internalServerError().build();
