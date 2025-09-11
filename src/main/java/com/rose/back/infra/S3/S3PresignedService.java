@@ -187,16 +187,17 @@ public class S3PresignedService {
         };
     }
 
-    public void saveToTempTable(String fileUrl, String key, DomainType domainType) { // 임시 테이블 저장
+    public void saveToTempTable(String fileUrl, String key, DomainType domainType, String username) { // 임시 테이블 저장
         ImageTempEntity tempEntity = ImageTempEntity.builder()
                 .fileUrl(fileUrl)
                 .s3Key(key)
                 .domainType(domainType)
                 .uploadedAt(new java.util.Date())
+                .uploadedBy(username)
                 .build();
-        
+
         imageTempRepository.save(tempEntity);
-        log.info("임시 테이블 저장 완료: fileUrl={}, s3Key={}, domainType={}", fileUrl, key, domainType);
+        log.info("임시 테이블 저장 완료: fileUrl={}, s3Key={}, domainType={}, uploadedBy={}", fileUrl, key, domainType, username);
     }
 
     public boolean hasDeletePermission(String key, CustomUserDetails user) { // 삭제 권한 확인

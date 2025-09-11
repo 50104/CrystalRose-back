@@ -37,28 +37,36 @@ public class ContentImageService {
     private final ContentRepository contentRepository;
     private final ImageUrlExtractor imageUrlExtractor;
 
-    public String saveImageS3(MultipartFile file) throws IOException {
+    public String saveImageS3(MultipartFile file, String uploader) throws IOException {
         ImageValidator.validate(file);
         String fileUrl = s3Uploader.uploadFile("boards", file);
-
         imageTempRepository.save(ImageTempEntity.builder()
-                .fileUrl(fileUrl)
-                .domainType(DomainType.BOARD) 
-                .uploadedAt(new Date())
-                .build());
+            .fileUrl(fileUrl)
+            .domainType(DomainType.BOARD)
+            .uploadedAt(new Date())
+            .uploadedBy(uploader)
+            .build());
         return fileUrl;
     }
 
+    public String saveImageS3(MultipartFile file) throws IOException {
+        return saveImageS3(file, null);
+    }
+
     @Transactional
-    public void savePreSignedImageToTemp(String fileUrl, String key) {
-        log.info("Pre-signed URL로 업로드된 이미지 임시 저장: fileUrl={}, key={}", fileUrl, key);
-        
+    public void savePreSignedImageToTemp(String fileUrl, String key, String uploader) {
+        log.info("Pre-signed URL로 업로드된 이미지 임시 저장: fileUrl={}, key={}, uploader={}", fileUrl, key, uploader);
         imageTempRepository.save(ImageTempEntity.builder()
-                .fileUrl(fileUrl)
-                .s3Key(key)    
-                .domainType(DomainType.BOARD)
-                .uploadedAt(new Date())
-                .build());
+            .fileUrl(fileUrl)
+            .s3Key(key)
+            .domainType(DomainType.BOARD)
+            .uploadedAt(new Date())
+            .uploadedBy(uploader)
+            .build());
+    }
+
+    public void savePreSignedImageToTemp(String fileUrl, String key) {
+        savePreSignedImageToTemp(fileUrl, key, null);
     }
 
     public void deletePreSignedImage(String fileUrl) {

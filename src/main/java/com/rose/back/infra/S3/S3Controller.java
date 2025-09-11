@@ -55,7 +55,7 @@ public class S3Controller implements S3ControllerDocs {
     public ResponseEntity<MessageResponse> uploadComplete(@RequestBody S3ControllerDocs.UploadCompleteRequest request, @AuthenticationPrincipal CustomUserDetails user) {
         log.info("업로드 완료 알림: key={}, url={}, domainType={}, user={}", request.getKey(), request.getAccessUrl(), request.getDomainType(), user.getUsername());
 
-        s3PresignedService.saveToTempTable(request.getAccessUrl(), request.getKey(), request.getDomainType());
+        s3PresignedService.saveToTempTable(request.getAccessUrl(), request.getKey(), request.getDomainType(), user.getUsername());
         return ResponseEntity.ok(new MessageResponse("업로드가 완료되었습니다."));
     }
 

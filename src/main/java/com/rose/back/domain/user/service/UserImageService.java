@@ -38,6 +38,7 @@ public class UserImageService {
             .fileUrl(url)
             .domainType(ImageTempEntity.DomainType.USER)
             .uploadedAt(new Date())
+            .uploadedBy(user.getUserId())
             .build());
 
         return url;

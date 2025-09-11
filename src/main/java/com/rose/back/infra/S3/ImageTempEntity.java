@@ -43,5 +43,8 @@ public class ImageTempEntity {
     @Column(length = 100, name = "s3_key")
     private String s3Key;
 
+    @Column(length = 50, name = "uploaded_by")
+    private String uploadedBy;
+
     public enum DomainType { BOARD, ROSE, WIKI, DIARY, USER }
 }

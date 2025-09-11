@@ -31,16 +31,20 @@ public class DiaryImageService {
     private final DiaryImageRepository diaryImageRepository;
 
     // MultipartFile 직접 업로드 (기존 방식)
-    public String uploadImage(MultipartFile file) throws IOException {
+    public String uploadImage(MultipartFile file, String uploader) throws IOException {
         ImageValidator.validate(file);
         String url = s3Uploader.uploadFile("diaries", file);
-
         tempRepository.save(ImageTempEntity.builder()
             .fileUrl(url)
             .domainType(ImageTempEntity.DomainType.DIARY)
             .uploadedAt(new Date())
+            .uploadedBy(uploader)
             .build());
         return url;
+    }
+
+    public String uploadImage(MultipartFile file) throws IOException {
+        return uploadImage(file, null);
     }
 
     // presigned URL로 업로드된 이미지 처리

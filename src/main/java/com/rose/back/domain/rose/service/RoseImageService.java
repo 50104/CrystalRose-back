@@ -30,16 +30,20 @@ public class RoseImageService {
     private final ImageTempRepository tempRepository;
     private final RoseImageRepository roseImageRepository;
 
-    public String uploadImage(MultipartFile file) throws IOException {
+    public String uploadImage(MultipartFile file, String uploader) throws IOException {
         ImageValidator.validate(file);
         String url = s3Uploader.uploadFile("roses", file);
-
         tempRepository.save(ImageTempEntity.builder()
             .fileUrl(url)
             .domainType(ImageTempEntity.DomainType.ROSE)
             .uploadedAt(new Date())
+            .uploadedBy(uploader)
             .build());
         return url;
+    }
+
+    public String uploadImage(MultipartFile file) throws IOException {
+        return uploadImage(file, null);
     }
 
     @Transactional

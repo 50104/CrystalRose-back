@@ -29,16 +29,20 @@ public class WikiImageService {
     private final ImageTempRepository tempRepository;
     private final WikiImageRepository wikiImageRepository;
 
-    public String uploadImage(MultipartFile file) throws IOException {
+    public String uploadImage(MultipartFile file, String uploader) throws IOException {
         ImageValidator.validate(file);
         String url = s3Uploader.uploadFile("wikis", file);
-
         tempRepository.save(ImageTempEntity.builder()
             .fileUrl(url)
             .domainType(ImageTempEntity.DomainType.WIKI)
             .uploadedAt(new Date())
+            .uploadedBy(uploader)
             .build());
         return url;
+    }
+
+    public String uploadImage(MultipartFile file) throws IOException {
+        return uploadImage(file, null);
     }
 
     @Transactional
