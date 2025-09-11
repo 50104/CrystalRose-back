@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import com.rose.back.common.dto.MessageResponse;
+import com.rose.back.domain.user.controller.AdminController.WikiRejectRequest;
 import com.rose.back.domain.user.dto.AdminResponse;
 import com.rose.back.domain.wiki.dto.WikiDetailResponse;
 import com.rose.back.global.exception.CommonErrorResponses;
@@ -75,7 +76,10 @@ public interface AdminControllerDocs {
                     }
                     """))),
     })
-    ResponseEntity<?> rejectWiki(@Parameter(description = "거절할 도감의 ID", required = true) Long id);
+    ResponseEntity<?> rejectWiki(
+        @Parameter(description = "거절할 도감의 ID", required = true) Long id,
+        @Parameter(description = "거절 사유", required = true) WikiRejectRequest request
+    );
 
     @Operation(summary = "신고 내역 조회", description = "관리자의 신고 내역을 조회합니다. ADMIN 권한이 필요합니다.")
     @CommonErrorResponses
@@ -96,6 +100,103 @@ public interface AdminControllerDocs {
                     """)))
     })
     ResponseEntity<?> getReports();
+
+    @Operation(summary = "댓글 신고 내역 조회", description = "관리자의 댓글 신고 내역을 조회합니다. ADMIN 권한이 필요합니다.")
+    @CommonErrorResponses
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "댓글 신고 내역 조회 성공",
+            content = @Content(mediaType = "application/json",
+                array = @ArraySchema(schema = @Schema(implementation = AdminResponse.class)))
+        ),
+        @ApiResponse(responseCode = "409", description = "댓글 신고 내역 조회 실패",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(name = "Conflict", value = """
+                    {
+                      "status": 409,
+                      "error": "CONFLICT",
+                      "message": "댓글 신고 내역 조회에 실패했습니다.",
+                      "path": "/api/v1/admin/comment-reports"
+                    }
+                    """)))
+    })
+    ResponseEntity<?> getCommentReports();
+
+    @Operation(summary = "수정 요청 대기 중인 도감 목록 조회", description = "수정 요청 대기 중인 도감 목록을 조회합니다. ADMIN 권한이 필요합니다.")
+    @CommonErrorResponses
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "수정 요청 대기 중인 도감 목록 조회 성공",
+            content = @Content(mediaType = "application/json",
+                array = @ArraySchema(schema = @Schema(implementation = AdminResponse.class)))
+        ),
+        @ApiResponse(responseCode = "409", description = "수정 요청 대기 중인 도감 목록 조회 실패",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(name = "Conflict", value = """
+                    {
+                      "status": 409,
+                      "error": "CONFLICT",
+                      "message": "수정 요청 대기 중인 도감 목록 조회에 실패했습니다.",
+                      "path": "/api/v1/admin/wiki/modifications/pending"
+                    }
+                    """)))
+    })
+    ResponseEntity<?> getPendingModificationRequests();
+
+    @Operation(summary = "도감 수정 요청 승인", description = "특정 ID의 도감 수정 요청을 승인합니다. ADMIN 권한이 필요합니다.")
+    @CommonErrorResponses
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "도감 수정 요청 승인 성공"),
+        @ApiResponse(responseCode = "409", description = "도감 수정 요청 승인 실패",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(name = "Conflict", value = """
+                    {
+                      "status": 409,
+                      "error": "CONFLICT",
+                      "message": "도감 수정 요청 승인에 실패했습니다.",
+                      "path": "/api/v1/admin/wiki/modifications/{id}/approve"
+                    }
+                    """))),
+    })
+    ResponseEntity<?> approveModificationRequest(@Parameter(description = "승인할 도감 수정 요청의 ID", required = true) Long id);
+
+    @Operation(summary = "도감 수정 요청 거절", description = "특정 ID의 도감 수정 요청을 거절합니다. ADMIN 권한이 필요합니다.")
+    @CommonErrorResponses
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "도감 수정 요청 거절 성공"),
+        @ApiResponse(responseCode = "409", description = "도감 수정 요청 거절 실패",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(name = "Conflict", value = """
+                    {
+                      "status": 409,
+                      "error": "CONFLICT",
+                      "message": "도감 수정 요청 거절에 실패했습니다.",
+                      "path": "/api/v1/admin/wiki/modifications/{id}/reject"
+                    }
+                    """))),
+    })
+    ResponseEntity<?> rejectModificationRequest(
+        @Parameter(description = "거절할 도감 수정 요청의 ID", required = true) Long id,
+        @Parameter(description = "거절 사유", required = true) WikiRejectRequest request
+    );
+
+    @Operation(summary = "도감 수정 요청 변경 사항 비교 조회", description = "특정 도감 수정 요청의 변경 사항을 비교 조회합니다. ADMIN 권한이 필요합니다.")
+    @CommonErrorResponses
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "도감 수정 요청 변경 사항 비교 조회 성공",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = WikiDetailResponse.class))
+        ),
+        @ApiResponse(responseCode = "409", description = "도감 수정 요청 변경 사항 비교 조회 실패",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(name = "Conflict", value = """
+                    {
+                      "status": 409,
+                      "error": "CONFLICT",
+                      "message": "도감 수정 요청 변경 사항 비교 조회에 실패했습니다.",
+                      "path": "/api/v1/admin/wiki/{requestId}/original"
+                    }
+                    """)))
+    })
+    ResponseEntity<?> getModificationComparison(@Parameter(description = "도감 수정 요청의 ID", required = true) Long requestId);
     
     @Operation(summary = "도감 삭제", description = "특정 ID의 도감을 삭제합니다. ADMIN 권한이 필요합니다.")
     @CommonErrorResponses
@@ -114,7 +215,6 @@ public interface AdminControllerDocs {
     })
     ResponseEntity<MessageResponse> deleteWikiByAdmin(@PathVariable("id") Long id);
 
-    // public ResponseEntity<WikiDetailResponse> getWikiDetailByAdmin(@PathVariable("id") Long id);
     @Operation(summary = "도감 상세 조회", description = "특정 ID의 도감을 상세 조회합니다. ADMIN 권한이 필요합니다.")
     @CommonErrorResponses
     @ApiResponses(value = {

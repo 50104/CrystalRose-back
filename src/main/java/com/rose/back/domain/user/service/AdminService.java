@@ -49,11 +49,20 @@ public class AdminService {
     public void approve(Long id) {
         WikiEntity wiki = getWikiOrThrow(id);
         wiki.setStatus(WikiEntity.Status.APPROVED);
+        
+        if (wiki.getRejectionReason() != null) { // 이전 거절 사유 초기화
+            wiki.setRejectionReason(null);
+        }
     }
 
-    public void reject(Long id) {
+    public void reject(Long id, String reason) {
         WikiEntity wiki = getWikiOrThrow(id);
+        if (reason == null || reason.trim().isEmpty()) {
+            throw new IllegalArgumentException("거절 사유를 입력해주세요.");
+        }
         wiki.setStatus(WikiEntity.Status.REJECTED);
+        wiki.setRejectionReason(reason.trim());
+        log.info("도감 ID {} 거절 처리 (사유: {})", id, reason);
     }
 
     public List<CommentReportResponseDto> getAllCommentReports() {

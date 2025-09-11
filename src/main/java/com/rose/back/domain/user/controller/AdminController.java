@@ -48,9 +48,9 @@ public class AdminController implements AdminControllerDocs {
 
     @PatchMapping("/wiki/{id}/reject")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<MessageResponse> rejectWiki(@PathVariable("id") Long id) {
-        log.info("[PATCH][/api/v1/admin/wiki/{}/reject] - 도감 거절 요청", id);
-        adminService.reject(id);
+    public ResponseEntity<MessageResponse> rejectWiki(@PathVariable("id") Long id, @RequestBody WikiRejectRequest request) {
+        log.info("[PATCH][/api/v1/admin/wiki/{}/reject] - 도감 거절 요청 (사유: {})", id, request.reason());
+        adminService.reject(id, request.reason());
         return ResponseEntity.ok(new MessageResponse("도감이 거절되었습니다."));
     }
 
