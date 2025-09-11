@@ -199,18 +199,4 @@ public class S3PresignedService {
         imageTempRepository.save(tempEntity);
         log.info("임시 테이블 저장 완료: fileUrl={}, s3Key={}, domainType={}, uploadedBy={}", fileUrl, key, domainType, username);
     }
-
-    public boolean hasDeletePermission(String key, CustomUserDetails user) { // 삭제 권한 확인
-        if (user.getAuthorities().stream() // 관리자는 모든 파일 삭제 가능
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"))) {
-            return true;
-        }
-
-        if (key.contains("profiles/" + user.getUsername())) { // 프로필 이미지는 본인만 삭제 가능
-            return true;
-        }
-
-        // 기타 권한 검증 로직 추가 가능
-        return true; // 임시로 모든 사용자에게 삭제 권한 부여
-    }
 }

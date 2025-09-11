@@ -58,24 +58,4 @@ public class S3Controller implements S3ControllerDocs {
         s3PresignedService.saveToTempTable(request.getAccessUrl(), request.getKey(), request.getDomainType(), user.getUsername());
         return ResponseEntity.ok(new MessageResponse("업로드가 완료되었습니다."));
     }
-
-    @Override
-    @DeleteMapping("/{key:.*}")
-    public ResponseEntity<MessageResponse> deleteFile(@PathVariable("key") String key, @AuthenticationPrincipal CustomUserDetails user) {
-        log.info("파일 삭제 요청: key={}, user={}", key, user.getUsername());
-
-        try {
-            if (!s3PresignedService.hasDeletePermission(key, user)) {
-                return ResponseEntity.status(403).body(new MessageResponse("파일을 삭제할 권한이 없습니다."));
-            }
-            s3PresignedService.deleteFile(key);
-            log.info("파일 삭제 완료: key={}", key);
-            return ResponseEntity.ok(new MessageResponse("파일이 삭제되었습니다."));
-            
-        } catch (Exception e) {
-            log.error("파일 삭제 실패: key={}", key, e);
-            return ResponseEntity.internalServerError()
-                    .body(new MessageResponse("파일 삭제에 실패했습니다."));
-        }
-    }
 }
