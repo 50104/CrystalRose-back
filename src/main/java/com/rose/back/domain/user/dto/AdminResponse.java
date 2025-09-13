@@ -16,4 +16,5 @@ public class AdminResponse {
     private String category;
     private String status;
     private LocalDateTime createdDate;
+    private String rejectionReason;
 }

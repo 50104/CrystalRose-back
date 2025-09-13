@@ -226,12 +226,21 @@ public class AdminService {
     }
 
     private AdminResponse toDto(WikiEntity wiki) {
+        String rejectionReason = null;
+        if (wiki.getModificationStatus() == WikiEntity.ModificationStatus.NONE) {
+            String reason = wiki.getRejectionReason();
+            if (reason != null && !reason.isBlank()) {
+                rejectionReason = reason;
+            }
+        }
+
         return AdminResponse.builder()
                 .id(wiki.getId())
                 .name(wiki.getName())
                 .category(wiki.getCategory())
                 .status(wiki.getStatus().name())
                 .createdDate(wiki.getCreatedDate())
+                .rejectionReason(rejectionReason)
                 .build();
     }
     
