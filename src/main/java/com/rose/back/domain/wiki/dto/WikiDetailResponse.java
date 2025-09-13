@@ -27,4 +27,5 @@ public class WikiDetailResponse {
     private String status;
     private String modificationStatus;
     private LocalDateTime createdDate;
+    private String rejectionReason;
 }
