@@ -231,6 +231,26 @@ public interface WikiControllerDocs {
     })
     public ResponseEntity<Page<WikiResponse>> getMyRejectedWikis(@AuthenticationPrincipal CustomUserDetails principal, Pageable pageable);
 
+    @Operation(summary = "거절된 도감 단건 상세 조회", description = "사용자가 제출했다가 거절된 도감 1건의 상세 정보를 조회합니다.")
+    @CommonErrorResponses
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "거절된 도감 단건 상세 조회 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = WikiResponse.class))),
+            @ApiResponse(responseCode = "409", description = "거절된 도감 단건 상세 조회 실패",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(name = "Conflict", value = """
+                                    {
+                                      \"status\": 409,
+                                      \"error\": \"CONFLICT\",
+                                      \"message\": \"해당 도감을 찾을 수 없습니다.\",
+                                      \"path\": "/api/v1/wiki/user/rejected/{id}"
+                                    }
+                                    """)))
+    })
+    ResponseEntity<WikiResponse> getMyRejectedWikiDetail(@PathVariable("id") Long id,
+                                                          @AuthenticationPrincipal CustomUserDetails principal);
+
     @Operation(summary = "사용자 도감 수정 요청 상세 조회", description = "사용자가 요청한 도감 수정 요청의 상세 정보를 조회합니다.")
     @CommonErrorResponses
     @ApiResponses(value = {

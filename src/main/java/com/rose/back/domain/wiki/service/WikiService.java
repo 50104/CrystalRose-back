@@ -239,6 +239,19 @@ public class WikiService {
         return page.map(WikiResponse::from);
     }
 
+    @Transactional(readOnly = true)
+    public WikiResponse getMyRejectedWikiDetail(Long userNo, Long wikiId) {
+        WikiEntity wiki = wikiRepository.findById(wikiId)
+            .orElseThrow(() -> new IllegalArgumentException("해당 도감을 찾을 수 없습니다."));
+        if (!wiki.getCreatedBy().equals(userNo)) {
+            throw new AccessDeniedException("본인이 제출한 도감만 조회할 수 있습니다.");
+        }
+        if (wiki.getStatus() != WikiEntity.Status.REJECTED) {
+            throw new IllegalStateException("거절된 도감이 아닙니다.");
+        }
+        return WikiResponse.from(wiki);
+    }
+
     @Transactional
     public void resubmitRejectedWiki(Long wikiId, Long userNo, WikiRequest dto) {
         WikiEntity wiki = wikiRepository.findById(wikiId)

@@ -127,6 +127,13 @@ public class WikiController {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping("/user/rejected/{id}")
+    public ResponseEntity<WikiResponse> getMyRejectedWikiDetail(@PathVariable("id") Long id, @AuthenticationPrincipal CustomUserDetails principal) {
+        log.info("[GET][/api/v1/wiki/user/rejected/{}] - 거절된 도감 단건 상세 조회", id);
+        WikiResponse detail = wikiService.getMyRejectedWikiDetail(principal.getUserNo(), id);
+        return ResponseEntity.ok(detail);
+    }
+
     @GetMapping("/user/modify/detail/{id}")
     public ResponseEntity<WikiModificationDetailDto> getUserModificationDetail(@PathVariable("id") Long id, @AuthenticationPrincipal CustomUserDetails user) {
         log.info("[GET][/api/v1/wiki/user/modify/detail/{}] - 사용자 도감 수정 요청 상세 조회", id);
