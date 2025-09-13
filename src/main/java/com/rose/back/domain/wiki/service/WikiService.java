@@ -239,6 +239,48 @@ public class WikiService {
         return page.map(WikiResponse::from);
     }
 
+    @Transactional
+    public void resubmitRejectedWiki(Long wikiId, Long userNo, WikiRequest dto) {
+        WikiEntity wiki = wikiRepository.findById(wikiId)
+            .orElseThrow(() -> new IllegalArgumentException("해당 도감을 찾을 수 없습니다."));
+
+        if (!wiki.getCreatedBy().equals(userNo)) {
+            throw new AccessDeniedException("본인이 제출한 도감만 보완 제출할 수 있습니다.");
+        }
+        if (wiki.getStatus() != WikiEntity.Status.REJECTED) {
+            throw new IllegalStateException("거절된 도감만 보완 제출할 수 있습니다.");
+        }
+
+        applyIfPresent(dto.getName(), wiki::setName);
+        applyIfPresent(dto.getCategory(), wiki::setCategory);
+        applyIfPresent(dto.getCultivarCode(), wiki::setCultivarCode);
+        applyIfPresent(dto.getFlowerSize(), wiki::setFlowerSize);
+        applyIfPresent(dto.getPetalCount(), wiki::setPetalCount);
+        applyIfPresent(dto.getFragrance(), wiki::setFragrance);
+        applyIfPresent(dto.getDiseaseResistance(), wiki::setDiseaseResistance);
+        applyIfPresent(dto.getGrowthType(), wiki::setGrowthType);
+        applyIfPresent(dto.getUsageType(), wiki::setUsageType);
+        applyIfPresent(dto.getRecommendedPosition(), wiki::setRecommendedPosition);
+        applyIfPresent(dto.getContinuousBlooming(), wiki::setContinuousBlooming);
+        applyIfPresent(dto.getMultiBlooming(), wiki::setMultiBlooming);
+        applyIfPresent(dto.getGrowthPower(), wiki::setGrowthPower);
+        applyIfPresent(dto.getColdResistance(), wiki::setColdResistance);
+
+        if (dto.getImageUrl() != null && !dto.getImageUrl().isBlank()) {
+            wikiImageService.wikiModification(dto.getImageUrl(), wiki);
+        }
+
+        wiki.setStatus(WikiEntity.Status.PENDING);
+
+        log.info("거절된 도감 재제출 완료 - wikiId: {}, userNo: {} -> PENDING", wikiId, userNo);
+    }
+
+    private void applyIfPresent(String newValue, java.util.function.Consumer<String> setter) {
+        if (newValue != null && !newValue.trim().isEmpty()) {
+            setter.accept(newValue.trim());
+        }
+    }
+
     @Transactional(readOnly = true)
     public WikiModificationDetailDto getUserModificationDetail(Long modificationId, Long userId) {
         WikiModificationRequest request = wikiModificationRequestRepository.findById(modificationId)

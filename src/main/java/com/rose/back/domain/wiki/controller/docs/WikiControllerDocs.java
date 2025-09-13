@@ -285,4 +285,24 @@ public interface WikiControllerDocs {
                                     """))),
     })
     public ResponseEntity<MessageResponse> cancelUserModification(@PathVariable("id") Long id, @AuthenticationPrincipal CustomUserDetails user);
+
+    @Operation(summary = "거절된 도감 보완 재제출", description = "거절된 도감(위키)을 수정하여 다시 심사 요청(PENDING) 상태로 재제출합니다.")
+    @CommonErrorResponses
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "거절된 도감 보완 재제출 성공",
+                    content = @Content(schema = @Schema(implementation = MessageResponse.class)) ),
+            @ApiResponse(responseCode = "409", description = "거절된 도감 보완 재제출 실패",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(name = "Conflict", value = """
+                                    {
+                                      \"status\": 409,
+                                      \"error\": \"CONFLICT\",
+                                      \"message\": \"거절된 도감 보완 재제출에 실패했습니다.\",
+                                      \"path\": "/api/v1/wiki/user/{id}/resubmit"
+                                    }
+                                    """)))
+    })
+    ResponseEntity<MessageResponse> resubmitRejectedWiki(@PathVariable("id") Long id,
+                                                          @RequestBody(description = "보완 제출할 도감 수정 내용", required = true, content = @Content(schema = @Schema(implementation = WikiRequest.class))) WikiRequest dto,
+                                                          @AuthenticationPrincipal CustomUserDetails user);
 }

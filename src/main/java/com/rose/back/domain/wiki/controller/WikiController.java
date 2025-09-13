@@ -151,5 +151,12 @@ public class WikiController {
         return ResponseEntity.ok(new MessageResponse("도감 수정 요청이 취소되었습니다."));
     }
 
+    @PatchMapping("/user/{id}/resubmit")
+    public ResponseEntity<MessageResponse> resubmitRejectedWiki(@PathVariable("id") Long id, @RequestBody WikiRequest dto, @AuthenticationPrincipal CustomUserDetails user) {
+        log.info("[PATCH][/api/v1/wiki/user/{}/resubmit] - 거절된 도감 보완 재제출", id);
+        wikiService.resubmitRejectedWiki(id, user.getUserNo(), dto);
+        return ResponseEntity.ok(new MessageResponse("거절된 도감이 보완 제출되었습니다."));
+    }
+
     public record ImageUploadResponse(boolean uploaded, String url, String error) {}
 }
