@@ -2,7 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.2.6'
 	id 'io.spring.dependency-management' version '1.1.5'
-    id 'application'
+  id 'application'
 }
 
 group = 'com.rose'
@@ -78,6 +78,7 @@ dependencies {
 
   // Prometheus
   implementation 'io.micrometer:micrometer-registry-prometheus'
+  runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 
   // AWS SDK
   implementation 'software.amazon.awssdk:s3:2.20.26'
@@ -86,7 +87,8 @@ dependencies {
 
 // log4j2 사용을 위해 Logback 제거
 configurations.all {
-  exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+  exclude group: 'org.springframework.boot', 
+          module: 'spring-boot-starter-logging'
 }
 
 application {
@@ -103,18 +105,4 @@ tasks.withType(JavaCompile) {
 }
 
 processResources {
-  // def envMap = [
-  //   "SPRING_JWT_SECRET"                : System.getenv("SPRING_JWT_SECRET"),
-  //   "CLOUD_AWS_CREDENTIALS_ACCESS_KEY" : System.getenv("CLOUD_AWS_CREDENTIALS_ACCESS_KEY"),
-  //   "CLOUD_AWS_CREDENTIALS_SECRET_KEY" : System.getenv("CLOUD_AWS_CREDENTIALS_SECRET_KEY"),
-  //   "CLOUD_AWS_REGION_STATIC"          : System.getenv("CLOUD_AWS_REGION_STATIC"),
-  //   "CLOUD_AWS_S3_BUCKET"              : System.getenv("CLOUD_AWS_S3_BUCKET")
-  // ]
-
-  // filesMatching('**/*.yml') {
-  //   expand(envMap)
-  // }
-  // filesMatching('**/*.properties') {
-  //   expand(envMap)
-  // }
 }
