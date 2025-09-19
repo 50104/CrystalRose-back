@@ -2,6 +2,7 @@ package com.rose.back.global.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.connector.ClientAbortException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -9,6 +10,7 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.server.ResponseStatusException;
@@ -199,5 +201,15 @@ public class GlobalExceptionHandler {
                                       .build();
             
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    @ExceptionHandler(ClientAbortException.class)
+    public void handleClientAbort(ClientAbortException ex, HttpServletRequest req) {
+        log.debug("클라이언트가 응답 도중 연결 종료: {} {} - {}", req.getMethod(), req.getRequestURI(), ex.getMessage());
+    }
+
+    @ExceptionHandler(AsyncRequestNotUsableException.class)
+    public void handleAsyncNotUsable(AsyncRequestNotUsableException ex, HttpServletRequest req) {
+        log.debug("비동기 응답 불가 상태에서 쓰기 시도: {} {} - {}", req.getMethod(), req.getRequestURI(), ex.getMessage());
     }
 }
