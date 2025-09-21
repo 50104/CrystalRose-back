@@ -185,5 +185,14 @@ public class WikiController {
         return ResponseEntity.ok(new MessageResponse("위시리스트에서 제거되었습니다."));
     }
 
+    @GetMapping("/wishlist")
+    public ResponseEntity<List<WikiWishlistResponse>> getUserWishlist(
+            @AuthenticationPrincipal CustomUserDetails user) {
+        log.info("[GET][/api/v1/wiki/wishlist] - 사용자 위시리스트 조회: userNo={}", user.getUserNo());
+        
+        List<WikiWishlistResponse> wishlist = wikiWishlistService.getUserWishlist(user.getUserNo());
+        return ResponseEntity.ok(wishlist);
+    }
+
     public record ImageUploadResponse(boolean uploaded, String url, String error) {}
 }

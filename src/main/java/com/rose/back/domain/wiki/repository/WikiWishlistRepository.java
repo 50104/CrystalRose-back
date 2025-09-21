@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -20,4 +21,8 @@ public interface WikiWishlistRepository extends JpaRepository<WikiWishlistEntity
     @Modifying
     @Query("DELETE FROM WikiWishlistEntity w WHERE w.user.userNo = :userNo AND w.wiki.id = :wikiId")
     void deleteByUserNoAndWikiId(@Param("userNo") Long userNo, @Param("wikiId") Long wikiId);
+
+    // 위키 위시리스트 조회
+    @Query("SELECT w FROM WikiWishlistEntity w JOIN FETCH w.wiki WHERE w.user.userNo = :userNo ORDER BY w.createdDate DESC")
+    List<WikiWishlistEntity> findByUserNoWithWiki(@Param("userNo") Long userNo);
 }

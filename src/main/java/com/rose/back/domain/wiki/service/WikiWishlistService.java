@@ -13,6 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -50,6 +53,14 @@ public class WikiWishlistService {
                 .orElseThrow(() -> new IllegalArgumentException("위시리스트에서 해당 장미를 찾을 수 없습니다."));
 
         wishlistRepository.delete(wishlistEntity);
+    }
+
+    public List<WikiWishlistResponse> getUserWishlist(Long userNo) {
+        List<WikiWishlistEntity> wishlistEntities = wishlistRepository.findByUserNoWithWiki(userNo);
+        
+        return wishlistEntities.stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
     }
 
     private WikiWishlistResponse convertToResponse(WikiWishlistEntity entity) {
