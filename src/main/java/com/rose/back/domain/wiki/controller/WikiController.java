@@ -6,8 +6,11 @@ import com.rose.back.domain.wiki.dto.WikiModificationListDto;
 import com.rose.back.domain.wiki.dto.WikiModificationResubmitDto;
 import com.rose.back.domain.wiki.dto.WikiRequest;
 import com.rose.back.domain.wiki.dto.WikiResponse;
+import com.rose.back.domain.wiki.dto.WikiWishlistAddRequest;
+import com.rose.back.domain.wiki.dto.WikiWishlistResponse;
 import com.rose.back.domain.wiki.service.WikiImageService;
 import com.rose.back.domain.wiki.service.WikiService;
+import com.rose.back.domain.wiki.service.WikiWishlistService;
 import com.rose.back.domain.user.entity.UserEntity;
 import com.rose.back.domain.auth.oauth2.CustomUserDetails;
 import com.rose.back.domain.auth.repository.AuthRepository;
@@ -34,6 +37,7 @@ public class WikiController {
 
     private final WikiService wikiService;
     private final WikiImageService wikiImageService;
+    private final WikiWishlistService wikiWishlistService;
     private final AuthRepository authRepository;
 
     @PostMapping("/register")
@@ -163,6 +167,14 @@ public class WikiController {
         log.info("[PATCH][/api/v1/wiki/user/{}/resubmit] - 거절된 도감 보완 재제출", id);
         wikiService.resubmitRejectedWiki(id, user.getUserNo(), dto);
         return ResponseEntity.ok(new MessageResponse("거절된 도감이 보완 제출되었습니다."));
+    }
+
+    @PostMapping("/wishlist")
+    public ResponseEntity<WikiWishlistResponse> addToWishlist(@RequestBody WikiWishlistAddRequest request, @AuthenticationPrincipal CustomUserDetails user) {
+        log.info("[POST][/api/v1/wiki/wishlist] - 위시리스트 추가 요청: wikiId={}, userNo={}", request.getWikiId(), user.getUserNo());
+        
+        WikiWishlistResponse response = wikiWishlistService.addToWishlist(user.getUserNo(), request);
+        return ResponseEntity.ok(response);
     }
 
     public record ImageUploadResponse(boolean uploaded, String url, String error) {}
