@@ -44,6 +44,14 @@ public class WikiWishlistService {
         return convertToResponse(savedEntity);
     }
 
+    @Transactional
+    public void removeFromWishlist(Long userNo, Long wikiId) {
+        WikiWishlistEntity wishlistEntity = wishlistRepository.findByUserNoAndWikiId(userNo, wikiId)
+                .orElseThrow(() -> new IllegalArgumentException("위시리스트에서 해당 장미를 찾을 수 없습니다."));
+
+        wishlistRepository.delete(wishlistEntity);
+    }
+
     private WikiWishlistResponse convertToResponse(WikiWishlistEntity entity) {
         return WikiWishlistResponse.builder()
                 .id(entity.getId())

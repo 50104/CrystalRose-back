@@ -177,5 +177,13 @@ public class WikiController {
         return ResponseEntity.ok(response);
     }
 
+    @DeleteMapping("/wishlist/{wikiId}")
+    public ResponseEntity<MessageResponse> removeFromWishlist(@PathVariable("wikiId") Long wikiId, @AuthenticationPrincipal CustomUserDetails user) {
+        log.info("[DELETE][/api/v1/wiki/wishlist/{}] - 위시리스트 제거 요청: userNo={}", wikiId, user.getUserNo());
+        
+        wikiWishlistService.removeFromWishlist(user.getUserNo(), wikiId);
+        return ResponseEntity.ok(new MessageResponse("위시리스트에서 제거되었습니다."));
+    }
+
     public record ImageUploadResponse(boolean uploaded, String url, String error) {}
 }
