@@ -194,5 +194,14 @@ public class WikiController {
         return ResponseEntity.ok(wishlist);
     }
 
+    @GetMapping("/wishlist/check/{wikiId}")
+    public ResponseEntity<Map<String, Boolean>> checkWishlistStatus(@PathVariable("wikiId") Long wikiId, @AuthenticationPrincipal CustomUserDetails user) {
+        log.info("[GET][/api/v1/wiki/wishlist/check/{}] - 위시리스트 포함 여부 확인: userNo={}", wikiId, user.getUserNo());
+        
+        boolean isInWishlist = wikiWishlistService.isInWishlist(user.getUserNo(), wikiId);
+        Map<String, Boolean> response = Map.of("isInWishlist", isInWishlist);
+        return ResponseEntity.ok(response);
+    }
+
     public record ImageUploadResponse(boolean uploaded, String url, String error) {}
 }

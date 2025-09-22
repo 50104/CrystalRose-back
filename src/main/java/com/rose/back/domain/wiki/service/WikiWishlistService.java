@@ -63,6 +63,10 @@ public class WikiWishlistService {
                 .collect(Collectors.toList());
     }
 
+    public boolean isInWishlist(Long userNo, Long wikiId) {
+        return wishlistRepository.findByUserNoAndWikiId(userNo, wikiId).isPresent();
+    }
+
     private WikiWishlistResponse convertToResponse(WikiWishlistEntity entity) {
         return WikiWishlistResponse.builder()
                 .id(entity.getId())
