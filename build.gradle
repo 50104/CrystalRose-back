@@ -79,6 +79,7 @@ dependencies {
   // Prometheus
   implementation 'io.micrometer:micrometer-registry-prometheus'
   runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+  //https://api.dodorose.com/actuator/prometheus 왜 이게 아니지
 
   // AWS SDK
   implementation 'software.amazon.awssdk:s3:2.20.26'
