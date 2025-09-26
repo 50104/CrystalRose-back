@@ -1,7 +1,6 @@
 package com.rose.back.domain.auth.service.impl;
 
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import java.time.LocalDateTime;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -13,6 +12,8 @@ import com.rose.back.common.constants.ResponseCode;
 import com.rose.back.common.util.CertificationNumber;
 import com.rose.back.domain.auth.jwt.JwtTokenProvider;
 import com.rose.back.domain.auth.repository.AuthRepository;
+import com.rose.back.domain.auth.repository.EmailCertificationRepository;
+import com.rose.back.domain.auth.entity.EmailCertificationEntity;
 import com.rose.back.domain.auth.service.AccessTokenBlacklistService;
 import com.rose.back.domain.auth.service.AuthService;
 import com.rose.back.domain.auth.service.RefreshTokenService;
@@ -35,9 +36,9 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.time.Duration;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
@@ -55,11 +56,9 @@ public class AuthServiceImpl implements AuthService {
     private final JwtTokenProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
     private final AccessTokenBlacklistService accessTokenBlacklistService;
-    
-    @Qualifier("emailRedisTemplate")
-    private final StringRedisTemplate redisTemplate;
+    private final EmailCertificationRepository emailCertificationRepository;
 
-    public AuthServiceImpl(UserRepository userRepository, EmailService emailService, PasswordEncoder passwordEncoder, AuthRepository authRepository, JwtTokenProvider jwtProvider, RefreshTokenService refreshTokenService, AccessTokenBlacklistService accessTokenBlacklistService, @Qualifier("emailRedisTemplate") StringRedisTemplate redisTemplate) {
+    public AuthServiceImpl(UserRepository userRepository, EmailService emailService, PasswordEncoder passwordEncoder, AuthRepository authRepository, JwtTokenProvider jwtProvider, RefreshTokenService refreshTokenService, AccessTokenBlacklistService accessTokenBlacklistService, EmailCertificationRepository emailCertificationRepository) {
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
@@ -67,7 +66,7 @@ public class AuthServiceImpl implements AuthService {
         this.jwtProvider = jwtProvider;
         this.refreshTokenService = refreshTokenService;
         this.accessTokenBlacklistService = accessTokenBlacklistService;
-        this.redisTemplate = redisTemplate;
+        this.emailCertificationRepository = emailCertificationRepository;
     }
 
     // 아이디 중복 확인
@@ -102,44 +101,75 @@ public class AuthServiceImpl implements AuthService {
     }
 
     // 이메일 인증
-    @Transactional
     @Override
+    @Transactional
     public ResponseEntity<? super EmailSendResponse> emailCertification(EmailSendRequest dto) {
-        try {
-            String userId = dto.getUserId();
-            String userEmail = dto.getUserEmail();
-            String code = CertificationNumber.getCertificationNumber();
+        String userId = dto.getUserId();
+        String userEmail = dto.getUserEmail();
+        String code = CertificationNumber.getCertificationNumber();
 
-            boolean isSent = emailService.sendCertificationMail(userEmail, code);
-            if (!isSent) return EmailSendResponse.mailSendFail();
+        // 이메일 전송
+        boolean success = emailService.sendCertificationMail(userEmail, code);
+        if (!success) return EmailSendResponse.mailSendFail();
 
-            String key = "cert:" + userId + ":" + userEmail; // Redis key 설정
-            redisTemplate.opsForValue().set(key, code, Duration.ofMinutes(5)); // 인증번호 + TTL 5분
+        // 추가 및 미사용 시 재발급
+        Optional<EmailCertificationEntity> optional = emailCertificationRepository.findByUserIdAndUserEmailAndUsedFalse(userId, userEmail);
 
-            return EmailSendResponse.success();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return CommonResponse.databaseError();
+        if (optional.isPresent()) {
+            EmailCertificationEntity entity = optional.get();
+            entity.reissue(code, 5);
+            emailCertificationRepository.save(entity);
+        } else {
+            EmailCertificationEntity newEntity = EmailCertificationEntity.builder()
+                    .userId(userId)
+                    .userEmail(userEmail)
+                    .certificationNumber(code)
+                    .build();
+            emailCertificationRepository.save(newEntity);
         }
+
+        return EmailSendResponse.success();
     }
 
-    // 인증 확인
-    @Transactional
+    // 이메일 인증 확인
     @Override
+    @Transactional
     public ResponseEntity<? super EmailVerifyResponse> checkCertification(EmailVerifyRequest dto) {
         try {
             String userId = dto.getUserId();
             String userEmail = dto.getUserEmail();
             String inputCode = dto.getCertificationNumber();
 
-            String key = "cert:" + userId + ":" + userEmail;
-            String savedCode = redisTemplate.opsForValue().get(key);
+            // 미사용 조회
+            Optional<EmailCertificationEntity> optionalEntity =
+                    emailCertificationRepository.findByUserIdAndUserEmailAndUsedFalse(userId, userEmail);
+            if (optionalEntity.isEmpty()) return EmailVerifyResponse.certificationFail();
 
-            if (savedCode == null || !savedCode.equals(inputCode)) {
+            EmailCertificationEntity certificationEntity = optionalEntity.get();
+
+            // 만료 확인
+            if (certificationEntity.isExpired()) {
+                certificationEntity.markUsed();
+                emailCertificationRepository.save(certificationEntity);
                 return EmailVerifyResponse.certificationFail();
             }
 
-            redisTemplate.delete(key); // 인증 후 삭제
+            // 번호 비교
+            String storedCode = certificationEntity.getCertificationNumber();
+            boolean isMatched = false;
+            if (storedCode != null && inputCode != null) {
+                byte[] a = storedCode.getBytes(StandardCharsets.UTF_8);
+                byte[] b = inputCode.getBytes(StandardCharsets.UTF_8);
+                isMatched = MessageDigest.isEqual(a, b);
+            }
+
+            if (!isMatched) {
+                emailCertificationRepository.save(certificationEntity);
+                return EmailVerifyResponse.certificationFail();
+            }
+
+            certificationEntity.markUsed();
+            emailCertificationRepository.save(certificationEntity);
 
             return EmailVerifyResponse.success();
         } catch (Exception e) {
