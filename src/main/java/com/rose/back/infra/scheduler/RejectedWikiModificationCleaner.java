@@ -28,9 +28,7 @@ public class RejectedWikiModificationCleaner {
     public void deleteRejectedWikiAndModificationRequests() {
         LocalDate fourDaysAgoDate = LocalDate.now().minusDays(4);
         LocalDateTime fourDaysAgoMidnight = fourDaysAgoDate.atTime(LocalTime.MIDNIGHT);
-        
-        log.info("거절된 Wiki 및 Wiki 수정 요청 정리 작업 시작 - 기준 날짜: {}", 
-                fourDaysAgoMidnight);
+        // log.info("거절된 Wiki 및 Wiki 수정 요청 정리 작업 시작 - 기준 날짜: {}", fourDaysAgoMidnight);
         
         try {
             deleteRejectedModificationRequests(fourDaysAgoMidnight);
@@ -50,7 +48,7 @@ public class RejectedWikiModificationCleaner {
             );
         
         if (expiredRequests.isEmpty()) {
-            log.info("삭제할 거절된 Wiki 수정 요청이 없습니다.");
+            // log.info("삭제할 거절된 Wiki 수정 요청이 없습니다.");
             return;
         }
         log.info("삭제 대상 거절된 Wiki 수정 요청 개수: {}", expiredRequests.size());
@@ -72,7 +70,7 @@ public class RejectedWikiModificationCleaner {
             wikiRepository.findRejectedWikisBeforeDeadline(deadline);
         
         if (expiredWikis.isEmpty()) {
-            log.info("삭제할 거절된 Wiki가 없습니다.");
+            // log.info("삭제할 거절된 Wiki가 없습니다.");
             return;
         }
         log.info("삭제 대상 거절된 Wiki 개수: {}", expiredWikis.size());
