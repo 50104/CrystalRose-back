@@ -108,10 +108,6 @@ public class AuthServiceImpl implements AuthService {
         String userEmail = dto.getUserEmail();
         String code = CertificationNumber.getCertificationNumber();
 
-        // 이메일 전송
-        boolean success = emailService.sendCertificationMail(userEmail, code);
-        if (!success) return EmailSendResponse.mailSendFail();
-
         // 추가 및 미사용 시 재발급
         Optional<EmailCertificationEntity> optional = emailCertificationRepository.findByUserIdAndUserEmailAndUsedFalse(userId, userEmail);
 
@@ -128,6 +124,7 @@ public class AuthServiceImpl implements AuthService {
             emailCertificationRepository.save(newEntity);
         }
 
+        emailService.sendCertificationMailAsync(userEmail, code);
         return EmailSendResponse.success();
     }
 

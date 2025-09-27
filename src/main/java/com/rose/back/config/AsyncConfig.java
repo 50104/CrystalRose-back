@@ -5,8 +5,10 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
+@EnableAsync
 @Configuration
 public class AsyncConfig {
     
@@ -21,5 +23,18 @@ public class AsyncConfig {
         exec.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         exec.initialize();
         return exec;
+    }
+
+    @Bean(name = "mailExecutor")
+    public Executor mailExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(2); // 동시 메일 전송 기본 스레드
+        executor.setMaxPoolSize(8);  // 최대 확장
+        executor.setQueueCapacity(100); // 대기열
+        executor.setThreadNamePrefix("MAIL-ASYNC-");
+        executor.setAwaitTerminationSeconds(30);
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.initialize();
+        return executor;
     }
 }

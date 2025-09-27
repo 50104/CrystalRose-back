@@ -6,6 +6,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 
 @Slf4j
 @Component
@@ -18,6 +19,18 @@ public class EmailService {
         String subject = "[DODOROSE] 메일인증 코드";
         String html = getCertificationHtml(certificationNumber);
         return send(email, subject, html);
+    }
+
+    @Async("mailExecutor")
+    public void sendCertificationMailAsync(String email, String certificationNumber) {
+        long start = System.currentTimeMillis();
+        boolean result = sendCertificationMail(email, certificationNumber);
+        long took = System.currentTimeMillis() - start;
+        if (!result) {
+            log.warn("[ASYNC][CERT] 실패 email={} thread={} took={}ms", email, Thread.currentThread().getName(), took);
+        } else {
+            log.debug("[ASYNC][CERT] 성공 email={} thread={} took={}ms", email, Thread.currentThread().getName(), took);
+        }
     }
 
     public void sendWithdrawalNotice(String email, String userNick) {
