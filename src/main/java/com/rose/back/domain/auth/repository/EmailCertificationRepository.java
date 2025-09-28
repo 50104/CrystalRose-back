@@ -25,4 +25,9 @@ public interface EmailCertificationRepository extends JpaRepository<EmailCertifi
     @Modifying
     @Query("UPDATE EmailCertificationEntity e SET e.used = true, e.usedAt = :usedAt WHERE e.userId = :userId AND e.userEmail = :userEmail AND e.used = false")
     int markAllAsUsedByUserIdAndUserEmail(@Param("userId") String userId, @Param("userEmail") String userEmail, @Param("usedAt") LocalDateTime usedAt);
+
+    // 만료 & 미사용 레코드 일괄 삭제
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("DELETE FROM EmailCertificationEntity e WHERE e.used = false AND e.expiresAt < :now")
+    int deleteAllExpiredAndUnused(@Param("now") LocalDateTime now);
 }
