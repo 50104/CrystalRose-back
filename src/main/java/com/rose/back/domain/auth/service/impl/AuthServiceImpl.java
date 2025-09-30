@@ -38,6 +38,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Optional;
@@ -107,19 +108,20 @@ public class AuthServiceImpl implements AuthService {
         String userId = dto.getUserId();
         String userEmail = dto.getUserEmail();
         String code = CertificationNumber.getCertificationNumber();
+        String hashed = hashCertificationCode(code);
 
         // 추가 및 미사용 시 재발급
         Optional<EmailCertificationEntity> optional = emailCertificationRepository.findByUserIdAndUserEmailAndUsedFalse(userId, userEmail);
 
         if (optional.isPresent()) {
             EmailCertificationEntity entity = optional.get();
-            entity.reissue(code, 5);
+            entity.reissue(hashed, 5);
             emailCertificationRepository.save(entity);
         } else {
             EmailCertificationEntity newEntity = EmailCertificationEntity.builder()
                     .userId(userId)
                     .userEmail(userEmail)
-                    .certificationNumber(code)
+                    .certificationNumber(hashed)
                     .build();
             emailCertificationRepository.save(newEntity);
         }
@@ -155,16 +157,24 @@ public class AuthServiceImpl implements AuthService {
             String storedCode = certificationEntity.getCertificationNumber();
             boolean isMatched = false;
             if (storedCode != null && inputCode != null) {
+                String hashedInput = hashCertificationCode(inputCode);
                 byte[] a = storedCode.getBytes(StandardCharsets.UTF_8);
-                byte[] b = inputCode.getBytes(StandardCharsets.UTF_8);
-                isMatched = MessageDigest.isEqual(a, b);
+                byte[] b = hashedInput.getBytes(StandardCharsets.UTF_8);
+                if (MessageDigest.isEqual(a, b)) {
+                    isMatched = true;
+                } else {
+                    byte[] bPlain = inputCode.getBytes(StandardCharsets.UTF_8);
+                    isMatched = MessageDigest.isEqual(a, bPlain);
+                    if (isMatched) {
+                        certificationEntity.reissue(hashCertificationCode(inputCode), 5);
+                    }
+                }
             }
 
             if (!isMatched) {
                 emailCertificationRepository.save(certificationEntity);
                 return EmailVerifyResponse.certificationFail();
             }
-
             certificationEntity.markUsed();
             emailCertificationRepository.save(certificationEntity);
 
@@ -172,6 +182,19 @@ public class AuthServiceImpl implements AuthService {
         } catch (Exception e) {
             e.printStackTrace();
             return CommonResponse.databaseError();
+        }
+    }
+
+    private String hashCertificationCode(String raw) {
+        if (raw == null) return null;
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] digest = md.digest(raw.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder(digest.length * 2);
+            for (byte b : digest) sb.append(String.format("%02x", b));
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("지원되지 않는 SHA-256", e);
         }
     }
 
